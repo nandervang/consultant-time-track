@@ -19,6 +19,7 @@ export type WidgetType =
   | 'company-motto'
   | 'monthly-expenses'
   | 'time-logged'
+  | 'today-time'
   | 'revenue-chart'
   | 'cash-flow'
   | 'cash-flow-projections'

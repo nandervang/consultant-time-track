@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Table, Search, Calendar } from 'lucide-react';
+import { useState } from 'react';
+import { Table, Search, Calendar, User } from 'lucide-react';
 import { useTimeEntries } from '../hooks/useTimeEntries';
 import { useProjects } from '../hooks/useProjects';
+import { useClients } from '../hooks/useClients';
 
 interface TableViewProps {
   isDarkMode: boolean;
@@ -10,12 +11,16 @@ interface TableViewProps {
 export default function TableView({ isDarkMode }: TableViewProps) {
   const { entries } = useTimeEntries();
   const { projects } = useProjects();
+  const { clients } = useClients();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState('');
 
   const filteredEntries = entries.filter(entry => {
+    const client = clients.find(c => c.id === entry.project?.client_id);
     const matchesSearch = !searchTerm || 
       entry.project?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client?.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (entry.comment && entry.comment.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesProject = !selectedProjectId || entry.project_id === selectedProjectId;
@@ -27,12 +32,17 @@ export default function TableView({ isDarkMode }: TableViewProps) {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00');
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('sv-SE', {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
       year: 'numeric'
     });
+  };
+
+  // Get client info for a project
+  const getClientInfo = (projectClientId?: string | null) => {
+    return clients.find(c => c.id === projectClientId);
   };
 
   const sortedEntries = [...filteredEntries].sort((a, b) => 
@@ -86,6 +96,7 @@ export default function TableView({ isDarkMode }: TableViewProps) {
         <select
           value={selectedProjectId}
           onChange={(e) => setSelectedProjectId(e.target.value)}
+          aria-label="Filter by project"
           className={`px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 ${
             isDarkMode 
               ? 'bg-slate-700 border-slate-600 text-white' 
@@ -93,11 +104,14 @@ export default function TableView({ isDarkMode }: TableViewProps) {
           }`}
         >
           <option value="">All projects</option>
-          {projects.map((project) => (
-            <option key={project.id} value={project.id}>
-              {project.name}
-            </option>
-          ))}
+          {projects.map((project) => {
+            const client = getClientInfo(project.client_id);
+            return (
+              <option key={project.id} value={project.id}>
+                {project.name} {client ? `- ${client.name}` : ''}
+              </option>
+            );
+          })}
         </select>
       </div>
 
@@ -125,6 +139,9 @@ export default function TableView({ isDarkMode }: TableViewProps) {
                 }`}>Project</th>
                 <th className={`text-left py-3 px-4 font-medium ${
                   isDarkMode ? 'text-slate-300' : 'text-slate-700'
+                }`}>Client</th>
+                <th className={`text-left py-3 px-4 font-medium ${
+                  isDarkMode ? 'text-slate-300' : 'text-slate-700'
                 }`}>Hours</th>
                 <th className={`text-left py-3 px-4 font-medium ${
                   isDarkMode ? 'text-slate-300' : 'text-slate-700'
@@ -132,40 +149,58 @@ export default function TableView({ isDarkMode }: TableViewProps) {
               </tr>
             </thead>
             <tbody>
-              {sortedEntries.map((entry) => (
-                <tr key={entry.id} className={`border-b transition-colors duration-150 ${
-                  isDarkMode 
-                    ? 'border-slate-700 hover:bg-slate-700' 
-                    : 'border-slate-100 hover:bg-slate-50'
-                }`}>
-                  <td className={`py-3 px-4 ${
-                    isDarkMode ? 'text-white' : 'text-slate-900'
+              {sortedEntries.map((entry) => {
+                const client = getClientInfo(entry.project?.client_id);
+                return (
+                  <tr key={entry.id} className={`border-b transition-colors duration-150 ${
+                    isDarkMode 
+                      ? 'border-slate-700 hover:bg-slate-700' 
+                      : 'border-slate-100 hover:bg-slate-50'
                   }`}>
-                    {formatDate(entry.date)}
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-3 h-3 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: entry.project?.color || '#64748B' }}
-                      />
-                      <span className={isDarkMode ? 'text-white' : 'text-slate-900'}>
-                        {entry.project?.name}
-                      </span>
-                    </div>
-                  </td>
-                  <td className={`py-3 px-4 font-medium ${
-                    isDarkMode ? 'text-white' : 'text-slate-900'
-                  }`}>
-                    {entry.hours}h
-                  </td>
-                  <td className={`py-3 px-4 ${
-                    isDarkMode ? 'text-slate-400' : 'text-slate-600'
-                  }`}>
-                    {entry.comment || '-'}
-                  </td>
-                </tr>
-              ))}
+                    <td className={`py-3 px-4 ${
+                      isDarkMode ? 'text-white' : 'text-slate-900'
+                    }`}>
+                      {formatDate(entry.date)}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-3 h-3 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: entry.project?.color || '#64748B' }}
+                        />
+                        <span className={isDarkMode ? 'text-white' : 'text-slate-900'}>
+                          {entry.project?.name}
+                        </span>
+                      </div>
+                    </td>
+                    <td className={`py-3 px-4 ${
+                      isDarkMode ? 'text-slate-300' : 'text-slate-600'
+                    }`}>
+                      {client ? (
+                        <div className="flex items-center gap-1">
+                          <User className="w-3 h-3" />
+                          <span>{client.name}</span>
+                          {client.company && (
+                            <span className="text-xs">({client.company})</span>
+                          )}
+                        </div>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+                    <td className={`py-3 px-4 font-medium ${
+                      isDarkMode ? 'text-white' : 'text-slate-900'
+                    }`}>
+                      {entry.hours}h
+                    </td>
+                    <td className={`py-3 px-4 ${
+                      isDarkMode ? 'text-slate-400' : 'text-slate-600'
+                    }`}>
+                      {entry.comment || '-'}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

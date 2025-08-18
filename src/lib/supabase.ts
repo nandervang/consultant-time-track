@@ -13,6 +13,38 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export interface Database {
   public: {
     Tables: {
+      monthly_settings: {
+        Row: {
+          id: string;
+          user_id: string;
+          year: number;
+          month: number;
+          billing_percentage: number;
+          absence_percentage: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          year: number;
+          month: number;
+          billing_percentage?: number;
+          absence_percentage?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          year?: number;
+          month?: number;
+          billing_percentage?: number;
+          absence_percentage?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       user_profiles: {
         Row: {
           id: string;
@@ -22,6 +54,10 @@ export interface Database {
           timezone: string | null;
           currency: string | null;
           hourly_rate: number | null;
+          debit_rate_monthly: number | null;
+          absence_percentage: number | null;
+          work_hours_per_day: number | null;
+          work_days_per_week: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -33,6 +69,10 @@ export interface Database {
           timezone?: string | null;
           currency?: string | null;
           hourly_rate?: number | null;
+          debit_rate_monthly?: number | null;
+          absence_percentage?: number | null;
+          work_hours_per_day?: number | null;
+          work_days_per_week?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -44,6 +84,10 @@ export interface Database {
           timezone?: string | null;
           currency?: string | null;
           hourly_rate?: number | null;
+          debit_rate_monthly?: number | null;
+          absence_percentage?: number | null;
+          work_hours_per_day?: number | null;
+          work_days_per_week?: number | null;
           created_at?: string;
           updated_at?: string;
         };

@@ -8,7 +8,9 @@ import TimeTracking from '@/pages/TimeTracking';
 import Budget from '@/pages/Budget';
 import CashFlow from '@/pages/CashFlow';
 import Projects from '@/pages/Projects';
+import Clients from '@/pages/Clients';
 import Analytics from '@/pages/Analytics';
+import Settings from '@/pages/Settings';
 
 function App() {
   const { user, loading, signOut } = useAuth();
@@ -70,11 +72,11 @@ function App() {
           <Route path="/time-tracking" element={<TimeTracking isDarkMode={isDarkMode} />} />
           <Route path="/budget" element={<Budget isDarkMode={isDarkMode} />} />
           <Route path="/cash-flow" element={<CashFlow isDarkMode={isDarkMode} />} />
-          <Route path="/projects" element={<Projects isDarkMode={isDarkMode} />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/clients" element={<Clients />} />
           <Route path="/analytics" element={<Analytics isDarkMode={isDarkMode} />} />
-          <Route path="/clients" element={<div className="p-6">Client management coming soon...</div>} />
           <Route path="/invoicing" element={<div className="p-6">Invoicing coming soon...</div>} />
-          <Route path="/settings" element={<div className="p-6">Settings coming soon...</div>} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </MainLayout>
     </Router>

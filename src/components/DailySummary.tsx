@@ -1,6 +1,6 @@
-import React from 'react';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock, User } from 'lucide-react';
 import { useTimeEntries } from '../hooks/useTimeEntries';
+import { useClients } from '../hooks/useClients';
 
 interface DailySummaryProps {
   isDarkMode: boolean;
@@ -8,18 +8,24 @@ interface DailySummaryProps {
 
 export default function DailySummary({ isDarkMode }: DailySummaryProps) {
   const { entries } = useTimeEntries();
+  const { clients } = useClients();
   const today = new Date().toISOString().split('T')[0];
   const todaysEntries = entries.filter(entry => entry.date === today);
   const totalHours = todaysEntries.reduce((sum, entry) => sum + entry.hours, 0);
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00');
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('sv-SE', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  // Helper function to get client info for a project
+  const getClientInfo = (projectClientId?: string | null) => {
+    return clients.find(c => c.id === projectClientId);
   };
 
   return (
@@ -73,32 +79,43 @@ export default function DailySummary({ isDarkMode }: DailySummaryProps) {
         </div>
       ) : (
         <div className="space-y-3">
-          {todaysEntries.map((entry) => (
-            <div
-              key={entry.id}
-              className={`flex items-center gap-4 p-3 rounded-lg transition-colors duration-200 ${
-                isDarkMode ? 'bg-slate-700' : 'bg-slate-50'
-              }`}
-            >
+          {todaysEntries.map((entry) => {
+            const client = getClientInfo(entry.project?.client_id);
+            return (
               <div
-                className="w-3 h-3 rounded-full flex-shrink-0"
-                style={{ backgroundColor: entry.project?.color || '#64748B' }}
-              />
-              <div className="flex-1 min-w-0">
-                <p className={`font-medium ${
+                key={entry.id}
+                className={`flex items-center gap-4 p-3 rounded-lg transition-colors duration-200 ${
+                  isDarkMode ? 'bg-slate-700' : 'bg-slate-50'
+                }`}
+              >
+                <div
+                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: entry.project?.color || '#64748B' }}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className={`font-medium ${
+                    isDarkMode ? 'text-white' : 'text-slate-900'
+                  }`}>{entry.project?.name}</p>
+                  {client && (
+                    <div className={`flex items-center gap-1 text-xs ${
+                      isDarkMode ? 'text-slate-400' : 'text-slate-600'
+                    }`}>
+                      <User className="w-3 h-3" />
+                      <span>{client.name}{client.company ? ` (${client.company})` : ''}</span>
+                    </div>
+                  )}
+                  {entry.comment && (
+                    <p className={`text-sm truncate ${
+                      isDarkMode ? 'text-slate-400' : 'text-slate-600'
+                    }`}>{entry.comment}</p>
+                  )}
+                </div>
+                <div className={`font-medium ${
                   isDarkMode ? 'text-white' : 'text-slate-900'
-                }`}>{entry.project?.name}</p>
-                {entry.comment && (
-                  <p className={`text-sm truncate ${
-                    isDarkMode ? 'text-slate-400' : 'text-slate-600'
-                  }`}>{entry.comment}</p>
-                )}
+                }`}>{entry.hours}h</div>
               </div>
-              <div className={`font-medium ${
-                isDarkMode ? 'text-white' : 'text-slate-900'
-              }`}>{entry.hours}h</div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

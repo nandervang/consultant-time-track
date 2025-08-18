@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { Plus, GripVertical } from 'lucide-react';
+import { Plus, GripVertical, Maximize, Minimize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DashboardWidget, WidgetProps } from '@/types/dashboard';
+import { useWidgets } from '@/hooks/useWidgets';
+import { useAuth } from '@/hooks/useAuth';
 import CompanyMottoCard from './widgets/CompanyMottoCard';
 import MonthlyExpensesCard from './widgets/MonthlyExpensesCard';
 import TimeLoggedCard from './widgets/TimeLoggedCard';
+import TodayTimeCard from './widgets/TodayTimeCard';
 import RevenueChartCard from './widgets/RevenueChartCard';
 import QuickStatsCard from './widgets/QuickStatsCard';
 import QuickActionsCard from './widgets/QuickActionsCard';
@@ -16,11 +19,9 @@ import CashFlowCard from './widgets/CashFlowCard';
 import CashFlowProjectionsCard from './widgets/CashFlowProjectionsCard';
 import BlankCard from './widgets/BlankCard';
 import AddWidgetDialog from './AddWidgetDialog';
+import RemoveWidgetButton from './RemoveWidgetButton';
 
 interface DashboardGridProps {
-  widgets: DashboardWidget[];
-  onUpdateWidgets: (widgets: DashboardWidget[]) => void;
-  onAddWidget: (widget: DashboardWidget) => void;
   isDarkMode: boolean;
 }
 
@@ -28,6 +29,7 @@ const widgetComponents: Record<string, React.ComponentType<WidgetProps>> = {
   'company-motto': CompanyMottoCard,
   'monthly-expenses': MonthlyExpensesCard,
   'time-logged': TimeLoggedCard,
+  'today-time': TodayTimeCard,
   'revenue-chart': RevenueChartCard,
   'quick-stats': QuickStatsCard,
   'quick-actions': QuickActionsCard,
@@ -38,13 +40,26 @@ const widgetComponents: Record<string, React.ComponentType<WidgetProps>> = {
   'blank-card': BlankCard,
 };
 
-export default function DashboardGrid({ 
-  widgets, 
-  onUpdateWidgets, 
-  onAddWidget, 
-  isDarkMode 
-}: DashboardGridProps) {
+export default function DashboardGrid({ isDarkMode }: DashboardGridProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const { user } = useAuth();
+  const { widgets, loading, updateWidgets, addWidget, removeWidget, updateWidget } = useWidgets(user?.id || null);
+
+  const handleRemoveWidget = (widgetId: string) => {
+    removeWidget(widgetId);
+  };
+
+  const handleResizeWidget = (widgetId: string) => {
+    const widget = widgets.find(w => w.id === widgetId);
+    if (!widget) return;
+
+    const newSize = widget.size.w === 1 ? 2 : widget.size.w === 2 ? 3 : 1;
+    
+    updateWidget(widgetId, {
+      size: { ...widget.size, w: newSize as 1 | 2 | 3 },
+      position: { ...widget.position, w: newSize }
+    });
+  };
 
   const handleDragEnd = (result: { destination?: { index: number } | null; source: { index: number } }) => {
     setIsDragging(false);
@@ -55,22 +70,44 @@ export default function DashboardGrid({
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
-    onUpdateWidgets(items);
+    // Update positions for all widgets
+    const updatedItems = items.map((widget, index) => ({
+      ...widget,
+      position: { ...widget.position, y: index }
+    }));
+
+    updateWidgets(updatedItems);
+  };
+
+  const handleAddWidget = (widget: DashboardWidget) => {
+    addWidget(widget);
   };
 
   const handleDragStart = () => {
     setIsDragging(true);
   };
 
-  const getGridColumns = () => {
-    if (typeof window === 'undefined') return 'repeat(3, 1fr)';
-    
-    const width = window.innerWidth;
-    if (width < 768) return 'repeat(1, 1fr)';
-    if (width < 1024) return 'repeat(2, 1fr)';
-    if (width < 1440) return 'repeat(3, 1fr)';
-    return 'repeat(4, 1fr)';
+  const getWidgetSizeClass = (width: number) => {
+    switch (width) {
+      case 2:
+        return 'col-span-1 md:col-span-2';
+      case 3:
+        return 'col-span-1 md:col-span-2 lg:col-span-3';
+      default:
+        return 'col-span-1';
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -82,7 +119,7 @@ export default function DashboardGrid({
             Welcome back! Here's what's happening with your business.
           </p>
         </div>
-        <AddWidgetDialog onAddWidget={onAddWidget}>
+        <AddWidgetDialog onAddWidget={handleAddWidget}>
           <Button>
             <Plus className="h-4 w-4 mr-2" />
             Add Widget
@@ -92,15 +129,12 @@ export default function DashboardGrid({
 
       {/* Widgets Grid */}
       <DragDropContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
-        <Droppable droppableId="dashboard" direction="horizontal">
+        <Droppable droppableId="dashboard">
           {(provided) => (
             <div
               {...provided.droppableProps}
               ref={provided.innerRef}
-              className="grid gap-6 auto-rows-min"
-              style={{
-                gridTemplateColumns: getGridColumns(),
-              }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-min"
             >
               {widgets.map((widget, index) => {
                 const WidgetComponent = widgetComponents[widget.type] || BlankCard;
@@ -111,25 +145,39 @@ export default function DashboardGrid({
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className={`relative group ${
-                          widget.size.w === 2 ? 'col-span-2' : 
-                          widget.size.w === 3 ? 'col-span-3' : ''
-                        } ${snapshot.isDragging ? 'opacity-50' : ''}`}
-                        style={{
-                          ...provided.draggableProps.style,
-                          gridColumn: `span ${Math.min(widget.size.w, 3)}`,
-                        }}
+                        className={`relative group ${getWidgetSizeClass(widget.size.w)} ${
+                          snapshot.isDragging ? 'opacity-70 shadow-2xl z-50' : ''
+                        }`}
+                        style={provided.draggableProps.style}
                       >
-                        {/* Drag handle */}
-                        <div
-                          {...provided.dragHandleProps}
-                          className={`absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity ${
-                            isDragging ? 'opacity-100' : ''
-                          }`}
-                        >
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <GripVertical className="h-4 w-4" />
+                        {/* Widget Controls */}
+                        <div className={`absolute top-2 right-2 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${
+                          isDragging ? 'opacity-100' : ''
+                        }`}>
+                          {/* Resize button */}
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 hover:text-blue-700"
+                            onClick={() => handleResizeWidget(widget.id)}
+                            title={`Resize widget (currently ${widget.size.w === 1 ? 'small' : widget.size.w === 2 ? 'medium' : 'large'})`}
+                          >
+                            {widget.size.w === 1 ? <Maximize className="h-4 w-4" /> : <Minimize className="h-4 w-4" />}
                           </Button>
+                          
+                          {/* Remove button */}
+                          <RemoveWidgetButton
+                            widgetId={widget.id}
+                            widgetTitle={widget.title}
+                            onRemove={handleRemoveWidget}
+                          />
+                          
+                          {/* Drag handle */}
+                          <div {...provided.dragHandleProps}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" title="Drag to reorder">
+                              <GripVertical className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
 
                         <WidgetComponent 
@@ -160,7 +208,7 @@ export default function DashboardGrid({
                 <p className="text-sm text-muted-foreground mb-4">
                   Get started by adding your first widget to the dashboard
                 </p>
-                <AddWidgetDialog onAddWidget={onAddWidget}>
+                <AddWidgetDialog onAddWidget={handleAddWidget}>
                   <Button>
                     <Plus className="h-4 w-4 mr-2" />
                     Add Your First Widget

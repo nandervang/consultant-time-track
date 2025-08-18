@@ -31,28 +31,20 @@ interface AddWidgetDialogProps {
 
 const availableWidgets = [
   {
-    type: 'monthly-expenses' as WidgetType,
-    name: 'Monthly Expenses',
-    description: 'Track your monthly expenses and trends',
-    icon: DollarSign,
-    category: 'Finance',
-    size: { w: 1, h: 1 }
+    type: 'today-time' as WidgetType,
+    name: 'Today\'s Hours',
+    description: 'Track your daily time logging progress',
+    icon: Clock,
+    category: 'Time',
+    size: { w: 1 as const, h: 1 }
   },
   {
     type: 'time-logged' as WidgetType,
-    name: 'Time Logged',
-    description: 'Monitor your time tracking progress',
+    name: 'Monthly Time',
+    description: 'Monitor your monthly time tracking progress',
     icon: Clock,
     category: 'Time',
-    size: { w: 1, h: 1 }
-  },
-  {
-    type: 'revenue-chart' as WidgetType,
-    name: 'Revenue Chart',
-    description: 'Visual representation of revenue trends',
-    icon: TrendingUp,
-    category: 'Finance',
-    size: { w: 2, h: 1 }
+    size: { w: 1 as const, h: 1 }
   },
   {
     type: 'quick-stats' as WidgetType,
@@ -60,7 +52,7 @@ const availableWidgets = [
     description: 'Key metrics at a glance',
     icon: BarChart3,
     category: 'Overview',
-    size: { w: 1, h: 1 }
+    size: { w: 1 as const, h: 1 }
   },
   {
     type: 'projects-overview' as WidgetType,
@@ -68,15 +60,7 @@ const availableWidgets = [
     description: 'Status of your active projects',
     icon: FolderOpen,
     category: 'Projects',
-    size: { w: 2, h: 1 }
-  },
-  {
-    type: 'quick-actions' as WidgetType,
-    name: 'Quick Actions',
-    description: 'Fast access to common tasks',
-    icon: Zap,
-    category: 'Overview',
-    size: { w: 1, h: 1 }
+    size: { w: 2 as const, h: 1 }
   },
   {
     type: 'recent-activities' as WidgetType,
@@ -84,7 +68,31 @@ const availableWidgets = [
     description: 'Latest actions and updates',
     icon: Activity,
     category: 'Overview',
-    size: { w: 1, h: 1 }
+    size: { w: 1 as const, h: 1 }
+  },
+  {
+    type: 'quick-actions' as WidgetType,
+    name: 'Quick Actions',
+    description: 'Fast access to common tasks',
+    icon: Zap,
+    category: 'Overview',
+    size: { w: 1 as const, h: 1 }
+  },
+  {
+    type: 'monthly-expenses' as WidgetType,
+    name: 'Monthly Expenses',
+    description: 'Track your monthly expenses and trends',
+    icon: DollarSign,
+    category: 'Finance',
+    size: { w: 1 as const, h: 1 }
+  },
+  {
+    type: 'revenue-chart' as WidgetType,
+    name: 'Revenue Chart',
+    description: 'Visual representation of revenue trends',
+    icon: TrendingUp,
+    category: 'Finance',
+    size: { w: 2 as const, h: 1 }
   },
   {
     type: 'cash-flow' as WidgetType,
@@ -92,7 +100,7 @@ const availableWidgets = [
     description: 'Monitor your cash flow and balance',
     icon: Wallet,
     category: 'Finance',
-    size: { w: 1, h: 1 }
+    size: { w: 1 as const, h: 1 }
   },
   {
     type: 'cash-flow-projections' as WidgetType,
@@ -100,7 +108,7 @@ const availableWidgets = [
     description: 'Forecast future cash flow scenarios',
     icon: Target,
     category: 'Finance',
-    size: { w: 2, h: 1 }
+    size: { w: 2 as const, h: 1 }
   },
   {
     type: 'blank-card' as WidgetType,
@@ -108,7 +116,7 @@ const availableWidgets = [
     description: 'Create your own custom content',
     icon: Plus,
     category: 'Custom',
-    size: { w: 1, h: 1 }
+    size: { w: 1 as const, h: 1 }
   }
 ];
 
