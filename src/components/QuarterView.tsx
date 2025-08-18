@@ -1,4 +1,3 @@
-import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTimeEntries } from '../hooks/useTimeEntries';
 
@@ -59,7 +58,7 @@ export default function QuarterView({ currentDate, onDateChange, isDarkMode }: Q
   }
 
   const formatMonthYear = (date: Date) => {
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    return date.toLocaleDateString('sv-SE', { month: 'long', year: 'numeric' });
   };
 
   const getQuarterName = (date: Date) => {
@@ -82,6 +81,7 @@ export default function QuarterView({ currentDate, onDateChange, isDarkMode }: Q
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigateQuarter('prev')}
+            title="Previous quarter"
             className={`p-2 rounded-lg transition-colors duration-200 ${
               isDarkMode 
                 ? 'hover:bg-slate-700 text-slate-400' 
@@ -92,6 +92,7 @@ export default function QuarterView({ currentDate, onDateChange, isDarkMode }: Q
           </button>
           <button
             onClick={() => navigateQuarter('next')}
+            title="Next quarter"
             className={`p-2 rounded-lg transition-colors duration-200 ${
               isDarkMode 
                 ? 'hover:bg-slate-700 text-slate-400' 

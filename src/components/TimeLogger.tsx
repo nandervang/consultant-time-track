@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { Clock, Plus, Calendar } from 'lucide-react';
-import { useProjects } from '../hooks/useProjects';
+import { Clock, Plus, Calendar, User, Building } from 'lucide-react';
+import { useProjects, Project } from '../hooks/useProjects';
 import { useTimeEntries } from '../hooks/useTimeEntries';
+import { useClients } from '../hooks/useClients';
 
 interface TimeLoggerProps {
   isDarkMode: boolean;
+  onTimeLogged?: () => void;
 }
 
-export default function TimeLogger({ isDarkMode }: TimeLoggerProps) {
+export default function TimeLogger({ isDarkMode, onTimeLogged }: TimeLoggerProps) {
   const { projects } = useProjects();
+  const { clients } = useClients();
   const { createTimeEntry } = useTimeEntries();
   const [hours, setHours] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState('');
@@ -34,6 +37,7 @@ export default function TimeLogger({ isDarkMode }: TimeLoggerProps) {
     if (!error) {
       setHours('');
       setComment('');
+      onTimeLogged?.(); // Call the callback to refresh other components
     }
     
     setIsSubmitting(false);
@@ -47,11 +51,20 @@ export default function TimeLogger({ isDarkMode }: TimeLoggerProps) {
       return 'Today';
     }
     
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('sv-SE', {
       weekday: 'short',
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  // Filter active projects only
+  const activeProjects = projects.filter(project => project.status === 'active');
+
+  // Helper function to get client info for a project
+  const getClientInfo = (project: { client_id?: string | null }) => {
+    const client = clients.find(c => c.id === project.client_id);
+    return client;
   };
   return (
     <div className={`rounded-xl shadow-sm border p-6 transition-colors duration-200 ${
@@ -110,6 +123,7 @@ export default function TimeLogger({ isDarkMode }: TimeLoggerProps) {
                     setSelectedDate(e.target.value);
                     setIsDatePickerOpen(false);
                   }}
+                  aria-label="Select date for time entry"
                   className={`w-full px-3 py-2 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
                     isDarkMode 
                       ? 'bg-slate-700 text-white' 
@@ -160,14 +174,25 @@ export default function TimeLogger({ isDarkMode }: TimeLoggerProps) {
                   : 'bg-white border-slate-300 text-slate-900'
               }`}
               required
+              aria-label="Select project"
             >
               <option value="">Select project</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
+              {activeProjects.map((project) => {
+                const client = getClientInfo(project);
+                return (
+                  <option key={project.id} value={project.id}>
+                    {project.name} {client ? `- ${client.name}${client.company ? ` (${client.company})` : ''}` : ''}
+                  </option>
+                );
+              })}
             </select>
+            {activeProjects.length === 0 && (
+              <p className={`text-sm mt-1 ${
+                isDarkMode ? 'text-slate-400' : 'text-slate-500'
+              }`}>
+                No active projects available. <a href="/projects" className="text-blue-500 hover:underline">Create a project</a> to start tracking time.
+              </p>
+            )}
           </div>
         </div>
         

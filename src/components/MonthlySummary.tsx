@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { FileText, Calendar, Filter } from 'lucide-react';
 import { useTimeEntries } from '../hooks/useTimeEntries';
 import { useProjects } from '../hooks/useProjects';
@@ -26,6 +26,8 @@ export default function MonthlySummary({ isDarkMode }: MonthlySummaryProps) {
   });
 
   const totalHours = filteredEntries.reduce((sum, entry) => sum + entry.hours, 0);
+  const avgHoursPerDay = filteredEntries.length > 0 ? totalHours / new Set(filteredEntries.map(e => e.date)).size : 0;
+  const totalDaysWorked = new Set(filteredEntries.map(e => e.date)).size;
 
   // Group entries by project
   const projectSummary = filteredEntries.reduce((acc, entry) => {
@@ -50,14 +52,14 @@ export default function MonthlySummary({ isDarkMode }: MonthlySummaryProps) {
   const formatMonthYear = (monthKey: string) => {
     const [year, month] = monthKey.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    return date.toLocaleDateString('sv-SE', { month: 'long', year: 'numeric' });
   };
 
   const formatDateRange = () => {
     if (!startDate && !endDate) return 'All time';
-    if (startDate && !endDate) return `From ${new Date(startDate).toLocaleDateString()}`;
-    if (!startDate && endDate) return `Until ${new Date(endDate).toLocaleDateString()}`;
-    return `${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`;
+    if (startDate && !endDate) return `From ${new Date(startDate).toLocaleDateString('sv-SE')}`;
+    if (!startDate && endDate) return `Until ${new Date(endDate).toLocaleDateString('sv-SE')}`;
+    return `${new Date(startDate).toLocaleDateString('sv-SE')} - ${new Date(endDate).toLocaleDateString('sv-SE')}`;
   };
 
   return (
@@ -150,7 +152,7 @@ export default function MonthlySummary({ isDarkMode }: MonthlySummaryProps) {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className={`rounded-lg p-4 transition-colors duration-200 ${
           isDarkMode ? 'bg-blue-900' : 'bg-blue-50'
         }`}>
@@ -178,10 +180,21 @@ export default function MonthlySummary({ isDarkMode }: MonthlySummaryProps) {
         }`}>
           <div className={`text-2xl font-bold ${
             isDarkMode ? 'text-purple-400' : 'text-purple-600'
-          }`}>{Object.keys(monthlySummary).length}</div>
+          }`}>{totalDaysWorked}</div>
           <div className={`text-sm ${
             isDarkMode ? 'text-purple-400' : 'text-purple-600'
-          }`}>Months Covered</div>
+          }`}>Days Worked</div>
+        </div>
+
+        <div className={`rounded-lg p-4 transition-colors duration-200 ${
+          isDarkMode ? 'bg-orange-900' : 'bg-orange-50'
+        }`}>
+          <div className={`text-2xl font-bold ${
+            isDarkMode ? 'text-orange-400' : 'text-orange-600'
+          }`}>{avgHoursPerDay.toFixed(1)}h</div>
+          <div className={`text-sm ${
+            isDarkMode ? 'text-orange-400' : 'text-orange-600'
+          }`}>Avg. Hours/Day</div>
         </div>
       </div>
 
