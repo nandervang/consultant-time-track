@@ -19,13 +19,16 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
 -- Enable RLS on user_profiles
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 
--- Create RLS policies for user_profiles
+-- Create RLS policies for user_profiles (drop if exists first)
+DROP POLICY IF EXISTS "consultant_users_can_view_own_profile" ON public.user_profiles;
 CREATE POLICY "consultant_users_can_view_own_profile" ON public.user_profiles
   FOR SELECT USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "consultant_users_can_insert_own_profile" ON public.user_profiles;
 CREATE POLICY "consultant_users_can_insert_own_profile" ON public.user_profiles
   FOR INSERT WITH CHECK (auth.uid() = id);
 
+DROP POLICY IF EXISTS "consultant_users_can_update_own_profile" ON public.user_profiles;
 CREATE POLICY "consultant_users_can_update_own_profile" ON public.user_profiles
   FOR UPDATE USING (auth.uid() = id);
 
@@ -50,16 +53,20 @@ CREATE TABLE IF NOT EXISTS public.cash_flow_entries (
 -- Enable RLS on cash_flow_entries
 ALTER TABLE public.cash_flow_entries ENABLE ROW LEVEL SECURITY;
 
--- Create RLS policies
+-- Create RLS policies (drop if exists first)
+DROP POLICY IF EXISTS "consultant_users_can_view_own_cash_flow_entries" ON public.cash_flow_entries;
 CREATE POLICY "consultant_users_can_view_own_cash_flow_entries" ON public.cash_flow_entries
   FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "consultant_users_can_insert_own_cash_flow_entries" ON public.cash_flow_entries;
 CREATE POLICY "consultant_users_can_insert_own_cash_flow_entries" ON public.cash_flow_entries
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "consultant_users_can_update_own_cash_flow_entries" ON public.cash_flow_entries;
 CREATE POLICY "consultant_users_can_update_own_cash_flow_entries" ON public.cash_flow_entries
   FOR UPDATE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "consultant_users_can_delete_own_cash_flow_entries" ON public.cash_flow_entries;
 CREATE POLICY "consultant_users_can_delete_own_cash_flow_entries" ON public.cash_flow_entries
   FOR DELETE USING (auth.uid() = user_id);
 
@@ -87,16 +94,20 @@ CREATE TABLE IF NOT EXISTS public.dashboard_widgets (
 -- Enable RLS on dashboard_widgets
 ALTER TABLE public.dashboard_widgets ENABLE ROW LEVEL SECURITY;
 
--- Create RLS policies for dashboard_widgets
+-- Create RLS policies for dashboard_widgets (drop if exists first)
+DROP POLICY IF EXISTS "consultant_users_can_view_own_widgets" ON public.dashboard_widgets;
 CREATE POLICY "consultant_users_can_view_own_widgets" ON public.dashboard_widgets
   FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "consultant_users_can_insert_own_widgets" ON public.dashboard_widgets;
 CREATE POLICY "consultant_users_can_insert_own_widgets" ON public.dashboard_widgets
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "consultant_users_can_update_own_widgets" ON public.dashboard_widgets;
 CREATE POLICY "consultant_users_can_update_own_widgets" ON public.dashboard_widgets
   FOR UPDATE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "consultant_users_can_delete_own_widgets" ON public.dashboard_widgets;
 CREATE POLICY "consultant_users_can_delete_own_widgets" ON public.dashboard_widgets
   FOR DELETE USING (auth.uid() = user_id);
 
@@ -121,21 +132,65 @@ CREATE TABLE IF NOT EXISTS public.monthly_settings (
 -- Enable RLS on monthly_settings
 ALTER TABLE public.monthly_settings ENABLE ROW LEVEL SECURITY;
 
--- Create RLS policies for monthly_settings
+-- Create RLS policies for monthly_settings (drop if exists first)
+DROP POLICY IF EXISTS "consultant_users_can_view_own_monthly_settings" ON public.monthly_settings;
 CREATE POLICY "consultant_users_can_view_own_monthly_settings" ON public.monthly_settings
   FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "consultant_users_can_insert_own_monthly_settings" ON public.monthly_settings;
 CREATE POLICY "consultant_users_can_insert_own_monthly_settings" ON public.monthly_settings
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "consultant_users_can_update_own_monthly_settings" ON public.monthly_settings;
 CREATE POLICY "consultant_users_can_update_own_monthly_settings" ON public.monthly_settings
   FOR UPDATE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "consultant_users_can_delete_own_monthly_settings" ON public.monthly_settings;
 CREATE POLICY "consultant_users_can_delete_own_monthly_settings" ON public.monthly_settings
   FOR DELETE USING (auth.uid() = user_id);
 
 -- Create index for monthly_settings
 CREATE INDEX IF NOT EXISTS idx_monthly_settings_user_date ON public.monthly_settings(user_id, year, month);
+
+-- Create budgets table for budget categories
+CREATE TABLE IF NOT EXISTS public.budgets (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  budget_limit DECIMAL(10,2) NOT NULL CHECK (budget_limit > 0),
+  period TEXT CHECK (period IN ('weekly', 'monthly', 'quarterly', 'yearly')) DEFAULT 'monthly',
+  start_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  end_date DATE NULL,
+  is_active BOOLEAN DEFAULT true,
+  color TEXT DEFAULT '#2563eb',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable RLS on budgets
+ALTER TABLE public.budgets ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policies for budgets (drop if exists first)
+DROP POLICY IF EXISTS "consultant_users_can_view_own_budgets" ON public.budgets;
+CREATE POLICY "consultant_users_can_view_own_budgets" ON public.budgets
+  FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "consultant_users_can_insert_own_budgets" ON public.budgets;
+CREATE POLICY "consultant_users_can_insert_own_budgets" ON public.budgets
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "consultant_users_can_update_own_budgets" ON public.budgets;
+CREATE POLICY "consultant_users_can_update_own_budgets" ON public.budgets
+  FOR UPDATE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "consultant_users_can_delete_own_budgets" ON public.budgets;
+CREATE POLICY "consultant_users_can_delete_own_budgets" ON public.budgets
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- Create index for budgets
+CREATE INDEX IF NOT EXISTS idx_budgets_user_id ON public.budgets(user_id);
+CREATE INDEX IF NOT EXISTS idx_budgets_user_active ON public.budgets(user_id, is_active);
 
 -- Add comments
 COMMENT ON COLUMN public.user_profiles.debit_rate_monthly IS 'Billing percentage - percentage of work hours that are actually billable';
