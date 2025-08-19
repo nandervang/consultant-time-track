@@ -114,7 +114,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
     setMonthlyData(months);
   };
 
-  const processMonthlyData = () => {
+const processMonthlyData = () => {
     // Create 7 months: 2 past + current + 4 future
     const months = [];
     const now = new Date();
@@ -144,7 +144,10 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
       monthlyMap.set(month.month, month);
     });
 
-    entries.forEach((entry) => {
+    // Process all entries (including generating recurring ones)
+    const allEntries = generateRecurringEntries(entries, months);
+
+    allEntries.forEach((entry) => {
       const entryMonth = entry.date.toString().slice(0, 7);
       const monthData = monthlyMap.get(entryMonth);
       
@@ -169,6 +172,50 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
     });
     
     setMonthlyData(processedMonths);
+  };
+
+  // Generate recurring entries for the 7-month period
+  const generateRecurringEntries = (baseEntries: any[], months: any[]) => {
+    const allEntries = [...baseEntries];
+    const monthKeys = months.map(m => m.month);
+    
+    // Find recurring entries
+    const recurringEntries = baseEntries.filter(entry => entry.is_recurring);
+    
+    recurringEntries.forEach((recurringEntry) => {
+      const originalDate = new Date(recurringEntry.date);
+      const originalMonth = recurringEntry.date.slice(0, 7);
+      
+      // Generate recurring entry for each month in our 7-month period
+      monthKeys.forEach((monthKey) => {
+        // Skip the original month (already exists)
+        if (monthKey === originalMonth) return;
+        
+        // Calculate the date for this month
+        const [year, month] = monthKey.split('-').map(Number);
+        const recurringDate = new Date(year, month - 1, originalDate.getDate());
+        
+        // Ensure the date is valid (handle month-end edge cases)
+        if (recurringDate.getMonth() !== month - 1) {
+          // If the day doesn't exist in the target month (e.g., Jan 31 -> Feb 31)
+          // Set to the last day of the target month
+          recurringDate.setDate(0);
+        }
+        
+        // Create a recurring entry for this month
+        const recurringEntryForMonth = {
+          ...recurringEntry,
+          id: `${recurringEntry.id}_recurring_${monthKey}`, // Unique ID for recurring instance
+          date: recurringDate.toISOString().split('T')[0],
+          is_recurring_instance: true, // Mark as a generated recurring instance
+          original_entry_id: recurringEntry.id // Reference to original entry
+        };
+        
+        allEntries.push(recurringEntryForMonth);
+      });
+    });
+    
+    return allEntries;
   };
 
   const processCategoryData = () => {
@@ -313,9 +360,13 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
 
   // Check if an entry can be deleted (manually added, not from budget)
   const canDeleteEntry = (entry: any) => {
-    // Entries from budget usually have a budget_item_id or similar identifier
-    // Adjust this logic based on your data structure
-    return !entry.budget_item_id && !entry.from_budget && !entry.is_recurring;
+    // Don't allow deletion if:
+    // 1. Entry comes from budget (has budget_item_id or from_budget flag)
+    // 2. Entry is a recurring instance (generated, not the original)
+    // 3. For original recurring entries, only allow if user wants to delete the whole series
+    return !entry.budget_item_id && 
+           !entry.from_budget && 
+           !entry.is_recurring_instance;
   };
 
   if (loading) {
@@ -593,6 +644,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
           </div>
 
           {/* Transactions for selected month */}
+          {/* Transactions for selected month */}
           <div className="space-y-2">
             <h4 className="font-medium">Transactions ({selectedMonthData.entries.length})</h4>
             <div className="max-h-64 overflow-y-auto space-y-2">
@@ -625,6 +677,12 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
                             </div>
                           </>
                         )}
+                        {entry.is_recurring_instance && (
+                          <>
+                            <span>•</span>
+                            <span className="text-purple-600 text-xs">Auto-Generated</span>
+                          </>
+                        )}
                         {entry.budget_item_id && (
                           <>
                             <span>•</span>
@@ -646,6 +704,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
                         size="sm"
                         onClick={() => handleDeleteTransaction(entry.id, entry.description)}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                        title={entry.is_recurring ? "Delete all recurring instances" : "Delete transaction"}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

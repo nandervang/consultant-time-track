@@ -273,16 +273,18 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
   };
 
   // Edit category functionality - also updates the recurring expense
-  const handleEditCategory = async (category: BudgetCategory) => {
-    const newBudget = prompt(`Redigera månadsbudget för ${category.name}:`, category.budgeted.toString());
-    if (newBudget && !isNaN(parseFloat(newBudget))) {
+const handleEditCategory = async (category: BudgetCategory) => {
+    const newBudget = prompt(`Redigera månadsbudget för ${category.name} (ange 0 för ingen budget):`, category.budgeted.toString());
+    if (newBudget !== null && !isNaN(parseFloat(newBudget))) {
+      const budgetValue = parseFloat(newBudget);
+      
       const success = await updateBudget(category.id, { 
-        budget_limit: parseFloat(newBudget),
+        budget_limit: budgetValue, // Allow 0 or any positive value
         updated_at: new Date().toISOString()
       });
       
       if (success) {
-        // Also update the recurring expense amount in cash flow
+        // Handle recurring expense based on budget value
         const currentDate = new Date();
         const currentYear = currentDate.getFullYear();
         const currentMonthNum = currentDate.getMonth();
@@ -296,16 +298,44 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
           new Date(entry.date).getFullYear() === currentYear
         );
 
-        if (recurringExpense) {
-          // Update the recurring expense amount
-          // Note: You'll need to implement updateEntry in useCashFlow hook
-          // await updateEntry(recurringExpense.id, { amount: parseFloat(newBudget) });
+        if (budgetValue === 0) {
+          // If budget is 0, remove the recurring expense if it exists
+          // Note: You'll need to implement deleteEntry in useCashFlow hook
+          if (recurringExpense) {
+            // await deleteEntry(recurringExpense.id);
+          }
+          toast({
+            title: "Månadsbudget uppdaterad",
+            description: `Budget för ${category.name} satt till ${formatSEK(budgetValue)} (ingen automatisk utgift)`,
+          });
+        } else {
+          // If budget > 0, update or create recurring expense
+          if (recurringExpense) {
+            // Update existing recurring expense
+            // await updateEntry(recurringExpense.id, { amount: budgetValue });
+          } else {
+            // Create new recurring expense
+            const firstDayOfMonth = new Date(currentYear, currentMonthNum, 1);
+            const nextMonth = new Date(firstDayOfMonth);
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            
+            await addEntry({
+              type: 'expense',
+              amount: budgetValue,
+              description: `Budget för ${category.name}`,
+              category: category.name,
+              date: firstDayOfMonth.toISOString().split('T')[0],
+              is_recurring: true,
+              recurring_interval: 'monthly',
+              next_due_date: nextMonth.toISOString().split('T')[0]
+            });
+          }
+          
+          toast({
+            title: "Månadsbudget uppdaterad",
+            description: `Budget för ${category.name} uppdaterad till ${formatSEK(budgetValue)}/månad`,
+          });
         }
-
-        toast({
-          title: "Månadsbudget uppdaterad",
-          description: `Budget för ${category.name} uppdaterad till ${formatSEK(parseFloat(newBudget))}/månad och kommer synas i Cash Flow`,
-        });
       } else {
         toast({
           title: "Fel",
@@ -315,6 +345,7 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
       }
     }
   };
+
 
   // Delete category functionality  
   const handleDeleteCategory = async (category: BudgetCategory) => {
@@ -340,44 +371,64 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
   };
 
   // Add new category functionality
+// Add new category functionality
   const handleAddCategory = async () => {
     const name = prompt("Namn på ny månadskategori:");
     if (!name) return;
     
-    const budget = prompt("Månadsbudget för denna kategori (SEK):");
-    if (!budget || isNaN(parseFloat(budget))) return;
+    const budget = prompt("Månadsbudget för denna kategori (SEK, ange 0 för ingen budget):");
+    if (budget === null || isNaN(parseFloat(budget))) return;
+
+    const budgetValue = parseFloat(budget);
+    
+    // Ensure budget is not negative
+    if (budgetValue < 0) {
+      toast({
+        title: "Fel",
+        description: "Budget kan inte vara negativ. Ange 0 för ingen budget.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     const success = await addBudget({
       name: name.trim(),
       category: name.trim(),
-      budget_limit: parseFloat(budget),
+      budget_limit: budgetValue, // Now allows 0
       period: 'monthly',
       start_date: new Date().toISOString().split('T')[0],
       is_active: true
     });
 
     if (success) {
-      // Create the initial monthly recurring expense in cash flow
-      const firstDayOfMonth = new Date();
-      firstDayOfMonth.setDate(1);
-      const nextMonth = new Date(firstDayOfMonth);
-      nextMonth.setMonth(nextMonth.getMonth() + 1);
+      // Only create recurring expense if budget > 0
+      if (budgetValue > 0) {
+        const firstDayOfMonth = new Date();
+        firstDayOfMonth.setDate(1);
+        const nextMonth = new Date(firstDayOfMonth);
+        nextMonth.setMonth(nextMonth.getMonth() + 1);
 
-      await addEntry({
-        type: 'expense',
-        amount: parseFloat(budget),
-        description: `Budget för ${name.trim()}`,
-        category: name.trim(),
-        date: firstDayOfMonth.toISOString().split('T')[0],
-        is_recurring: true,
-        recurring_interval: 'monthly',
-        next_due_date: nextMonth.toISOString().split('T')[0]
-      });
+        await addEntry({
+          type: 'expense',
+          amount: budgetValue,
+          description: `Budget för ${name.trim()}`,
+          category: name.trim(),
+          date: firstDayOfMonth.toISOString().split('T')[0],
+          is_recurring: true,
+          recurring_interval: 'monthly',
+          next_due_date: nextMonth.toISOString().split('T')[0]
+        });
 
-      toast({
-        title: "Månadskategori tillagd",
-        description: `${name.trim()} med budget ${formatSEK(parseFloat(budget))}/månad har lagts till och kommer synas i Cash Flow`,
-      });
+        toast({
+          title: "Månadskategori tillagd",
+          description: `${name.trim()} med budget ${formatSEK(budgetValue)}/månad har lagts till och kommer synas i Cash Flow`,
+        });
+      } else {
+        toast({
+          title: "Månadskategori tillagd",
+          description: `${name.trim()} har lagts till utan automatisk budget (du kan lägga till utgifter manuellt)`,
+        });
+      }
     } else {
       toast({
         title: "Fel",
@@ -386,6 +437,7 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
       });
     }
   };
+
 
   const totalBudget = categories.reduce((sum, cat) => sum + cat.budgeted, 0);
   const totalSpent = categories.reduce((sum, cat) => sum + cat.spent, 0);
