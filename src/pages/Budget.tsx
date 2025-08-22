@@ -1082,7 +1082,7 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
                         <div className="p-6 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
                           <div className="flex items-center gap-4">
                             <div 
-                              className="w-6 h-6 rounded-lg shadow-sm" 
+                              className="w-5 h-5 rounded-lg shadow-sm" 
                               style={{ backgroundColor: category.color }}
                             />
                             <div className="flex-1">
