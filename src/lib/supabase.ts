@@ -203,6 +203,8 @@ export interface Database {
           is_recurring: boolean;
           recurring_interval: 'weekly' | 'monthly' | 'yearly' | null;
           next_due_date: string | null;
+          is_budget_entry: boolean | null;
+          is_recurring_instance: boolean | null
           project_id: string | null;
           client_id: string | null;
           created_at: string;
@@ -218,6 +220,8 @@ export interface Database {
           date?: string;
           is_recurring?: boolean;
           recurring_interval?: 'weekly' | 'monthly' | 'yearly' | null;
+          is_budget_entry: boolean | null;
+          is_recurring_instance: boolean | null;
           next_due_date?: string | null;
           project_id?: string | null;
           client_id?: string | null;
@@ -234,6 +238,8 @@ export interface Database {
           date?: string;
           is_recurring?: boolean;
           recurring_interval?: 'weekly' | 'monthly' | 'yearly' | null;
+          is_budget_entry?: boolean | null;
+          is_recurring_instance?: boolean | null;
           next_due_date?: string | null;
           project_id?: string | null;
           client_id?: string | null;

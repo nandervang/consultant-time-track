@@ -144,7 +144,14 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
       monthlyMap.set(month.month, month);
     });
 
-    entries.forEach((entry) => {
+    // Process all entries (including generating recurring ones)
+    const allEntries = generateRecurringEntries(entries, months);
+
+    console.log('Total entries after generation:', allEntries.length);
+    console.log('Original entries:', entries.length);
+    console.log('Generated entries:', allEntries.length - entries.length);
+
+    allEntries.forEach((entry) => {
       const entryMonth = entry.date.toString().slice(0, 7);
       const monthData = monthlyMap.get(entryMonth);
       
@@ -168,14 +175,123 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
       return month;
     });
     
+    console.log('Final monthly breakdown:', processedMonths.map(month => ({
+      month: month.month,
+      monthName: month.monthName,
+      entriesCount: month.entries.length,
+      income: month.income,
+      expenses: month.expenses
+    })));
+    
     setMonthlyData(processedMonths);
+  };
+
+  // Generate recurring entries - Works with actual database structure
+  const generateRecurringEntries = (baseEntries: any[], months: any[]) => {
+    const allEntries = [...baseEntries];
+    const monthKeys = months.map(m => m.month);
+    
+    // Find recurring entries (all entries with is_recurring = true)
+    const recurringEntries = baseEntries.filter(entry => entry.is_recurring);
+    
+    console.log('Found recurring entries to process:', recurringEntries.length);
+    
+    // CRITICAL FIX: Deduplicate recurring entries by description + amount + category
+    const uniqueRecurringEntries = new Map();
+    recurringEntries.forEach(entry => {
+      const key = `${entry.description}_${entry.amount}_${entry.category}`;
+      if (!uniqueRecurringEntries.has(key)) {
+        uniqueRecurringEntries.set(key, entry);
+      } else {
+        console.log(`Skipping duplicate recurring entry: ${entry.description}`);
+      }
+    });
+    
+    const deduplicatedRecurringEntries = Array.from(uniqueRecurringEntries.values());
+    console.log('Deduplicated recurring entries:', deduplicatedRecurringEntries.length);
+    
+    deduplicatedRecurringEntries.forEach((recurringEntry) => {
+      const originalDate = new Date(recurringEntry.date);
+      const originalMonth = recurringEntry.date.slice(0, 7);
+      
+      console.log(`Processing recurring entry: ${recurringEntry.description} from ${originalMonth}`);
+      
+      // Generate recurring entry for each month in our 7-month period
+      monthKeys.forEach((monthKey) => {
+        // Skip the original month (already exists)
+        if (monthKey === originalMonth) {
+          console.log(`Skipping original month ${monthKey} for ${recurringEntry.description}`);
+          return;
+        }
+        
+        // Calculate the date for this month
+        const [year, month] = monthKey.split('-').map(Number);
+        let recurringDate = new Date(year, month - 1, originalDate.getDate());
+        
+        // Handle month-end edge cases (e.g., Jan 31 -> Feb 28/29)
+        if (recurringDate.getMonth() !== month - 1) {
+          // Set to last day of the target month
+          recurringDate = new Date(year, month, 0);
+        }
+        
+        const generatedDateString = recurringDate.toISOString().split('T')[0];
+        const generatedMonth = generatedDateString.slice(0, 7);
+        
+        // Verify the generated date is in the correct month
+        if (generatedMonth !== monthKey) {
+          console.error(`Date generation error: expected ${monthKey}, got ${generatedMonth}`);
+          return;
+        }
+        
+        // Create a recurring entry for this month
+        const recurringEntryForMonth = {
+          ...recurringEntry,
+          id: `${recurringEntry.id}_recurring_${monthKey}`, // Unique ID for recurring instance
+          date: generatedDateString,
+          is_generated: true, // Mark as a generated recurring instance
+          original_entry_id: recurringEntry.id // Reference to original entry
+        };
+        
+        console.log(`Generated entry for ${monthKey}:`, {
+          id: recurringEntryForMonth.id,
+          description: recurringEntryForMonth.description,
+          amount: recurringEntryForMonth.amount,
+          date: recurringEntryForMonth.date,
+          targetMonth: monthKey
+        });
+        
+        allEntries.push(recurringEntryForMonth);
+      });
+    });
+    
+    return allEntries;
   };
 
   const processCategoryData = () => {
     const incomeCategories = new Map<string, number>();
     const expenseCategories = new Map<string, number>();
 
-    entries.forEach((entry) => {
+    // FIXED: Work with actual database structure
+    // Budget entries typically have "Budget för" in their description
+    const actualEntries = entries.filter(entry => {
+      const isBudgetEntry = entry.description.toLowerCase().includes('budget för') || 
+                           entry.description.toLowerCase().includes('budget for');
+      
+      // Include actual transactions (exclude budget entries)
+      // All recurring entries that are NOT budget entries are actual recurring transactions
+      const isActualTransaction = !isBudgetEntry;
+      
+      console.log(`Entry "${entry.description}": isBudgetEntry=${isBudgetEntry}, isActualTransaction=${isActualTransaction}`);
+      return isActualTransaction;
+    });
+
+    console.log('Processing category data:');
+    console.log('Total entries:', entries.length);
+    console.log('Actual transaction entries only:', actualEntries.length);
+    console.log('Filtered out budget entries:', entries.length - actualEntries.length);
+
+    actualEntries.forEach((entry) => {
+      console.log(`Processing actual entry: ${entry.description} - ${entry.category} - ${entry.amount}`);
       if (entry.type === 'income') {
         const currentAmount = incomeCategories.get(entry.category) || 0;
         incomeCategories.set(entry.category, currentAmount + entry.amount);
@@ -184,6 +300,9 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
         expenseCategories.set(entry.category, currentAmount + entry.amount);
       }
     });
+
+    console.log('Final income categories:', Array.from(incomeCategories.entries()));
+    console.log('Final expense categories:', Array.from(expenseCategories.entries()));
 
     const colors = ['#2563eb', '#16a34a', '#ca8a04', '#9333ea', '#dc2626', '#06b6d4', '#84cc16', '#f59e0b'];
 
@@ -311,11 +430,17 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
     return found || getCurrentMonth();
   };
 
-  // Check if an entry can be deleted (manually added, not from budget)
+  // Check if an entry can be deleted - FIXED for actual database structure
   const canDeleteEntry = (entry: any) => {
-    // Entries from budget usually have a budget_item_id or similar identifier
-    // Adjust this logic based on your data structure
-    return !entry.budget_item_id && !entry.from_budget && !entry.is_recurring;
+    // Don't allow deletion if:
+    // 1. Entry is a generated instance (has is_generated flag)
+    // 2. Entry is a budget entry (contains "Budget för" in description)
+    const isBudgetEntry = entry.description.toLowerCase().includes('budget för') || 
+                         entry.description.toLowerCase().includes('budget for');
+    const isGeneratedInstance = entry.is_generated;
+    
+    // Allow deletion of actual transactions (including recurring ones like "Supabase Databas")
+    return !isBudgetEntry && !isGeneratedInstance;
   };
 
   if (loading) {
@@ -414,11 +539,12 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
                       </>
                     ) : (
                       <>
-                        <option value="Software">Software</option>
-                        <option value="Office">Office</option>
+                        <option value="Software & Tools">Software & Tools</option>
+                        <option value="Office Expenses">Office Expenses</option>
                         <option value="Travel">Travel</option>
                         <option value="Marketing">Marketing</option>
                         <option value="Insurance">Insurance</option>
+                        <option value="Professional Development">Professional Development</option>
                         <option value="Tax">Tax</option>
                         <option value="Other">Other</option>
                       </>
@@ -616,7 +742,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
                         <span>{entry.category}</span>
                         <span>•</span>
                         <span>{new Date(entry.date).toLocaleDateString('sv-SE')}</span>
-                        {entry.is_recurring && (
+                        {entry.is_recurring && !entry.is_generated && (
                           <>
                             <span>•</span>
                             <div className="flex items-center gap-1">
@@ -625,10 +751,17 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
                             </div>
                           </>
                         )}
-                        {entry.budget_item_id && (
+                        {entry.is_generated && (
                           <>
                             <span>•</span>
-                            <span className="text-blue-600 text-xs">From Budget</span>
+                            <span className="text-purple-600 text-xs">Auto-Generated</span>
+                          </>
+                        )}
+                        {(entry.description.toLowerCase().includes('budget för') || 
+                          entry.description.toLowerCase().includes('budget for')) && (
+                          <>
+                            <span>•</span>
+                            <span className="text-blue-600 text-xs">Budget Entry</span>
                           </>
                         )}
                       </div>
@@ -646,6 +779,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
                         size="sm"
                         onClick={() => handleDeleteTransaction(entry.id, entry.description)}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                        title={entry.is_recurring ? "Delete recurring transaction" : "Delete transaction"}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -778,7 +912,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Income Categories</CardTitle>
+            <CardTitle>Income Categories (Actual Transactions Only)</CardTitle>
           </CardHeader>
           <CardContent>
             {categoryData.income.length > 0 ? (
@@ -818,7 +952,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                No income categories yet
+                No actual income transactions yet
               </div>
             )}
           </CardContent>
@@ -826,7 +960,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Expense Categories</CardTitle>
+            <CardTitle>Expense Categories (Actual Transactions Only)</CardTitle>
           </CardHeader>
           <CardContent>
             {categoryData.expense.length > 0 ? (
@@ -866,7 +1000,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                No expense categories yet
+                No actual expense transactions yet
               </div>
             )}
           </CardContent>
