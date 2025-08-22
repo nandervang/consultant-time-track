@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { DollarSign, TrendingUp, PieChart, Plus, Edit, Trash2, Receipt, Eye, Calendar, Target, CheckCircle2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DollarSign, TrendingUp, PieChart, Plus, Edit, Trash2, Receipt, Eye, Calendar, Target, Clock, CheckCircle2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, PieChart as RePieChart, Cell, Pie } from 'recharts';
 import { formatSEK } from '../lib/currency';
 import { useAuth } from '../hooks/useAuth';
@@ -45,12 +46,8 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
 
   const [categories, setCategories] = useState<BudgetCategory[]>([]);
   const [annualItems, setAnnualItems] = useState<AnnualBudgetItem[]>([]);
-  const [isDetailedView, setIsDetailedView] = useState(false);
-  
   const currentMonth = new Date().toISOString().slice(0, 7);
   const currentYear = new Date().getFullYear();
-
-  console.log('🔍 Budget component render - isDetailedView:', isDetailedView);
 
   // Add expense dialog state
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
@@ -89,30 +86,6 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
   // Get current year for display
   const getCurrentYear = () => {
     return new Date().getFullYear().toString();
-  };
-
-  // Helper function to get category entries
-  const getCategoryEntries = (categoryName: string, period: 'monthly' | 'yearly') => {
-    if (!entries) return [];
-    
-    if (period === 'monthly') {
-      return entries.filter(entry => {
-        const entryDate = new Date(entry.date);
-        const entryMonth = entryDate.toISOString().slice(0, 7);
-        return entry.type === 'expense' && 
-               entryMonth === currentMonth &&
-               (entry.category.toLowerCase() === categoryName.toLowerCase() ||
-                entry.category.toLowerCase().includes(categoryName.toLowerCase().split(' ')[0]));
-      });
-    } else {
-      return entries.filter(entry => {
-        const entryDate = new Date(entry.date);
-        const entryYear = entryDate.getFullYear();
-        return entry.type === 'expense' && 
-               entryYear === currentYear &&
-               entry.category.toLowerCase() === categoryName.toLowerCase();
-      });
-    }
   };
 
   // Filter expenses for current month only
@@ -165,12 +138,113 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
     }));
   };
 
+  // Create monthly recurring expenses
+  // const createMonthlyRecurringExpenses = async () => {
+  //   if (!user || !entries) return;
+
+  //   try {
+  //     const currentDate = new Date();
+  //     const currentYear = currentDate.getFullYear();
+  //     const currentMonthNum = currentDate.getMonth();
+  //     const firstDayOfMonth = new Date(currentYear, currentMonthNum, 1);
+      
+  //     // Find all budget categories that should have recurring monthly expenses
+  //     for (const budget of budgets) {
+  //       // Only process monthly budgets with limit > 0
+  //       if (budget.budget_limit <= 0 || budget.period !== 'monthly') continue;
+        
+  //       // Check if we already have a recurring expense for this budget category this month
+  //       const existingMonthlyExpense = entries.find(entry =>
+  //         entry.type === 'expense' &&
+  //         entry.category === budget.category &&
+  //         entry.is_recurring === true &&
+  //         entry.recurring_interval === 'monthly' &&
+  //         entry.is_budget_entry === true &&
+  //         new Date(entry.date).getMonth() === currentMonthNum &&
+  //         new Date(entry.date).getFullYear() === currentYear
+  //       );
+
+  //       // If no recurring expense exists for this month, create one
+  //       if (!existingMonthlyExpense) {
+  //         const nextMonth = new Date(firstDayOfMonth);
+  //         nextMonth.setMonth(nextMonth.getMonth() + 1);
+          
+  //         await addEntry({
+  //           type: 'expense',
+  //           amount: budget.budget_limit,
+  //           description: `Budget för ${budget.name}`,
+  //           category: budget.category,
+  //           date: firstDayOfMonth.toISOString().split('T')[0],
+  //           is_recurring: true,
+  //           recurring_interval: 'monthly',
+  //           next_due_date: nextMonth.toISOString().split('T')[0],
+  //           is_budget_entry: true,
+  //           is_recurring_instance: false
+  //         });
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Error creating monthly recurring expenses:', error);
+  //   }
+  // };
+
+  // Create annual budget entries
+  // const createAnnualBudgetEntries = async () => {
+  //   if (!user || !entries) return;
+
+  //   try {
+  //     const currentDate = new Date();
+  //     const currentYear = currentDate.getFullYear();
+  //     const firstDayOfYear = new Date(currentYear, 0, 1);
+      
+  //     // Find all annual budget categories
+  //     for (const budget of budgets) {
+  //       // Only process yearly budgets with limit > 0
+  //       if (budget.budget_limit <= 0 || budget.period !== 'yearly') continue;
+        
+  //       // Check if we already have an annual budget entry for this year
+  //       const existingAnnualEntry = entries.find(entry =>
+  //         entry.type === 'expense' &&
+  //         entry.category === budget.category &&
+  //         entry.is_budget_entry === true &&
+  //         entry.recurring_interval === 'yearly' &&
+  //         new Date(entry.date).getFullYear() === currentYear
+  //       );
+
+  //       // If no annual entry exists for this year, create one
+  //       if (!existingAnnualEntry) {
+  //         const nextYear = new Date(firstDayOfYear);
+  //         nextYear.setFullYear(nextYear.getFullYear() + 1);
+          
+  //         await addEntry({
+  //           type: 'expense',
+  //           amount: budget.budget_limit,
+  //           description: `Årlig budget för ${budget.name}`,
+  //           category: budget.category,
+  //           date: budget.start_date || firstDayOfYear.toISOString().split('T')[0],
+  //           is_recurring: true,
+  //           recurring_interval: 'yearly',
+  //           next_due_date: nextYear.toISOString().split('T')[0],
+  //           is_budget_entry: true,
+  //           is_recurring_instance: false
+  //         });
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Error creating annual budget entries:', error);
+  //   }
+  // };
+
   // Load data
   useEffect(() => {
     const loadData = async () => {
       if (!user || budgetsLoading) return;
 
       try {
+        // Create monthly and annual budget entries
+        // await createMonthlyRecurringExpenses();
+        // await createAnnualBudgetEntries();
+        
         // Refresh entries
         await refetch();
         
@@ -682,16 +756,6 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant={isDetailedView ? "default" : "outline"} 
-            onClick={() => {
-              console.log('🔘 Button clicked! Current state:', isDetailedView, '-> New state:', !isDetailedView);
-              setIsDetailedView(!isDetailedView);
-            }}
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            {isDetailedView ? "Översikt" : "Detaljvy"}
-          </Button>
           <Button variant="outline" onClick={() => setAnnualDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Årlig post
@@ -703,477 +767,347 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
         </div>
       </div>
 
-      {!isDetailedView ? (
-        <>
-          {console.log('📊 Rendering OVERVIEW view')}
-          
-          {/* Current month indicator */}
-          <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
-            <CardContent className="py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-blue-600" />
-                  <span className="font-medium text-blue-900 dark:text-blue-100">
-                    Aktuell period: {getCurrentMonthName()} & {getCurrentYear()}
-                  </span>
-                </div>
-                <div className="text-sm text-blue-700 dark:text-blue-300">
-                  Alla budgetutgifter syns automatiskt i Cash Flow
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Monthly Budget Cards */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  Månadsbudget
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatSEK(totalBudget)}</div>
-                <p className="text-xs text-muted-foreground">{getCurrentMonthName()}</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4" />
-                  Spenderat (månad)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatSEK(totalSpent)}</div>
-                <p className="text-xs text-muted-foreground">{spentPercentage.toFixed(1)}% av budget</p>
-                <div className="w-full bg-muted rounded-full h-2 mt-2">
-                  <div 
-                    className="bg-primary h-2 rounded-full transition-all duration-300" 
-                    style={{ width: `${Math.min(spentPercentage, 100)}%` }}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Annual Budget Cards */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Target className="h-4 w-4" />
-                  Årsbudget
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatSEK(totalAnnualBudget)}</div>
-                <p className="text-xs text-muted-foreground">{getCurrentYear()}</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4" />
-                  Årliga poster
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{completedItems}/{annualItems.length}</div>
-                <p className="text-xs text-muted-foreground">
-                  {overdueItems > 0 && <span className="text-red-500">{overdueItems} försenade</span>}
-                  {overdueItems === 0 && "Inga försenade"}
-                </p>
-              </CardContent>
-            </Card>
+      {/* Current month indicator */}
+      <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+        <CardContent className="py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-blue-600" />
+              <span className="font-medium text-blue-900 dark:text-blue-100">
+                Aktuell period: {getCurrentMonthName()} & {getCurrentYear()}
+              </span>
+            </div>
+            <div className="text-sm text-blue-700 dark:text-blue-300">
+              Alla budgetutgifter syns automatiskt i Cash Flow
+            </div>
           </div>
+        </CardContent>
+      </Card>
 
-          {/* Show empty state if no categories and no annual items */}
-          {categories.length === 0 && annualItems.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <PieChart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">Ingen budget än</h3>
-                <p className="text-muted-foreground mb-4">
-                  Skapa din första budgetkategori eller årliga post för att börja spåra utgifter
-                </p>
-                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mt-4 text-sm">
-                  <p className="font-medium mb-2">💡 Så fungerar det:</p>
-                  <ul className="text-left space-y-1 text-muted-foreground">
-                    <li>• <strong>Månadskategorier:</strong> Återkommande utgifter (mat, transport, hyra)</li>
-                    <li>• <strong>Årliga poster:</strong> Engångsutgifter (konferenser, utrustning, resor)</li>
-                    <li>• Allt syns automatiskt i Cash Flow för helhetsbild</li>
-                  </ul>
-                </div>
-                <div className="flex gap-2 justify-center mt-4">
-                  <Button variant="outline" onClick={() => setAnnualDialogOpen(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Årlig post
-                  </Button>
-                  <Button onClick={handleAddCategory}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Månadskategori
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              {/* Charts */}
-              {categories.length > 0 && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Månadsbudget vs Faktisk</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={chartData}>
-                            <XAxis 
-                              dataKey="name" 
-                              axisLine={false} 
-                              tickLine={false}
-                              tick={{ fontSize: 10, fill: isDarkMode ? '#94a3b8' : '#64748b' }}
-                            />
-                            <YAxis hide />
-                            <Bar dataKey="budgeted" fill="#e2e8f0" name="Budget" />
-                            <Bar dataKey="spent" fill="#2563eb" name="Spenderat" />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </CardContent>
-                  </Card>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Monthly Budget Cards */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              Månadsbudget
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatSEK(totalBudget)}</div>
+            <p className="text-xs text-muted-foreground">{getCurrentMonthName()}</p>
+          </CardContent>
+        </Card>
 
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Utgiftsfördelning</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-64">
-                        {pieData.length > 0 ? (
-                          <ResponsiveContainer width="100%" height="100%">
-                            <RePieChart>
-                              <Pie
-                                data={pieData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={60}
-                                outerRadius={100}
-                                dataKey="value"
-                              >
-                                {pieData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={entry.color} />
-                                ))}
-                              </Pie>
-                            </RePieChart>
-                          </ResponsiveContainer>
-                        ) : (
-                          <div className="flex items-center justify-center h-full text-muted-foreground">
-                            Inga utgifter att visa än
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Spenderat (månad)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatSEK(totalSpent)}</div>
+            <p className="text-xs text-muted-foreground">{spentPercentage.toFixed(1)}% av budget</p>
+            <div className="w-full bg-muted rounded-full h-2 mt-2">
+              <div 
+                className="bg-primary h-2 rounded-full transition-all duration-300" 
+                style={{ width: `${Math.min(spentPercentage, 100)}%` }}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-              {/* Monthly Budget Categories */}
-              {categories.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Månadskategorier</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {categories.map((category) => {
-                        const percentage = (category.spent / category.budgeted) * 100;
-                        const isOverBudget = category.spent > category.budgeted;
-                        
-                        return (
-                          <div key={category.id} className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div 
-                                  className="w-3 h-3 rounded-full" 
-                                  style={{ backgroundColor: category.color }}
-                                />
-                                <span className="font-medium">{category.name}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => openCategoryDetail(category)}
-                                  className="h-8"
-                                >
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  Detaljer
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => openExpenseDialog(category)}
-                                  className="h-8"
-                                >
-                                  <Receipt className="h-4 w-4 mr-1" />
-                                  Lägg till
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  className="h-8 w-8"
-                                  onClick={() => handleEditCategory(category)}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  className="h-8 w-8"
-                                  onClick={() => handleDeleteCategory(category)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-muted-foreground">
-                                {formatSEK(category.spent)} / {formatSEK(category.budgeted)}
-                              </span>
-                              <span className={isOverBudget ? 'text-red-500' : 'text-muted-foreground'}>
-                                {percentage.toFixed(1)}%
-                              </span>
-                            </div>
-                            
-                            <div className="w-full bg-muted rounded-full h-2">
-                              <div 
-                                className={`h-2 rounded-full transition-all duration-300 ${
-                                  isOverBudget ? 'bg-red-500' : 'bg-primary'
-                                }`}
-                                style={{ width: `${Math.min(percentage, 100)}%` }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+        {/* Annual Budget Cards */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              Årsbudget
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatSEK(totalAnnualBudget)}</div>
+            <p className="text-xs text-muted-foreground">{getCurrentYear()}</p>
+          </CardContent>
+        </Card>
 
-              {/* Annual Budget Items */}
-              {annualItems.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Target className="h-5 w-5" />
-                      Årliga budgetposter {getCurrentYear()}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {annualItems.map((item) => {
-                        const percentage = (item.spent / item.budgeted) * 100;
-                        const isCompleted = item.status === 'completed';
-                        const isOverdue = item.status === 'overdue';
-                        
-                        return (
-                          <div key={item.id} className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div 
-                                  className="w-3 h-3 rounded-full" 
-                                  style={{ backgroundColor: item.color }}
-                                />
-                                <div>
-                                  <span className="font-medium">{item.name}</span>
-                                  <div className="text-xs text-muted-foreground">
-                                    Målmåndag: {new Date(item.targetDate).toLocaleDateString('sv-SE')}
-                                    {isCompleted && <span className="text-green-600 ml-2">✓ Genomförd</span>}
-                                    {isOverdue && <span className="text-red-600 ml-2">⚠ Försenad</span>}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => openAnnualExpenseDialog(item)}
-                                  className="h-8"
-                                  disabled={isCompleted}
-                                >
-                                  <Receipt className="h-4 w-4 mr-1" />
-                                  Lägg till utgift
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  className="h-8 w-8"
-                                  onClick={() => handleDeleteCategory({ ...item } as any)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-muted-foreground">
-                                {formatSEK(item.spent)} / {formatSEK(item.budgeted)}
-                              </span>
-                              <span className={isCompleted ? 'text-green-600' : isOverdue ? 'text-red-500' : 'text-muted-foreground'}>
-                                {percentage.toFixed(1)}%
-                              </span>
-                            </div>
-                            
-                            <div className="w-full bg-muted rounded-full h-2">
-                              <div 
-                                className={`h-2 rounded-full transition-all duration-300 ${
-                                  isCompleted ? 'bg-green-500' : isOverdue ? 'bg-red-500' : 'bg-blue-500'
-                                }`}
-                                style={{ width: `${Math.min(percentage, 100)}%` }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </>
-          )}
-        </>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4" />
+              Årliga poster
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{completedItems}/{annualItems.length}</div>
+            <p className="text-xs text-muted-foreground">
+              {overdueItems > 0 && <span className="text-red-500">{overdueItems} försenade</span>}
+              {overdueItems === 0 && "Inga försenade"}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Show empty state if no categories and no annual items */}
+      {categories.length === 0 && annualItems.length === 0 ? (
+        <Card>
+          <CardContent className="text-center py-12">
+            <PieChart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">Ingen budget än</h3>
+            <p className="text-muted-foreground mb-4">
+              Skapa din första budgetkategori eller årliga post för att börja spåra utgifter
+            </p>
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mt-4 text-sm">
+              <p className="font-medium mb-2">💡 Så fungerar det:</p>
+              <ul className="text-left space-y-1 text-muted-foreground">
+                <li>• <strong>Månadskategorier:</strong> Återkommande utgifter (mat, transport, hyra)</li>
+                <li>• <strong>Årliga poster:</strong> Engångsutgifter (konferenser, utrustning, resor)</li>
+                <li>• Allt syns automatiskt i Cash Flow för helhetsbild</li>
+              </ul>
+            </div>
+            <div className="flex gap-2 justify-center mt-4">
+              <Button variant="outline" onClick={() => setAnnualDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Årlig post
+              </Button>
+              <Button onClick={handleAddCategory}>
+                <Plus className="h-4 w-4 mr-2" />
+                Månadskategori
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       ) : (
         <>
-          {console.log('📋 Rendering DETAILED view')}
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Monthly Categories Detail */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  📅 Månadskategorier - {getCurrentMonthName()}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {categories.length > 0 ? categories.map((category) => {
-                    const categoryEntries = getCategoryEntries(category.name, 'monthly');
-                    const totalSpent = categoryEntries.reduce((sum, entry) => sum + entry.amount, 0);
-                    
-                    return (
-                      <div key={category.id} className="space-y-3">
-                        <div className="flex items-center gap-3">
-                          <div 
-                            className="w-4 h-4 rounded-full" 
-                            style={{ backgroundColor: category.color }}
-                          />
-                          <div className="flex-1">
-                            <h4 className="font-medium">{category.name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {formatSEK(totalSpent)} / {formatSEK(category.budgeted)} 
-                              ({categoryEntries.length} utgifter)
-                            </p>
-                          </div>
-                        </div>
-                        
-                        <div className="ml-7 space-y-2">
-                          {categoryEntries.length > 0 ? (
-                            <div className="space-y-2">
-                              {categoryEntries.map((entry) => (
-                                <div key={entry.id} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded text-sm">
-                                  <div>
-                                    <div className="font-medium">{entry.description}</div>
-                                    <div className="text-xs text-muted-foreground">
-                                      {new Date(entry.date).toLocaleDateString('sv-SE')}
-                                    </div>
-                                  </div>
-                                  <div className="font-medium">{formatSEK(entry.amount)}</div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-sm text-muted-foreground">Inga utgifter registrerade</p>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  }) : (
-                    <p className="text-muted-foreground">Inga månadskategorier ännu</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+          {/* Charts */}
+          {categories.length > 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Månadsbudget vs Faktisk</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData}>
+                        <XAxis 
+                          dataKey="name" 
+                          axisLine={false} 
+                          tickLine={false}
+                          tick={{ fontSize: 10, fill: isDarkMode ? '#94a3b8' : '#64748b' }}
+                        />
+                        <YAxis hide />
+                        <Bar dataKey="budgeted" fill="#e2e8f0" name="Budget" />
+                        <Bar dataKey="spent" fill="#2563eb" name="Spenderat" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
 
-            {/* Annual Items Detail */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Utgiftsfördelning</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64">
+                    {pieData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RePieChart>
+                          <Pie
+                            data={pieData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={100}
+                            dataKey="value"
+                          >
+                            {pieData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                        </RePieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-muted-foreground">
+                        Inga utgifter att visa än
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Monthly Budget Categories */}
+          {categories.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  🎯 Årliga poster - {getCurrentYear()}
-                </CardTitle>
+                <CardTitle>Månadskategorier</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {annualItems.length > 0 ? annualItems.map((item) => {
-                    const itemEntries = getCategoryEntries(item.name, 'yearly');
-                    const totalSpent = itemEntries.reduce((sum, entry) => sum + entry.amount, 0);
+                <div className="space-y-4">
+                  {categories.map((category) => {
+                    const percentage = (category.spent / category.budgeted) * 100;
+                    const isOverBudget = category.spent > category.budgeted;
                     
                     return (
-                      <div key={item.id} className="space-y-3">
-                        <div className="flex items-center gap-3">
-                          <div 
-                            className="w-4 h-4 rounded-full" 
-                            style={{ backgroundColor: item.color }}
-                          />
-                          <div className="flex-1">
-                            <h4 className="font-medium">{item.name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {formatSEK(totalSpent)} / {formatSEK(item.budgeted)}
-                              ({itemEntries.length} utgifter)
-                            </p>
-                            <div className="text-xs text-muted-foreground">
-                              Mål: {new Date(item.targetDate).toLocaleDateString('sv-SE')}
-                            </div>
+                      <div key={category.id} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-3 h-3 rounded-full" 
+                              style={{ backgroundColor: category.color }}
+                            />
+                            <span className="font-medium">{category.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => openCategoryDetail(category)}
+                              className="h-8"
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              Detaljer
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => openExpenseDialog(category)}
+                              className="h-8"
+                            >
+                              <Receipt className="h-4 w-4 mr-1" />
+                              Lägg till
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8"
+                              onClick={() => handleEditCategory(category)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8"
+                              onClick={() => handleDeleteCategory(category)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
                         
-                        <div className="ml-7 space-y-2">
-                          {itemEntries.length > 0 ? (
-                            <div className="space-y-2">
-                              {itemEntries.map((entry) => (
-                                <div key={entry.id} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded text-sm">
-                                  <div>
-                                    <div className="font-medium">{entry.description}</div>
-                                    <div className="text-xs text-muted-foreground">
-                                      {new Date(entry.date).toLocaleDateString('sv-SE')}
-                                    </div>
-                                  </div>
-                                  <div className="font-medium">{formatSEK(entry.amount)}</div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-sm text-muted-foreground">Inga utgifter registrerade</p>
-                          )}
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            {formatSEK(category.spent)} / {formatSEK(category.budgeted)}
+                          </span>
+                          <span className={isOverBudget ? 'text-red-500' : 'text-muted-foreground'}>
+                            {percentage.toFixed(1)}%
+                          </span>
+                        </div>
+                        
+                        <div className="w-full bg-muted rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full transition-all duration-300 ${
+                              isOverBudget ? 'bg-red-500' : 'bg-primary'
+                            }`}
+                            style={{ width: `${Math.min(percentage, 100)}%` }}
+                          />
                         </div>
                       </div>
                     );
-                  }) : (
-                    <p className="text-muted-foreground">Inga årliga poster ännu</p>
-                  )}
+                  })}
                 </div>
               </CardContent>
             </Card>
-          </div>
+          )}
+
+          {/* Annual Budget Items */}
+          {annualItems.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  Årliga budgetposter {getCurrentYear()}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {annualItems.map((item) => {
+                    const percentage = (item.spent / item.budgeted) * 100;
+                    const isCompleted = item.status === 'completed';
+                    const isOverdue = item.status === 'overdue';
+                    
+                    return (
+                      <div key={item.id} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-3 h-3 rounded-full" 
+                              style={{ backgroundColor: item.color }}
+                            />
+                            <div>
+                              <span className="font-medium">{item.name}</span>
+                              <div className="text-xs text-muted-foreground">
+                                Målmåndag: {new Date(item.targetDate).toLocaleDateString('sv-SE')}
+                                {isCompleted && <span className="text-green-600 ml-2">✓ Genomförd</span>}
+                                {isOverdue && <span className="text-red-600 ml-2">⚠ Försenad</span>}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => openAnnualExpenseDialog(item)}
+                              className="h-8"
+                              disabled={isCompleted}
+                            >
+                              <Receipt className="h-4 w-4 mr-1" />
+                              Lägg till utgift
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8"
+                              onClick={() => handleDeleteCategory({ ...item } as any)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            {formatSEK(item.spent)} / {formatSEK(item.budgeted)}
+                          </span>
+                          <span className={isCompleted ? 'text-green-600' : isOverdue ? 'text-red-500' : 'text-muted-foreground'}>
+                            {percentage.toFixed(1)}%
+                          </span>
+                        </div>
+                        
+                        <div className="w-full bg-muted rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full transition-all duration-300 ${
+                              isCompleted ? 'bg-green-500' : isOverdue ? 'bg-red-500' : 'bg-blue-500'
+                            }`}
+                            style={{ width: `${Math.min(percentage, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
 
-      {/* Dialogs */}
       {/* Add Annual Budget Dialog */}
       <Dialog open={annualDialogOpen} onOpenChange={setAnnualDialogOpen}>
         <DialogContent>
