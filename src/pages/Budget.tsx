@@ -711,14 +711,15 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
           <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
             <CardContent className="py-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-blue-600" />
                   <span className="font-medium text-blue-900 dark:text-blue-100">
-                    Aktuell period: {getCurrentMonthName()} & {getCurrentYear()}
+                    Spåra utgifter mot dina budgetmål,                   alla budgetutgifter syns automatiskt i Cash Flow
+
                   </span>
                 </div>
                 <div className="text-sm text-blue-700 dark:text-blue-300">
-                  Alla budgetutgifter syns automatiskt i Cash Flow
+                  {categories.length} månadskategorier • {annualItems.length} årliga poster
                 </div>
               </div>
             </CardContent>
@@ -1048,123 +1049,160 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
             </>
           )}
         </>
+// ...existing code...
+
       ) : (
         <>
           {console.log('📋 Rendering DETAILED view')}
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Monthly Categories Detail */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  📅 Månadskategorier - {getCurrentMonthName()}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Monthly Categories Detail - Modern Spreadsheet Design */}
+            <Card className="shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-t-lg">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  📅 Månadskategorier
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {categories.length > 0 ? categories.map((category) => {
+              <CardContent className="p-0">
+                <div className="space-y-0">
+                  {categories.length > 0 ? categories.map((category, categoryIndex) => {
                     const categoryEntries = getCategoryEntries(category.name, 'monthly');
                     const totalSpent = categoryEntries.reduce((sum, entry) => sum + entry.amount, 0);
                     
                     return (
-                      <div key={category.id} className="space-y-3">
-                        <div className="flex items-center gap-3">
-                          <div 
-                            className="w-4 h-4 rounded-full" 
-                            style={{ backgroundColor: category.color }}
-                          />
-                          <div className="flex-1">
-                            <h4 className="font-medium">{category.name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {formatSEK(totalSpent)} / {formatSEK(category.budgeted)} 
-                              ({categoryEntries.length} utgifter)
-                            </p>
+                      <div 
+                        key={category.id} 
+                        className="border-b last:border-b-0"
+                        style={{ 
+                          borderLeft: `6px solid ${category.color}`,
+                          backgroundColor: `${category.color}08`
+                        }}
+                      >
+                        {/* Category Header */}
+                        <div className="p-6 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
+                          <div className="flex items-center gap-4">
+                            <div 
+                              className="w-6 h-6 rounded-lg shadow-sm" 
+                              style={{ backgroundColor: category.color }}
+                            />
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold">{category.name}</h3>
+                              <p className="text-base text-muted-foreground">
+                                <span className="font-medium">{formatSEK(totalSpent)}</span> / {formatSEK(category.budgeted)} 
+                                <span className="ml-2 text-sm">({categoryEntries.length} utgifter)</span>
+                              </p>
+                            </div>
                           </div>
                         </div>
                         
-                        <div className="ml-7 space-y-2">
+                        {/* Expense List - Spreadsheet Style */}
+                        <div className="bg-white dark:bg-gray-900">
                           {categoryEntries.length > 0 ? (
-                            <div className="space-y-2">
-                              {categoryEntries.map((entry) => (
-                                <div key={entry.id} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded text-sm">
-                                  <div>
-                                    <div className="font-medium">{entry.description}</div>
-                                    <div className="text-xs text-muted-foreground">
-                                      {new Date(entry.date).toLocaleDateString('sv-SE')}
-                                    </div>
+                            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                              {categoryEntries.map((entry, entryIndex) => (
+                                <div 
+                                  key={entry.id} 
+                                  className={`flex justify-between items-center p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                                    entryIndex % 2 === 0 ? 'bg-gray-25 dark:bg-gray-900' : 'bg-white dark:bg-gray-850'
+                                  }`}
+                                >
+                                  <div className="flex-1">
+                                    <div className="text-sm font-medium">{entry.description}</div>
                                   </div>
-                                  <div className="font-medium">{formatSEK(entry.amount)}</div>
+                                  <div className="text-sm font-semibold tabular-nums" style={{ color: category.color }}>
+                                    {formatSEK(entry.amount)}
+                                  </div>
                                 </div>
                               ))}
                             </div>
                           ) : (
-                            <p className="text-sm text-muted-foreground">Inga utgifter registrerade</p>
+                            <div className="p-3 text-center text-muted-foreground">
+                              <p className="text-sm">Inga utgifter registrerade</p>
+                            </div>
                           )}
                         </div>
                       </div>
                     );
                   }) : (
-                    <p className="text-muted-foreground">Inga månadskategorier ännu</p>
+                    <div className="p-12 text-center text-muted-foreground">
+                      <p className="text-lg">Inga månadskategorier ännu</p>
+                    </div>
                   )}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Annual Items Detail */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  🎯 Årliga poster - {getCurrentYear()}
+            {/* Annual Items Detail - Modern Spreadsheet Design */}
+            <Card className="shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 rounded-t-lg">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  🎯 Årliga poster
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {annualItems.length > 0 ? annualItems.map((item) => {
+              <CardContent className="p-0">
+                <div className="space-y-0">
+                  {annualItems.length > 0 ? annualItems.map((item, itemIndex) => {
                     const itemEntries = getCategoryEntries(item.name, 'yearly');
                     const totalSpent = itemEntries.reduce((sum, entry) => sum + entry.amount, 0);
                     
                     return (
-                      <div key={item.id} className="space-y-3">
-                        <div className="flex items-center gap-3">
-                          <div 
-                            className="w-4 h-4 rounded-full" 
-                            style={{ backgroundColor: item.color }}
-                          />
-                          <div className="flex-1">
-                            <h4 className="font-medium">{item.name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {formatSEK(totalSpent)} / {formatSEK(item.budgeted)}
-                              ({itemEntries.length} utgifter)
-                            </p>
-                            <div className="text-xs text-muted-foreground">
-                              Mål: {new Date(item.targetDate).toLocaleDateString('sv-SE')}
+                      <div 
+                        key={item.id} 
+                        className="border-b last:border-b-0"
+                        style={{ 
+                          borderLeft: `6px solid ${item.color}`,
+                          backgroundColor: `${item.color}08`
+                        }}
+                      >
+                        {/* Annual Item Header */}
+                        <div className="p-6 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
+                          <div className="flex items-center gap-4">
+                            <div 
+                              className="w-6 h-6 rounded-lg shadow-sm" 
+                              style={{ backgroundColor: item.color }}
+                            />
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold">{item.name}</h3>
+                              <p className="text-base text-muted-foreground">
+                                <span className="font-medium">{formatSEK(totalSpent)}</span> / {formatSEK(item.budgeted)}
+                                <span className="ml-2 text-sm">({itemEntries.length} utgifter)</span>
+                              </p>
                             </div>
                           </div>
                         </div>
                         
-                        <div className="ml-7 space-y-2">
+                        {/* Annual Expense List - Spreadsheet Style */}
+                        <div className="bg-white dark:bg-gray-900">
                           {itemEntries.length > 0 ? (
-                            <div className="space-y-2">
-                              {itemEntries.map((entry) => (
-                                <div key={entry.id} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded text-sm">
-                                  <div>
-                                    <div className="font-medium">{entry.description}</div>
-                                    <div className="text-xs text-muted-foreground">
-                                      {new Date(entry.date).toLocaleDateString('sv-SE')}
-                                    </div>
+                            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                              {itemEntries.map((entry, entryIndex) => (
+                                <div 
+                                  key={entry.id} 
+                                  className={`flex justify-between items-center p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                                    entryIndex % 2 === 0 ? 'bg-gray-25 dark:bg-gray-900' : 'bg-white dark:bg-gray-850'
+                                  }`}
+                                >
+                                  <div className="flex-1">
+                                    <div className="text-sm font-medium">{entry.description}</div>
                                   </div>
-                                  <div className="font-medium">{formatSEK(entry.amount)}</div>
+                                  <div className="text-sm font-semibold tabular-nums" style={{ color: item.color }}>
+                                    {formatSEK(entry.amount)}
+                                  </div>
                                 </div>
                               ))}
                             </div>
                           ) : (
-                            <p className="text-sm text-muted-foreground">Inga utgifter registrerade</p>
+                            <div className="p-3 text-center text-muted-foreground">
+                              <p className="text-sm">Inga utgifter registrerade</p>
+                            </div>
                           )}
                         </div>
                       </div>
                     );
                   }) : (
-                    <p className="text-muted-foreground">Inga årliga poster ännu</p>
+                    <div className="p-12 text-center text-muted-foreground">
+                      <p className="text-lg">Inga årliga poster ännu</p>
+                    </div>
                   )}
                 </div>
               </CardContent>
@@ -1172,6 +1210,7 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
           </div>
         </>
       )}
+
 
       {/* Dialogs */}
       {/* Add Annual Budget Dialog */}
