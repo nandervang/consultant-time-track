@@ -1062,6 +1062,9 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
                 <CardTitle className="flex items-center gap-3 text-xl">
                   📅 Månadskategorier
                 </CardTitle>
+                  <div className="text-sm text-blue-700 dark:text-blue-300 mt-2">
+                  Totalsumma: {formatSEK(totalSpent)} / Budgeterat: {formatSEK(totalBudget)}
+                </div>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="space-y-0">
@@ -1138,6 +1141,9 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
                 <CardTitle className="flex items-center gap-3 text-xl">
                   🎯 Årliga poster
                 </CardTitle>
+                <div className="text-sm text-purple-700 dark:text-purple-300 mt-2">
+                  Totalsumma: {formatSEK(totalAnnualSpent)} / Budgeterat: {formatSEK(totalAnnualBudget)}
+                </div>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="space-y-0">
