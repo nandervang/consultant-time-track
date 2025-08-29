@@ -1,0 +1,370 @@
+=== CV TEXT EXTRACTED WITH PDFPLUMBER ===
+
+Niklas Andervang
+niklas.andervang@frankdigital.se
++46702441323
+Niklas Andervang
+Senior front-end/fullstack utvecklare &
+tillgänglighetsexpert
+Niklas är en senior frontend/fullstack utvecklare som är bred Niklas Andervang
+med sin kompetens och kan röra sig i flera roller. Niklas har
+Senior utvecklare FE/Fullstack
+stor erfarenhet från flertalet frontend-ramverk, dev-ops
+Test och kvalitetssäkring
+teknik och moderna arkitekturlösningar under de ca 15 år
+Teamlead / mentor /
+som Niklas arbetat som utvecklare. Niklas jobbar ofta UI nära
+scrummaster
+och med sin långa erfarenhet är Niklas ofta ett bollplank för
+Tillgänglighetsexpert
+UX och design kring förbättring av flöden och interaktion
+Teknisk projektledare
+men även utformning av komponenter.
+Niklas har också ett stort intresse för analys och SEO och
+brinner för att skapa värde och förbättring.
+Som person är Niklas noggrann och trivs med att ha ett brett
+perspektiv till saker och ting. Hans erfarenhet är bred och
+han har inga problem att gå mellan olika roller och ta sig an
+andra uppgifter. Niklas beskrivs som ödmjuk och prestigelös
+och har ofta haft roller som mentor, scrummaster och
+teamlead.
+Niklas Andervang 1/13
+
+Projekt och uppdrag
+nov. 2024 - pågående Front-end / Fullstack utvecklare
+Cisco
+Niklas är med i ett team där man utforskar AI agenter för Ciscos alla olika typer av
+produkter och tjänster. Niklas jobbar med integration av backend och front end AI
+assistent chat interface.
+CI/CD Docker TypeScript Kubernetes React Open API
+mars 2024 -okt. 2024 Front-end / Fullstack utvecklare / Tillgänglighetsexpert
+Digitalidag, Post och telestyrelsen PTS
+Vi fick i uppdrag att bygga en ny webb åt digitalidag.se utifrån deras
+tillgänglighetsgranskning av befintlig webb. Det resutlerade i att vi byggde en ny webb
+från grunden som är helt skräddarsydd utifrån deras behov. Projektet innefattade
+också ett custom gränssnitt för event hantering. Komplett projekt där vi skötte devops,
+intergrationer och numera förvaltning. I projektet la vi stort fokus på
+redaktörsupplevelsen och säkerställde så hög tillgänglighet som möjligt för både
+användare och redaktör.
+Tekniken som används är Contentful CMS, React, Typescript och Next.js.
+DevOps Tillgänglighet TypeScript WCAG Test och validering React
+Contentful Next.js MongoDB Event hantering
+nov. 2023 -juni 2024 Front-end / Fullstack utvecklare
+DePalma Workwear
+DePalma Workwear / Goods är en webbplats med headless data arkitektur från Sanity
+CMS med flera integrationer som Shopify och Drip Marketing Automation. Niklas roll i
+projektet var att underhålla webbplatsen, se över infra strukturen och miljöer,
+utveckla nya funktioner och förbättringar samt ta fram strategi kring konvertering,
+tillgänglighet och SEO.
+SEO CI/CD DevOps HTML & CSS Tillgänglighet WCAG Analytics
+Shopify React Gatsby.js Headless Netlify Sanity
+Niklas Andervang 2/13
+
+dec. 2023 -apr. 2024 Front-end / Fullstack utvecklare / Tillgänglighetsexpert
+Postnord - Postnord International
+Postnord satsar och jobbar globalt och i detta projekt jobbade Niklas med den
+internationella .com webbplatsen. I projektet skapas nya agnostiska komponenter och
+block som sedan används i Optimizely CMS. En stor tyngt lades på att validera
+tillgänglighet för nya och befintliga komponenterna. Komponenterna skapades med
+modern teknisk, webkomponents som sedan kan användas oavsett teknikval/ramverk.
+C# Kvalitetssäkring Tillgänglighet TypeScript WCAG Optimizely
+Test och validering Komponentbibliotek Stencil.js .NET Webcomponents
+Dotnet core
+mars 2023 -dec. 2023 Front-end utvecklare / Tillgänglighetsexpert
+Skandia - Skandia designsystem team
+Niklas hade en specialistroll som tillgänglighetsexpert i det centrala designsystem
+teamet på Skandia. I projektet skedde en förflyttning av ramverk och ombyggnad av
+samtliga komponenter för webb, app och interna system. I arbetet jobbade Niklas
+med kvalitetssäkring, dokumentation och granskning men också direkt stöd för både
+utvecklare och design/ux. Niklas jobbade både operativt med process och utveckling
+men samtidigt strategiarbete för organsiationen.
+Kvalitetssäkring Strategy Tillgänglighet BrowserStack AXE TypeScript
+WCAG Komponentbibliotek Tillgänglighetstester Figma Designsystem
+React Storybook Test och kvalitetssäkring Webdriver IO End2End-testning
+Niklas Andervang 3/13
+
+mars 2023 -okt. 2023 Front-end / Fullstack utvecklare
+Kungliga Tekniska Högskolan (KTH)
+Avdelningen för energisystem vid KTH är involverad i initiativet för klimatkompatibel
+tillväxt (CCG). CCG är ett forskningsprogram finansierat av utvecklingsbistånd som
+hjälper utvecklingsländer att minska sina koldioxidutsläpp samtidigt som
+möjligheterna till lönsamma investeringar i grön infrastruktur ökar. För KTH och CCG
+byggs en lösning för att bättre dela kunskap mellan olika länder runt om i världen.
+Tjänsten följer också principer och krav från https://sustainablewebdesign.org/ och
+har höga tillgänglighetsstandarder. Niklas jobbade med utveckling och såg över
+tillgängligheten för både användargränssnitt och redaktörsidor. I senare delen av
+projektet migrerade vi från AWS till Azure och satte upp en helt nu infrastruktur.
+Testing DevOps Tillgänglighet TypeScript React WCAG-analys
+Strapi
+feb. 2023 -okt. 2023 Front-end / Fullstack utvecklare
+Funmed
+Mentor och stöd till vårt utvecklingsteam för vår kund Funmed inom med. tech.
+Migrationsarbete, buggfix, ny funktionalitet, sökmotoroptimering (SEO) och
+webbanalys.
+SEO CI/CD GitHub TypeScript Analytics React Contentful
+Netlify GatsbyJS TagManager Google TagManager
+okt. 2022 -mars 2023 Front-end / Fullstack utvecklare
+ForSea
+Forsea är en betydande aktör inom färjetransport till Danmark. Projektet handlar om
+taxfree-varor. En ny e-handelswebbplats har utvecklats med den senaste versionen av
+Optimizely-plattformen. Frontend-ramverket som används är React, Redux och
+Typescript. Projektet omfattar en stor produktkatalog med bakomliggande
+integrationer mot PIM och marknadsföringsverktyg, en skräddarsydd shoppingkorg
+och orderflöde. Niklas hade en ledande roll inom frontendutvecklingen men arbetade
+också mycket med C#, analys och optimering samt tillgänglighet.
+[react] [redux] [css/html] [.net Core] [C#] [tillgänglighet] [optimizely] [commerce]
+Niklas Andervang 4/13
+
+apr. 2022 -okt. 2022 Front-end / Fullstack utvecklare / Tillgänglighetsexpert
+Mycronic
+Mycronic är en global leverantör av högprecision produktionsutrustning som ständigt
+utvecklar och förbättrar sina digitala plattformar. Nyligen lanserades en ny webbplats
+med den senaste Optimizely-plattformen och ett nytt frontendramverk med React och
+Typescript. Projektet omfattade också en migrering av äldre innehåll till den nya
+webbplatsen samt utveckling av nya sidtyper, block och funktioner. Niklas hade en
+ledande roll som Front-end utvecklare men var även involverad i Backend-utveckling
+med C# och dotnet core.
+[C#] [.net Core] [css/html] [SCSS] [tailwind] [javascript] [react] [tillgänglighet]
+[optimizely]
+jan. 2022 -okt. 2022 Front-end utvecklare / Tillgänglighetsexpert
+M&Ms - M&Ms: Project Phoenix
+Mars, Incorporated är en ledande amerikansk multinationell tillverkare av konfektyr,
+djurfoder och andra livsmedelsprodukter, samt en leverantör av djurvårdstjänster.
+Bland dess berömda varumärken finns M&M's-godis, som har en framträdande plats
+på företagets webbplats med e-handelsalternativ och möjlighet att skapa skräddarsytt
+godis. Nyligen genomförde Mars en omfattande uppgradering av sin webbplattform
+genom att övergå till en modernare teknisk plattform baserad på Commercetools och
+Amplience. Projektet omfattade också en total omarbetning av befintliga moduler och
+komponenter, inklusive deras konfigurator som låter användare skapa eget godis.
+Niklas spelade en viktig roll som en utvecklare med specialistkunskaper inom
+tillgänglighet och var en stödjande kraft för fem utvecklingsteam. Han hade också
+ansvaret för att säkerställa att webbplatsen var tillgänglig och håller hög användbarhet
+i deras flöden.
+[react] [typescript] [graphQL] [html/css] [tillgänglighet] [wcag] [amplience]
+[commercetools]
+aug. 2017 -sep. 2022 Tillgänglighetsexpert
+Valtech Global - Tillgänglighetsansvarig
+Under flera år jobbade Niklas som ansvarig för den interna kompetenssatsningen
+inom tillgänglighet för Valtech globalt. Det innefattade att utbilda och arbeta
+strategiskt med tillgänglighet. Att ta fram arbetssätt och verktyg samt bygga ett
+nätverk av experter från olika håll i världen. Niklas arbetade omfattande med interna
+utbildningar, workshops för både medarbetare och kunder, dokumentation,
+försäljning, partnerskap och mycket mer.
+[team-lead] [way of working] [kvalitetssäkring] [strategi] [dokumentation] [nätverk]
+[kompetensutveckling] [utbildning] [tillgänglighet]
+Niklas Andervang 5/13
+
+juni 2020 -apr. 2022 Front-end / Fullstack utvecklare / Scrummaster /
+Tillgänglighetsexpert
+SJ - sj.se
+Ny webbplats för sj.se. Migrera och bygg om från angular.js till React-ramverk. Fokus
+på mikrofrontendarkitektur och komponentbibliotek. Huvudrollen i projektet var som
+frontend-utvecklare men i projektet var Niklas också en del av SJs leveransgrupp som
+projektledare/Scrum Master. Rollen inkluderade samordning, planering och arkitektur
+tillsammans med hög nivå produktägare och arkitektforum. Dessutom stöttade han
+organisationen i olika tillgänglighetsforum. Niklas jobbade även tätt med SJ´s analys
+team och jobbade med A/B tester, analys och optimering. Verktygen som användes
+var Adobe analytics, Target och Launch. I projektet användes react som ramverk och
+Niklas var med och satte en micro FE arkitektur med olika appar för diverse flöden
+som interagerar med varandra på avancerad nivå.
+[react] [redux] [angular] [typescript] [html/CSS] [komponentbibliotek] [design-system]
+[Storybook] [micro FE] [Headless] [Scrum Agile Safe] [Adobe AEM] [End2End test]
+[Cypress] [Percy] [Dev-ops] [NodeJS] [Express] [Azure] [Jira] [Tooling CI/CD] [Adobe
+Analytics] [SEO] [Adobe Target] [Adobe Launch] [A/B test]
+jan. 2021 -juni 2021 Front-end utvecklare / Tillgänglighetsexpert
+Procter & Gamble
+Utvecklare, tillgänglighetsexpert
+Procter & Gamble (P&G) är en multinationell koncern som äger en stor portfölj av
+varumärken. Från och med 2021 har P&G över 65 varumärken under sitt paraply,
+inklusive välkända namn som Tide, Gillette, Pampers, Crest och Pantene, bland många
+andra. Niklas utförde granskning av flera webbplatser kring tillgänglighet,
+användbarhet och kodning enligt bästa praxis som en del av projektet. Han bidrog till
+att utveckla strategier, rapporter och en backlog av arbete för både utveckling och
+design.
+[html/css] [javascript] [kodstandard] [tillgänglighet] [wcag] [webbstrategi]
+[tillgänglighet granskning]
+Niklas Andervang 6/13
+
+mars 2014 -maj 2021 Front-end / Fullstack utvecklare / Tillgänglighetsexpert
+Sveriges Riksbank
+Riksbankens webbplats är en viktig källa till korrekt information om Sveriges och andra
+länders ekonomiska tillstånd. Målgruppen är mycket bred och informationen bör
+passa både experter och vanligt folk. Vårt arbete går ut på att förenkla för människor
+att hitta den information de behöver, och detta gäller både design och kod. Valtech
+har arbetat med Riksbanken sedan 2010. År 2018 byggde vi om den offentliga
+webbplatsen med ny funktionalitet och design på en EpiServer CMS. Efter lanseringen
+har vi gjort flera förändringar och förbättringar, vi har lagt till interaktiva grafer,
+digitaliserat rapporter och hållit webbplatsen på en hög nivå vad gäller tillgänglighet.
+[Javascript] [HTML] [CSS] [C#] [.net Core] [Episerver]
+mars 2018 -aug. 2020 Front-end / Fullstack utvecklare / Tillgänglighetsexpert
+Axfood
+Axfood - Ny extern-webb samt löpande support
+Axfoodkoncernens styrka ligger i att utveckla och driva framgångsrika koncept på den
+svenska matmarknaden. Med flera varumärken och webbplatser under koncernen har
+Niklas varit involverad i att bygga deras externa webbplats samt flera andra
+dotterbolags webbplatser. Niklas har haft rollen som ledande front-end utvecklare
+men har även arbetat med backend. Plattformen som används är Episerver. Under
+åren har Niklas hjälpt till med löpande underhåll och har också fungerat som
+tillgänglighetsexpert.
+[html/css] [C#] [.dotnet] [javascript] [tillgänglighet] [analys och optimering] [episerver]
+[google analytics]
+jan. 2019 -juni 2020 Front-end / Fullstack utvecklare / Tillgänglighetsexpert
+Täby kommun
+I projektet med Täby kommuns externa webbplats låg fokus på att förbättra
+användarupplevelsen genom att förbättra befintliga block och moduler samt att
+utveckla nya funktioner. Niklas arbetade som front-end utvecklare och var också
+involverad i en hel del backend. Han bidrog även som tillgänglighetsexpert för att
+säkerställa att webbplatsen var tillgänglig för alla användare. Efter projektets avslut
+fortsatte Niklas att arbeta med löpande underhåll och utveckling av webbplatsen,
+samt stödja och supporta Täbys IOS- och Android-app.
+[C#] [.dotnet] [css/html] [javascript] [tillgänglighet] [tillgänglighet strategi]
+[tillgänglighet granskning] [episerver]
+Niklas Andervang 7/13
+
+jan. 2020 -maj 2020 Front-end / Fullstack utvecklare / Tillgänglighetsexpert
+Astra Zeneca
+Niklas var en viktig del av teamet som utvecklade en extern webbplats för cancer.nu
+på uppdrag av Astra Zeneca. Som senior Front-end utvecklare och
+tillgänglighetsspecialist bidrog Niklas med sin erfarenhet och expertis för att
+säkerställa att webbplatsen var både användarvänlig och tillgänglig för alla. Han
+stöttade också det befintliga webbteamet genom att erbjuda support och teknisk
+expertis när det behövdes. Resultatet av projektet var en modern och användarvänlig
+webbplats som mötte kraven från både Astra Zeneca och dess användare.
+[C#] [.net Core] [css/html] [javascript] [tillgänglighet] [optimizely]
+jan. 2017 -mars 2020 Tillgänglighetsexpert
+Danderyds sjukhus, Täby kommun
+Multiple clients - Tillgänglighetsstöd Tillgänglgihetsexpert
+Danderyds sjukhus, Täby kommun, Ecster bank, Recorded Future, Lantmännen,
+Axfood, Skl, Gih, SSM
+[Tillgänglighet] [Tillgänglighetsgranskning]
+jan. 2019 -jan. 2020 Front-end / Fullstack utvecklare / Tillgänglighetsexpert
+Ecster
+Ecster Bank och finansiella tjänster har närvaro både i Sverige och Finland. I projektet
+ingick en granskning av deras befintliga webbplats och en rekommendation av hur
+man kan möta framtida krav. Under processen utfördes faktiskt utvecklings- och
+designarbete för att förbättra webbplatsen och tillgängligheten. Niklas hade en roll
+som tillgänglighetsexpert men även som senior utvecklare och var delaktig i att
+implementera förbättringar och nya funktioner.
+[C#] [.net] [css/html] [javascript] [tillgänglighet] [tillgänglighet strategi] [tillgänglighet
+granskning] [episerver]
+Niklas Andervang 8/13
+
+juni 2018 -dec. 2019 Front-end / Fullstack utvecklare / Tillgänglighetsexpert
+Forexbank
+Forex AB, av företaget skrivet FOREX, tidigare Forex Bank, är ett företag som erbjuder
+resevaluta, reseförsäkringar och kreditkort I projektet togs en ny extern webbplats
+fram med e-handel för både valuta, lån och försäkring. Stort fokus låg på att bygga
+oberoende flöden med backend micro tjänster. Som ramverk användes react med
+många externa integrationer såsom betallösningar och hämtande av personuppgifter.
+I projektet jobbade Niklas som lead front-end utvecklare med extra fokus kring
+konvertering och optimering och person privacy/policy. Förutom sin roll som
+utvecklare inom ren FE jobbade även Niklas med analys och optimering, A/B testning i
+verktyget Google Optise. Plattformen var Episerver men med egen front för olika
+köpflöden.
+[C#] [.dotnet] [react] [redux] [typescript] [micro services] [tillgänglighet] [analys]
+[strategi] [konvertering] [a/b test] [SEO] [episerver] [google analytics] [google
+tagmanager] [dev-ops] [azure] [azure-devops]
+sep. 2014 -okt. 2018 Front-end / Fullstack utvecklare / UX
+Flera kunder och uppdrag
+Brf webbplatser, bokningssystem, nyhetsbrev, föreningshemsidor, Ronneby Handboll,
+Ronneby Golfklubb, Marinmuseum Karlskrona, mindre byggbolag, webb till
+tandläkare, webbplatser åt pingströrelsen, it-telekom bolag
+MySQL JavaScript PHP WorldPress jQuery HTML & CSS Mailchimp
+Typeform innehållsarbete/strategi
+jan. 2017 -aug. 2017 Utvecklare / UI
+Finansinspektionen
+Skräddarsytt nyhetsbrev
+jan. 2016 -dec. 2016 Front-end / Fullstack utvecklare / Tillgänglighetsexpert
+IAR
+IAR, Ecster, SWECO - Vidareutveckling och förvaltning
+Niklas Andervang 9/13
+
+dec. 2014 -maj 2016 Front-end utvecklare
+Adlibris
+Lead front-end-utvecklare med nära samarbete med UX-teamet. Komplex lösning där
+vi drev ett initiativ att få in ett nytt PIM system samt personifierade produktlistor. I
+projektet var mitt fokus också på analys och konvertering. Jag var också delaktig i
+skapandet av en stileguide / komponentbiliotek.
+[Analytics] [E-sales] [Aptus] [PIM] [C#] [.NET]
+sep. 2014 -okt. 2015 Front-end utvecklare
+Securitas
+Byggde en ny global webbtjänst för Securitas samtliga marknaden i världen på med
+plattformen Episerver. Niklas hade rollen som frontend lead.
+[C#] [.net Core] [Episerver]
+jan. 2012 -sep. 2015 Front-end utvecklare
+Cajam Karlskrona
+Cajam - Flera webbplatser Utvecklare
+Wordpress sida med multisite och eget tema
+jan. 2011 -jan. 2015 Front-end utvecklare
+Oslobuss
+Wordpress webbplats för Norges största bussbolag
+jan. 2013 -sep. 2014 Front-end / Fullstack utvecklare
+Världsarvskonferensen
+Världsarvskonferensen - Registrerings app Utvecklare, analytics
+recurring support for the client. Sign-up system, newsletters, surveys.
+jan. 2012 -sep. 2014 Front-end / Fullstack utvecklare
+Konferens Möt - Webbplats och registrering av deltagare Utvecklare och UX
+Webb, design and ux, sign-up process, newsletter
+jan. 2012 -sep. 2014 Front-end utvecklare
+Webbsites för Metalcolour, IOT-företaget Crossbreed samt portal och webbplats för
+Kia Ung
+Niklas Andervang 10/13
+
+jan. 2013 -apr. 2014 Front-end / Fullstack utvecklare
+Gamerguides - Webbshopp spelguider
+E-handel och plattform för spelguider
+jan. 2012 -jan. 2014 Front-end utvecklare
+STF - STF Franchise
+Nyhetbrev
+jan. 2012 -jan. 2013 Front-end utvecklare
+Nofatel
+Webbplats för telekom bolaget Nofatel
+jan. 2012 -jan. 2013 Front-end / Fullstack utvecklare / UX
+Ankdammen.eu
+Utvecklade en app för inventering och loggning för gravvård
+jan. 2008 -jan. 2013 Front-end / Fullstack utvecklare / UX
+Intershape / Designkonsulatet
+Utvecklare, strateg, entreprenör för eget bolag Intershape samt designkollektivet
+Designkonsulatet
+Allt inom webb, grafisk produktion, industridesign och kommunikation.
+Projektledare Webbutvecklare Interaktionsdesign UX/ UI
+Utbildning
+Interaktion och Desing (MDA) Interaktionsdesign (Kandidatexamen) 2008 -2011
+Blekinge Tekniska Högskola (Karlskrona)
+Mekanik och teknik 2007 -2008
+Civilingenjör (Karlskrona)
+Niklas Andervang 11/13
+
+Kurser och certifieringar
+Certified Professional in Accessibility Core Competencies 2022
+IAAP; CPACC
+Agile core competence and fundamentals course 2021
+Valtech
+Web Accessibility by Google 2019
+Tillgänglighet konferens och workshops FUNKA 2018
+Agile Scrum kurs 2015
+UX kurser, Lean UX & UX strategi 2015
+Interaktion och Design (MDA) 2008
+Blekinge Tekniska Högskola
+Kompetenser
+5 Expert inom området
+CSS CSS HTML HTML HTML & CSS innehållsarbete/strategi PL/Scrum
+Senior utvecklare FE/Fullstack Test och kvalitetssäkring Test och validering Testing Tillgänglighet
+Tillgänglighetsexpert Tillgänglighetstester UX/ UI WCAG WCAG-analys Webbutvecklare
+WorldPress
+4 Mycket hög kompetens
+Analytics End2End-testning Git Google TagManager Headless JavaScript jQuery
+Komponentbibliotek Kvalitetssäkring MySQL Next.js Projektledare React SEO
+SEO & Analys Storybook Strategy TagManager Teamlead / mentor / scrummaster TypeScript
+Niklas Andervang 12/13
+
+3 Hög kompetens
+.NET AXE BrowserStack C# CI/CD Contentful Designsystem DevOps
+Docker Dotnet core Event hantering Figma Gatsby.js GatsbyJS GitHub
+Interaktionsdesign Kubernetes Mailchimp MongoDB Netlify Open API Optimizely
+PHP Sanity Shopify Stencil.js Strapi Teknisk projektledare Typeform
+Webcomponents Webdriver IO
+Språkkunskaper
+Svenska Modersmål
+Engelska Flytande
+Niklas Andervang 13/13

@@ -82,7 +82,7 @@ export interface CVSkill {
   id: string;
   cv_profile_id: string;
   skill_name: string;
-  skill_level: 1 | 2 | 3 | 4; // Kalmar scale
+  skill_level: 1 | 2 | 3 | 4 | 5; // Kammarkollegiet scale
   category?: string;
   years_of_experience?: number;
   last_used_date?: string;
@@ -96,7 +96,7 @@ export interface CVLanguage {
   id: string;
   cv_profile_id: string;
   language_name: string;
-  proficiency_level: 1 | 2 | 3 | 4;
+  proficiency_level: 1 | 2 | 3 | 4 | 5;
   proficiency_description?: string;
   certifications?: string[];
   sort_order: number;
@@ -155,20 +155,22 @@ export interface CVCertification {
   updated_at: string;
 }
 
-// Skill level descriptions for the Kalmar scale
+// Skill level descriptions for the Kammarkollegiet scale
 export const SKILL_LEVELS = {
-  1: { label: 'Basic', description: 'Limited experience, requires guidance' },
-  2: { label: 'Intermediate', description: 'Some experience, can work independently' },
-  3: { label: 'Advanced', description: 'Extensive experience, can mentor others' },
-  4: { label: 'Expert', description: 'Deep expertise, recognized authority' }
+  1: { label: 'Grundläggande', description: 'Kan utföra enklare uppgifter med viss arbetsledning' },
+  2: { label: 'Medelkompetens', description: 'Bekväm i färdigheter, kan arbeta självständigt med viss vägledning' },
+  3: { label: 'Hög kompetens', description: 'Stark kompetens med flera års erfarenhet, arbetar självständigt' },
+  4: { label: 'Mycket hög kompetens', description: 'Hög generalistkompetens, axlar huvudansvar' },
+  5: { label: 'Expert', description: 'Behärskar allt inom området, leder andra och håller utbildningar' }
 } as const;
 
 // Language proficiency levels
 export const LANGUAGE_LEVELS = {
-  1: { label: 'Basic', description: 'Can understand and use basic phrases' },
-  2: { label: 'Conversational', description: 'Can handle routine communications' },
-  3: { label: 'Fluent', description: 'Can communicate effectively in most situations' },
-  4: { label: 'Native', description: 'Native or near-native proficiency' }
+  1: { label: 'Grundläggande', description: 'Kan förstå och använda grundläggande fraser' },
+  2: { label: 'Konversation', description: 'Kan hantera rutinmässig kommunikation' },
+  3: { label: 'Flyt', description: 'Kan kommunicera effektivt i de flesta situationer' },
+  4: { label: 'Avancerad', description: 'Mycket god behärskning, nästan modersmålsnivå' },
+  5: { label: 'Modersmål', description: 'Modersmål eller motsvarande nivå' }
 } as const;
 
 // Job application status options
