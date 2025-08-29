@@ -1,4 +1,4 @@
-import { FolderOpen, Clock, DollarSign, AlertCircle } from 'lucide-react';
+import { FolderOpen, Clock, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { WidgetProps } from '@/types/dashboard';
 import { formatSEK } from '../../../lib/currency';
@@ -138,7 +138,7 @@ export default function ProjectsOverviewCard({ widget, isDarkMode }: WidgetProps
 
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <div className="flex items-center gap-1">
-                    <DollarSign className="h-3 w-3" />
+                    <span className="text-xs">SEK</span>
                     <span>{project.budget > 0 ? formatSEK(project.budget) : 'No budget'}</span>
                   </div>
                   <div className="flex items-center gap-1">
