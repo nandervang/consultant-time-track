@@ -36,6 +36,8 @@ interface BudgetOverviewProps {
   onDeleteItem: (item: AnnualBudgetItem) => void;
   onAddCategory: () => void;
   onAddAnnualItem: () => void;
+  onViewAnnualDetails?: (item: AnnualBudgetItem) => void;
+  onEditAnnualItem?: (item: AnnualBudgetItem) => void;
 }
 
 export function BudgetOverview({
@@ -54,7 +56,9 @@ export function BudgetOverview({
   onDeleteCategory,
   onDeleteItem,
   onAddCategory,
-  onAddAnnualItem
+  onAddAnnualItem,
+  onViewAnnualDetails,
+  onEditAnnualItem
 }: BudgetOverviewProps) {
   console.log('📊 Rendering OVERVIEW');
 
@@ -94,6 +98,7 @@ export function BudgetOverview({
           <BudgetCharts 
             chartData={chartData}
             pieData={pieData}
+            annualItems={annualItems}
             isDarkMode={isDarkMode}
           />
 
@@ -115,6 +120,8 @@ export function BudgetOverview({
               getCurrentYear={getCurrentYear}
               onAddExpense={onAddExpense}
               onDeleteItem={onDeleteItem}
+              onViewDetails={onViewAnnualDetails}
+              onEditItem={onEditAnnualItem}
             />
           )}
         </>
