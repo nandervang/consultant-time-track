@@ -91,36 +91,42 @@ export default function InvoicingPage() {
       <InvoiceSummaryCards summary={summary} loading={loading} />
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {/* Client Overview */}
-        <ClientOverviewCard
-          clients={clientSummaries}
-          loading={loading}
-          onClientClick={handleClientClick}
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[600px]">
+        {/* Client Overview - Takes 4 columns on large screens */}
+        <div className="lg:col-span-4 xl:col-span-3">
+          <ClientOverviewCard
+            clients={clientSummaries}
+            loading={loading}
+            onClientClick={handleClientClick}
+          />
+        </div>
 
-        {/* Recent Items */}
-        <RecentInvoiceItems
-          items={invoiceItems}
-          loading={loading}
-          onItemClick={handleItemClick}
-          clients={clients}
-          projects={projects}
-        />
+        {/* Recent Items - Takes 5 columns on large screens */}
+        <div className="lg:col-span-5 xl:col-span-6">
+          <RecentInvoiceItems
+            items={invoiceItems}
+            loading={loading}
+            onItemClick={handleItemClick}
+            clients={clients}
+            projects={projects}
+          />
+        </div>
 
-        {/* Quick Actions */}
-        <QuickActionsCard
-          onCreateInvoiceItem={handleCreateInvoiceItem}
-          onCreateFromTime={handleCreateFromTime}
-          onMarkAsInvoiced={handleMarkAsInvoiced}
-          onMarkAsPaid={handleMarkAsPaid}
-          onExportToFortnox={handleExportToFortnox}
-          onExportPlainText={handleExportPlainText}
-        />
+        {/* Quick Actions - Takes 3 columns on large screens */}
+        <div className="lg:col-span-3 xl:col-span-3">
+          <QuickActionsCard
+            onCreateInvoiceItem={handleCreateInvoiceItem}
+            onCreateFromTime={handleCreateFromTime}
+            onMarkAsInvoiced={handleMarkAsInvoiced}
+            onMarkAsPaid={handleMarkAsPaid}
+            onExportToFortnox={handleExportToFortnox}
+            onExportPlainText={handleExportPlainText}
+          />
+        </div>
       </div>
 
       {/* Monthly Revenue Chart */}
-      <div className="grid grid-cols-1">
+      <div className="grid grid-cols-1 min-h-[400px]">
         <MonthlyRevenueChart items={invoiceItems} loading={loading} />
       </div>
 
