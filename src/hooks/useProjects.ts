@@ -127,7 +127,15 @@ export function useProjects(userId?: string | null) {
         ...projectData,
         user_id: effectiveUserId,
         status: projectData.status || 'planning' as const,
+        // Ensure empty strings are converted to null for optional date fields
+        start_date: projectData.start_date || null,
+        end_date: projectData.end_date || null,
+        // Ensure empty strings are converted to null for optional fields
+        description: projectData.description || null,
+        client_id: projectData.client_id || null,
       };
+
+      console.log('Attempting to insert project:', newProject);
 
       const { data, error: insertError } = await supabase
         .from('projects')
@@ -136,8 +144,11 @@ export function useProjects(userId?: string | null) {
         .single();
 
       if (insertError) {
+        console.error('Database insert error:', insertError);
         throw insertError;
       }
+
+      console.log('Project inserted successfully:', data);
 
       if (data) {
         setProjects(prev => [data, ...prev]);

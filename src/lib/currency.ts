@@ -3,21 +3,27 @@
  */
 
 export const formatSEK = (amount: number): string => {
+  // Handle NaN, null, undefined values
+  if (typeof amount !== 'number' || isNaN(amount)) {
+    return '0 kr';
+  }
+  
   return new Intl.NumberFormat('sv-SE', {
-    style: 'currency',
-    currency: 'SEK',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount);
+  }).format(amount) + ' kr';
 };
 
 export const formatSEKWithDecimals = (amount: number): string => {
+  // Handle NaN, null, undefined values
+  if (typeof amount !== 'number' || isNaN(amount)) {
+    return '0,00 kr';
+  }
+  
   return new Intl.NumberFormat('sv-SE', {
-    style: 'currency',
-    currency: 'SEK',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(amount);
+  }).format(amount) + ' kr';
 };
 
 export const DEFAULT_CURRENCY = 'SEK';

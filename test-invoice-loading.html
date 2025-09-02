@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Invoice Loading</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Test Invoice Data Loading</h1>
+    <div id="results"></div>
+    
+    <script>
+        // Initialize Supabase client
+        const supabaseUrl = 'https://mnopzvozjgfmwgvsnmey.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ub3B6dm96amdmbXdndnNubWV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQ3ODI3ODksImV4cCI6MjA0MDM1ODc4OX0.n3dexOuA5aYd-4t0XpT5Vl5IVb7xH4nNXR6HjEI0Wj0';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        
+        async function testInvoiceLoading() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Loading invoice data...</p>';
+            
+            try {
+                const { data: invoiceItems, error } = await supabase
+                    .from('invoice_items')
+                    .select('*')
+                    .limit(5);
+                
+                if (error) {
+                    resultsDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                    return;
+                }
+                
+                if (invoiceItems && invoiceItems.length > 0) {
+                    resultsDiv.innerHTML = `
+                        <p style="color: green;">✅ Successfully loaded ${invoiceItems.length} invoice items!</p>
+                        <h3>Sample Data:</h3>
+                        <pre>${JSON.stringify(invoiceItems[0], null, 2)}</pre>
+                        <h3>Schema Fields Found:</h3>
+                        <ul>
+                            ${Object.keys(invoiceItems[0]).map(field => `<li>${field}</li>`).join('')}
+                        </ul>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = '<p style="color: orange;">⚠️ No invoice items found in database</p>';
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Run test on page load
+        testInvoiceLoading();
+    </script>
+</body>
+</html>

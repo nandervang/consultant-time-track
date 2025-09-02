@@ -13,11 +13,14 @@ import {
   Building, 
   Palette,
   Save,
-  Loader2
+  Loader2,
+  Settings2
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { FortnoxConfigDialog } from '@/components/invoicing/FortnoxConfigDialog';
+import { getStoredFortnoxConfig } from '@/lib/fortnox';
 
 interface UserSettings {
   id: string;
@@ -38,6 +41,7 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [fortnoxDialogOpen, setFortnoxDialogOpen] = useState(false);
   const [settings, setSettings] = useState<UserSettings>({
     id: '',
     company_name: '',
@@ -376,6 +380,49 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Fortnox Integration */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings2 className="w-5 h-5" />
+                Fortnox Integration
+              </CardTitle>
+              <CardDescription>
+                Konfigurera Fortnox API för att exportera fakturor direkt
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium">Fortnox API</h4>
+                    {getStoredFortnoxConfig() ? (
+                      <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
+                        Konfigurerad
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                        Inte konfigurerad
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {getStoredFortnoxConfig() 
+                      ? 'Du kan nu exportera fakturor direkt till Fortnox.'
+                      : 'Ställ in dina API-uppgifter för att aktivera Fortnox-export.'
+                    }
+                  </p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setFortnoxDialogOpen(true)}
+                >
+                  {getStoredFortnoxConfig() ? 'Hantera' : 'Konfigurera'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Preferences */}
@@ -407,6 +454,12 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Fortnox Configuration Dialog */}
+      <FortnoxConfigDialog
+        open={fortnoxDialogOpen}
+        onOpenChange={setFortnoxDialogOpen}
+      />
     </div>
   );
 }

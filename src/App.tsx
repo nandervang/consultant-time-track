@@ -10,6 +10,8 @@ import CashFlow from '@/pages/CashFlow';
 import Projects from '@/pages/Projects';
 import Clients from '@/pages/Clients';
 import Analytics from '@/pages/Analytics';
+import Invoicing from '@/pages/Invoicing';
+import CVManager from '@/pages/CVManager';
 import Settings from '@/pages/Settings';
 
 function App() {
@@ -74,8 +76,9 @@ function App() {
           <Route path="/cash-flow" element={<CashFlow isDarkMode={isDarkMode} />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/clients" element={<Clients />} />
-          <Route path="/analytics" element={<Analytics isDarkMode={isDarkMode} />} />
-          <Route path="/invoicing" element={<div className="p-6">Invoicing coming soon...</div>} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/cv-manager" element={<CVManager />} />
+          <Route path="/invoicing" element={<Invoicing />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>
       </MainLayout>
