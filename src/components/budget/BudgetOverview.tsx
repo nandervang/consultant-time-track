@@ -6,6 +6,9 @@ import { MonthlyCategories } from './MonthlyCategories';
 import { AnnualItems } from './AnnualItems';
 import { EmptyState } from './EmptyState';
 import type { BudgetCategory, AnnualBudgetItem, BudgetTotals } from '@/types/budget';
+import type { Database } from '@/lib/supabase';
+
+type CashFlowEntry = Database['public']['Tables']['cash_flow_entries']['Row'];
 
 interface BudgetOverviewProps {
   categories: BudgetCategory[];
@@ -25,6 +28,7 @@ interface BudgetOverviewProps {
   isDarkMode: boolean;
   getCurrentMonthName: () => string;
   getCurrentYear: () => string;
+  getCategoryEntries?: (categoryName: string, period: 'monthly' | 'yearly') => CashFlowEntry[];
   onViewDetails: (category: BudgetCategory) => void;
   onAddExpense: (category: BudgetCategory | AnnualBudgetItem) => void;
   onEditCategory: (category: BudgetCategory) => void;
@@ -43,6 +47,7 @@ export function BudgetOverview({
   isDarkMode,
   getCurrentMonthName,
   getCurrentYear,
+  getCategoryEntries,
   onViewDetails,
   onAddExpense,
   onEditCategory,
