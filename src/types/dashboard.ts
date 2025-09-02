@@ -30,6 +30,8 @@ export type WidgetType =
   | 'recent-activities'
   | 'client-overview'
   | 'invoice-status'
+  | 'yearly-budget-chart'
+  | 'yearly-expense-distribution'
   | 'blank-card';
 
 export interface WidgetConfig {

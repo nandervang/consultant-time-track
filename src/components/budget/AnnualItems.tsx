@@ -10,13 +10,17 @@ interface AnnualItemsProps {
   getCurrentYear: () => string;
   onAddExpense: (item: AnnualBudgetItem) => void;
   onDeleteItem: (item: AnnualBudgetItem) => void;
+  onViewDetails?: (item: AnnualBudgetItem) => void;
+  onEditItem?: (item: AnnualBudgetItem) => void;
 }
 
 export function AnnualItems({ 
   annualItems, 
   getCurrentYear, 
   onAddExpense, 
-  onDeleteItem 
+  onDeleteItem,
+  onViewDetails,
+  onEditItem
 }: AnnualItemsProps) {
   if (annualItems.length === 0) return null;
 
@@ -53,6 +57,26 @@ export function AnnualItems({
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
+                    {onViewDetails && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => onViewDetails(item)}
+                        className="h-8"
+                      >
+                        Detaljer
+                      </Button>
+                    )}
+                    {onEditItem && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => onEditItem(item)}
+                        className="h-8"
+                      >
+                        Redigera
+                      </Button>
+                    )}
                     <Button 
                       variant="outline" 
                       size="sm"

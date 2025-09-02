@@ -70,9 +70,21 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
     setShowDeleteDialog(true);
   };
 
+  const handleViewAnnualDetails = (item: any) => {
+    (window as any).budgetDialogs?.openAnnualDetailDialog(item);
+  };
+
+  const handleEditAnnualItem = (item: any) => {
+    (window as any).budgetDialogs?.openEditAnnualItemDialog(item);
+  };
+
+  const handleDeleteAnnualItem = (item: any) => {
+    (window as any).budgetDialogs?.openDeleteAnnualDialog(item);
+  };
+
   const handleDeleteItem = (item: any) => {
-    // Handle annual item deletion
-    console.log('Delete annual item:', item);
+    // This will be passed to BudgetOverview for onDeleteItem prop
+    handleDeleteAnnualItem(item);
   };
 
   return (
@@ -117,6 +129,8 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
           onDeleteItem={handleDeleteItem}
           onAddCategory={handleAddCategory}
           onAddAnnualItem={handleAddAnnualItem}
+          onViewAnnualDetails={handleViewAnnualDetails}
+          onEditAnnualItem={handleEditAnnualItem}
         />
       ) : (
         <BudgetDetailView {...budgetLogic} />

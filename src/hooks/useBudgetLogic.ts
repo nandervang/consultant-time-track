@@ -458,6 +458,139 @@ export const useBudgetLogic = () => {
     }
   };
 
+  // Annual item handlers
+  const handleAddAnnualItem = async (name: string, budget: number, targetDate: string) => {
+    // Check for duplicates
+    const existingItem = budgets.find(budget => 
+      budget.name.toLowerCase().trim() === name.toLowerCase().trim() ||
+      budget.category.toLowerCase().trim() === name.toLowerCase().trim()
+    );
+    
+    if (existingItem) {
+      toast({
+        title: "Årlig post finns redan",
+        description: `En årlig post med namnet "${name.trim()}" finns redan.`,
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (budget < 0) {
+      toast({
+        title: "Fel",
+        description: "Budget kan inte vara negativ. Ange 0 för ingen budget.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    setIsLoading(true);
+    try {
+      const success = await addBudget({
+        name: name.trim(),
+        category: name.trim(),
+        budget_limit: budget,
+        period: 'yearly',
+        start_date: targetDate,
+        is_active: true
+      });
+
+      if (success) {
+        toast({
+          title: "Årlig post tillagd",
+          description: `${name.trim()} med budget ${formatSEK(budget)} har lagts till`,
+        });
+        await refetch();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error adding annual item:', error);
+      toast({
+        title: "Fel",
+        description: "Kunde inte lägga till årlig post.",
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUpdateAnnualItem = async (itemId: string, newBudget: number, newTargetDate?: string) => {
+    if (newBudget < 0) {
+      toast({
+        title: "Fel",
+        description: "Budget kan inte vara negativ. Ange 0 för ingen budget.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    setIsLoading(true);
+    try {
+      const updateData: any = { 
+        budget_limit: newBudget,
+        updated_at: new Date().toISOString()
+      };
+      
+      if (newTargetDate) {
+        updateData.start_date = newTargetDate;
+      }
+
+      const success = await updateBudget(itemId, updateData);
+      
+      if (success) {
+        const item = annualItems.find(item => item.id === itemId);
+        toast({
+          title: "Årlig post uppdaterad",
+          description: `Budget för ${item?.name} uppdaterad till ${formatSEK(newBudget)}`,
+        });
+        await refetch();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error updating annual item:', error);
+      toast({
+        title: "Fel",
+        description: "Kunde inte uppdatera årlig post.",
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteAnnualItem = async (item: AnnualBudgetItem) => {
+    setIsLoading(true);
+    try {
+      const success = await deleteBudget(item.id);
+      
+      if (success) {
+        toast({
+          title: "Årlig post borttagen",
+          description: `${item.name} har tagits bort`,
+        });
+        
+        await refetch();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error deleting annual item:', error);
+      toast({
+        title: "Fel",
+        description: "Kunde inte ta bort årlig post.",
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     // Data
     categories,
@@ -479,6 +612,9 @@ export const useBudgetLogic = () => {
     handleAddCategory,
     handleUpdateCategory,
     handleDeleteCategory,
+    handleAddAnnualItem,
+    handleUpdateAnnualItem,
+    handleDeleteAnnualItem,
     addEntry,
     deleteEntry,
     addBudget,
