@@ -4,9 +4,6 @@ import { useCashFlow } from './useCashFlow';
 import { useBudgets } from './useBudgets';
 import { useToast } from './use-toast';
 import { formatSEK } from '../lib/currency';
-import type { Database } from '@/lib/supabase';
-
-type CashFlowEntry = Database['public']['Tables']['cash_flow_entries']['Row'];
 
 export interface BudgetCategory {
   id: string;
@@ -69,22 +66,54 @@ export const useBudgetLogic = () => {
   const getCategoryEntries = (categoryName: string, period: 'monthly' | 'yearly') => {
     if (!entries) return [];
     
+    const matchesCategory = (expenseCategory: string, budgetCategory: string) => {
+      const budgetCat = budgetCategory.toLowerCase();
+      const expCat = expenseCategory.toLowerCase();
+      
+      // Exact match
+      if (expCat === budgetCat) return true;
+      
+      // Keyword matching for common categories
+      if ((budgetCat.includes('travel') || budgetCat.includes('resa')) && 
+          (expCat.includes('resa') || expCat.includes('travel') || expCat.includes('konferens'))) return true;
+      
+      if ((budgetCat.includes('office') || budgetCat.includes('kontor')) && 
+          (expCat.includes('kontor') || expCat.includes('office') || expCat.includes('material'))) return true;
+      
+      if ((budgetCat.includes('software') || budgetCat.includes('tool') || budgetCat.includes('verktyg')) && 
+          (expCat.includes('software') || expCat.includes('tool') || expCat.includes('verktyg') || expCat.includes('licens'))) return true;
+      
+      if ((budgetCat.includes('development') || budgetCat.includes('utveckling')) && 
+          (expCat.includes('kurs') || expCat.includes('utbildning') || expCat.includes('development'))) return true;
+      
+      if ((budgetCat.includes('utrustning') || budgetCat.includes('equipment')) && 
+          (expCat.includes('utrustning') || expCat.includes('equipment') || expCat.includes('dator') || expCat.includes('hårdvara'))) return true;
+      
+      // Basic word matching (fallback)
+      if (budgetCat.includes(expCat.split(' ')[0]) || expCat.includes(budgetCat.split(' ')[0])) return true;
+      
+      return false;
+    };
+    
+    // Filter out budget entries - we only want actual expenses
+    const actualExpenses = entries.filter(entry => 
+      entry.type === 'expense' && 
+      entry.is_budget_entry === false
+    );
+    
     if (period === 'monthly') {
-      return entries.filter(entry => {
-        const entryDate = new Date(entry.date);
-        const entryMonth = entryDate.toISOString().slice(0, 7);
-        return entry.type === 'expense' && 
-               entryMonth === currentMonth &&
-               (entry.category.toLowerCase() === categoryName.toLowerCase() ||
-                entry.category.toLowerCase().includes(categoryName.toLowerCase().split(' ')[0]));
+      // For monthly budgets: Get ALL expenses for this category across ALL months
+      // Monthly budgets are recurring allocations, not specific to a single month
+      return actualExpenses.filter(entry => {
+        return matchesCategory(entry.category, categoryName);
       });
     } else {
-      return entries.filter(entry => {
+      // For yearly budgets: Filter by current year only
+      return actualExpenses.filter(entry => {
         const entryDate = new Date(entry.date);
         const entryYear = entryDate.getFullYear();
-        return entry.type === 'expense' && 
-               entryYear === currentYear &&
-               entry.category.toLowerCase() === categoryName.toLowerCase();
+        return entryYear === currentYear &&
+               matchesCategory(entry.category, categoryName);
       });
     }
   };
@@ -137,22 +166,71 @@ export const useBudgetLogic = () => {
     const loadData = async () => {
       if (!user || budgetsLoading || !entries) return;
 
+      console.log('🔍 useBudgetLogic: Loading data');
+      console.log('📊 Budgets:', budgets?.length || 0);
+      console.log('📈 Entries:', entries?.length || 0);
+
       setIsLoading(true);
       try {
         // Process monthly categories
         const monthlyBudgets = budgets.filter(budget => budget.period === 'monthly');
-        const monthlyExpenses = entries.filter(entry => {
-          const entryDate = new Date(entry.date);
-          const entryMonth = entryDate.toISOString().slice(0, 7);
-          return entry.type === 'expense' && entryMonth === currentMonth;
+        console.log('📅 Monthly budgets:', monthlyBudgets.length);
+        
+        // Filter out budget entries - we only want actual expenses
+        const actualExpenses = entries.filter(entry => 
+          entry.type === 'expense' && 
+          entry.is_budget_entry === false
+        );
+        console.log('💰 Actual expenses (excluding budget entries):', actualExpenses.length);
+        
+        actualExpenses.forEach(exp => {
+          console.log(`  - ${exp.description}: ${exp.amount} SEK (${exp.category})`);
         });
 
+        // For monthly budgets, we want to show ALL expenses for that category
+        // Monthly budgets are recurring allocations, not tied to specific months
         const budgetCategories: BudgetCategory[] = monthlyBudgets.map((budget, index) => {
-          const categoryExpenses = monthlyExpenses.filter(exp => 
-            exp.category.toLowerCase() === budget.category.toLowerCase() ||
-            exp.category.toLowerCase().includes(budget.category.toLowerCase().split(' ')[0])
-          );
+          console.log(`\n🎯 Processing budget: ${budget.name} (${budget.category})`);
+          
+          // Get ALL expenses for this budget category (across all months)
+          const categoryExpenses = actualExpenses.filter(exp => {
+            const budgetCat = budget.category.toLowerCase();
+            const expCat = exp.category.toLowerCase();
+            
+            // Exact match
+            const exactMatch = expCat === budgetCat;
+            
+            // Keyword matching for common categories
+            const isTravel = (budgetCat.includes('travel') || budgetCat.includes('resa')) && 
+                           (expCat.includes('resa') || expCat.includes('travel') || expCat.includes('konferens'));
+            
+            const isOffice = (budgetCat.includes('office') || budgetCat.includes('kontor')) && 
+                           (expCat.includes('kontor') || expCat.includes('office') || expCat.includes('material'));
+            
+            const isSoftware = (budgetCat.includes('software') || budgetCat.includes('tool') || budgetCat.includes('verktyg')) && 
+                             (expCat.includes('software') || expCat.includes('tool') || expCat.includes('verktyg') || expCat.includes('licens'));
+            
+            const isDevelopment = (budgetCat.includes('development') || budgetCat.includes('utveckling')) && 
+                                (expCat.includes('kurs') || expCat.includes('utbildning') || expCat.includes('development'));
+            
+            const isEquipment = (budgetCat.includes('utrustning') || budgetCat.includes('equipment')) && 
+                              (expCat.includes('utrustning') || expCat.includes('equipment') || expCat.includes('dator') || expCat.includes('hårdvara'));
+            
+            // Basic word matching (fallback)
+            const budgetContainsExp = budgetCat.includes(expCat.split(' ')[0]);
+            const expContainsBudget = expCat.includes(budgetCat.split(' ')[0]);
+            
+            const matches = exactMatch || isTravel || isOffice || isSoftware || isDevelopment || isEquipment || budgetContainsExp || expContainsBudget;
+            
+            if (matches) {
+              console.log(`    ✅ MATCH: "${exp.category}" -> "${budget.category}" (${exp.amount} SEK)`);
+            }
+            
+            return matches;
+          });
+          
           const totalSpent = categoryExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+          console.log(`    💸 Total spent for ${budget.name}: ${totalSpent} SEK`);
 
           const colors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
           
@@ -167,13 +245,10 @@ export const useBudgetLogic = () => {
 
         // Process annual items
         const annualBudgets = budgets.filter(budget => budget.period === 'yearly');
-        const annualExpenses = entries.filter(entry => {
+        const annualExpenses = actualExpenses.filter(entry => {
           const entryDate = new Date(entry.date);
           const entryYear = entryDate.getFullYear();
-          return entry.type === 'expense' && 
-                 entryYear === currentYear &&
-                 entry.is_budget_entry === true &&
-                 entry.recurring_interval === 'yearly';
+          return entryYear === currentYear;
         });
 
         const annualBudgetItems: AnnualBudgetItem[] = annualBudgets.map((budget, index) => {
@@ -207,6 +282,12 @@ export const useBudgetLogic = () => {
 
         setCategories(budgetCategories);
         setAnnualItems(annualBudgetItems);
+        
+        console.log('📋 Final budget categories:', budgetCategories.length);
+        budgetCategories.forEach(cat => {
+          console.log(`  - ${cat.name}: ${cat.spent}/${cat.budgeted} SEK`);
+        });
+        
       } catch (error) {
         console.error('Error loading budgets and expenses:', error);
         toast({
@@ -220,7 +301,7 @@ export const useBudgetLogic = () => {
     };
 
     loadData();
-  }, [user?.id, budgets, budgetsLoading, entries, toast]);
+  }, [user?.id, budgets, budgetsLoading, entries, toast, currentMonth, currentYear, user]);
 
   // Action handlers with optimistic updates and error handling
   const handleAddCategory = async (name: string, budgetValue: number) => {
@@ -377,6 +458,139 @@ export const useBudgetLogic = () => {
     }
   };
 
+  // Annual item handlers
+  const handleAddAnnualItem = async (name: string, budget: number, targetDate: string) => {
+    // Check for duplicates
+    const existingItem = budgets.find(budget => 
+      budget.name.toLowerCase().trim() === name.toLowerCase().trim() ||
+      budget.category.toLowerCase().trim() === name.toLowerCase().trim()
+    );
+    
+    if (existingItem) {
+      toast({
+        title: "Årlig post finns redan",
+        description: `En årlig post med namnet "${name.trim()}" finns redan.`,
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (budget < 0) {
+      toast({
+        title: "Fel",
+        description: "Budget kan inte vara negativ. Ange 0 för ingen budget.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    setIsLoading(true);
+    try {
+      const success = await addBudget({
+        name: name.trim(),
+        category: name.trim(),
+        budget_limit: budget,
+        period: 'yearly',
+        start_date: targetDate,
+        is_active: true
+      });
+
+      if (success) {
+        toast({
+          title: "Årlig post tillagd",
+          description: `${name.trim()} med budget ${formatSEK(budget)} har lagts till`,
+        });
+        await refetch();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error adding annual item:', error);
+      toast({
+        title: "Fel",
+        description: "Kunde inte lägga till årlig post.",
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUpdateAnnualItem = async (itemId: string, newBudget: number, newTargetDate?: string) => {
+    if (newBudget < 0) {
+      toast({
+        title: "Fel",
+        description: "Budget kan inte vara negativ. Ange 0 för ingen budget.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    setIsLoading(true);
+    try {
+      const updateData: any = { 
+        budget_limit: newBudget,
+        updated_at: new Date().toISOString()
+      };
+      
+      if (newTargetDate) {
+        updateData.start_date = newTargetDate;
+      }
+
+      const success = await updateBudget(itemId, updateData);
+      
+      if (success) {
+        const item = annualItems.find(item => item.id === itemId);
+        toast({
+          title: "Årlig post uppdaterad",
+          description: `Budget för ${item?.name} uppdaterad till ${formatSEK(newBudget)}`,
+        });
+        await refetch();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error updating annual item:', error);
+      toast({
+        title: "Fel",
+        description: "Kunde inte uppdatera årlig post.",
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteAnnualItem = async (item: AnnualBudgetItem) => {
+    setIsLoading(true);
+    try {
+      const success = await deleteBudget(item.id);
+      
+      if (success) {
+        toast({
+          title: "Årlig post borttagen",
+          description: `${item.name} har tagits bort`,
+        });
+        
+        await refetch();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error deleting annual item:', error);
+      toast({
+        title: "Fel",
+        description: "Kunde inte ta bort årlig post.",
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     // Data
     categories,
@@ -398,6 +612,9 @@ export const useBudgetLogic = () => {
     handleAddCategory,
     handleUpdateCategory,
     handleDeleteCategory,
+    handleAddAnnualItem,
+    handleUpdateAnnualItem,
+    handleDeleteAnnualItem,
     addEntry,
     deleteEntry,
     addBudget,

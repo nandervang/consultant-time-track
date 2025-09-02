@@ -10,7 +10,8 @@ import {
   Plus,
   Wallet,
   Target,
-  Zap
+  Zap,
+  PieChart
 } from 'lucide-react';
 import {
   Dialog,
@@ -117,6 +118,22 @@ const availableWidgets = [
     icon: Plus,
     category: 'Custom',
     size: { w: 1 as const, h: 1 }
+  },
+  {
+    type: 'yearly-budget-chart' as WidgetType,
+    name: 'Årsbudget vs Faktisk',
+    description: 'Bar chart comparing yearly budget to actual spending',
+    icon: BarChart3,
+    category: 'Finance',
+    size: { w: 2 as const, h: 1 }
+  },
+  {
+    type: 'yearly-expense-distribution' as WidgetType,
+    name: 'Årlig Utgiftsfördelning',
+    description: 'Pie chart showing yearly expense distribution',
+    icon: PieChart,
+    category: 'Finance',
+    size: { w: 2 as const, h: 1 }
   }
 ];
 

@@ -13,13 +13,13 @@ interface ClientOverviewCardProps {
 export function ClientOverviewCard({ clients, loading, onClientClick }: ClientOverviewCardProps) {
   if (loading) {
     return (
-      <Card className="h-[400px]">
+      <Card className="h-full flex flex-col">
         <CardHeader>
           <CardTitle className="text-lg">Client Overview</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
+        <CardContent className="flex-1">
+          <div className="space-y-4 h-full">
+            {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="flex items-center justify-between p-3 border rounded-lg animate-pulse">
                 <div className="flex-1">
                   <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
@@ -37,20 +37,20 @@ export function ClientOverviewCard({ clients, loading, onClientClick }: ClientOv
     );
   }
 
-  const topClients = clients.slice(0, 5);
+  const topClients = clients.slice(0, 8); // Show more clients
 
   return (
-    <Card className="h-[400px]">
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="h-full flex flex-col">
+      <CardHeader className="flex flex-row items-center justify-between flex-shrink-0">
         <CardTitle className="text-lg">Client Overview</CardTitle>
         <Button variant="ghost" size="sm">
           <MoreVertical className="h-4 w-4" />
         </Button>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
+      <CardContent className="flex-1 flex flex-col">
+        <div className="space-y-3 flex-1 overflow-y-auto">
           {topClients.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 flex-1 flex flex-col justify-center">
               <Building2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
               <p>No client data available</p>
               <p className="text-sm">Add some invoice items to see client overview</p>
@@ -91,10 +91,12 @@ export function ClientOverviewCard({ clients, loading, onClientClick }: ClientOv
             ))
           )}
         </div>
-        {clients.length > 5 && (
-          <Button variant="outline" className="w-full mt-3" size="sm">
-            View All Clients ({clients.length})
-          </Button>
+        {clients.length > 8 && (
+          <div className="mt-3 flex-shrink-0">
+            <Button variant="outline" className="w-full" size="sm">
+              View All Clients ({clients.length})
+            </Button>
+          </div>
         )}
       </CardContent>
     </Card>

@@ -71,26 +71,26 @@ export function QuickActionsCard({
   ];
 
   return (
-    <Card className="h-[480px]">
-      <CardHeader>
+    <Card className="h-full flex flex-col">
+      <CardHeader className="flex-shrink-0">
         <CardTitle className="text-lg">Quick Actions</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 gap-3">
+      <CardContent className="flex-1 flex flex-col">
+        <div className="grid grid-cols-1 gap-3 flex-1">
           {actions.map((action) => {
             const Icon = action.icon;
             return (
               <Button
                 key={action.title}
                 variant="outline"
-                className={`h-auto p-4 justify-start ${
+                className={`h-auto p-4 justify-start flex-1 min-h-[70px] ${
                   action.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'
                 }`}
                 onClick={action.disabled ? undefined : action.onClick}
                 disabled={action.disabled}
               >
                 <div className="flex items-center gap-3 w-full">
-                  <div className={`p-2 rounded-full ${action.color}`}>
+                  <div className={`p-2 rounded-full ${action.color} flex-shrink-0`}>
                     <Icon className="h-4 w-4" />
                   </div>
                   <div className="text-left flex-1">

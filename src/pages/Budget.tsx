@@ -14,6 +14,18 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
   const [isDetailedView, setIsDetailedView] = useState(false);
   const budgetLogic = useBudgetLogic();
 
+  // Dialog states
+  const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
+  const [showAddAnnualItemDialog, setShowAddAnnualItemDialog] = useState(false);
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [showAddExpenseDialog, setShowAddExpenseDialog] = useState(false);
+  const [showEditCategoryDialog, setShowEditCategoryDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  
+  // Selected items for dialogs
+  const [selectedCategory, setSelectedCategory] = useState<any>(null);
+  const [selectedExpenseCategory, setSelectedExpenseCategory] = useState<any>(null);
+
   console.log('🔍 Budget component render - isDetailedView:', isDetailedView);
 
   if (budgetLogic.budgetsLoading) {
@@ -31,32 +43,48 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
 
   // Dialog handlers
   const handleAddCategory = () => {
-    (window as any).budgetDialogs?.openAddCategoryDialog();
+    setShowAddCategoryDialog(true);
   };
 
   const handleAddAnnualItem = () => {
-    (window as any).budgetDialogs?.openAddAnnualItemDialog();
+    setShowAddAnnualItemDialog(true);
   };
 
   const handleViewDetails = (category: any) => {
-    (window as any).budgetDialogs?.openDetailDialog(category);
+    setSelectedCategory(category);
+    setShowDetailDialog(true);
   };
 
   const handleAddExpense = (category: any) => {
-    (window as any).budgetDialogs?.openAddExpenseDialog(category);
+    setSelectedExpenseCategory(category);
+    setShowAddExpenseDialog(true);
   };
 
   const handleEditCategory = (category: any) => {
-    (window as any).budgetDialogs?.openEditCategoryDialog(category);
+    setSelectedCategory(category);
+    setShowEditCategoryDialog(true);
   };
 
   const handleDeleteCategory = (category: any) => {
-    (window as any).budgetDialogs?.openDeleteDialog(category);
+    setSelectedCategory(category);
+    setShowDeleteDialog(true);
+  };
+
+  const handleViewAnnualDetails = (item: any) => {
+    (window as any).budgetDialogs?.openAnnualDetailDialog(item);
+  };
+
+  const handleEditAnnualItem = (item: any) => {
+    (window as any).budgetDialogs?.openEditAnnualItemDialog(item);
+  };
+
+  const handleDeleteAnnualItem = (item: any) => {
+    (window as any).budgetDialogs?.openDeleteAnnualDialog(item);
   };
 
   const handleDeleteItem = (item: any) => {
-    // Handle annual item deletion
-    console.log('Delete annual item:', item);
+    // This will be passed to BudgetOverview for onDeleteItem prop
+    handleDeleteAnnualItem(item);
   };
 
   return (
@@ -101,12 +129,32 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
           onDeleteItem={handleDeleteItem}
           onAddCategory={handleAddCategory}
           onAddAnnualItem={handleAddAnnualItem}
+          onViewAnnualDetails={handleViewAnnualDetails}
+          onEditAnnualItem={handleEditAnnualItem}
         />
       ) : (
         <BudgetDetailView {...budgetLogic} />
       )}
 
-      <BudgetDialogs {...budgetLogic} />
+      <BudgetDialogs 
+        {...budgetLogic}
+        deleteEntry={budgetLogic.deleteEntry}
+        getCategoryEntries={budgetLogic.getCategoryEntries}
+        showDetailDialog={showDetailDialog}
+        setShowDetailDialog={setShowDetailDialog}
+        showAddExpenseDialog={showAddExpenseDialog}
+        setShowAddExpenseDialog={setShowAddExpenseDialog}
+        showEditCategoryDialog={showEditCategoryDialog}
+        setShowEditCategoryDialog={setShowEditCategoryDialog}
+        showDeleteDialog={showDeleteDialog}
+        setShowDeleteDialog={setShowDeleteDialog}
+        showAddCategoryDialog={showAddCategoryDialog}
+        setShowAddCategoryDialog={setShowAddCategoryDialog}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        selectedExpenseCategory={selectedExpenseCategory}
+        setSelectedExpenseCategory={setSelectedExpenseCategory}
+      />
     </div>
   );
 }

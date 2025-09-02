@@ -6,6 +6,9 @@ import { MonthlyCategories } from './MonthlyCategories';
 import { AnnualItems } from './AnnualItems';
 import { EmptyState } from './EmptyState';
 import type { BudgetCategory, AnnualBudgetItem, BudgetTotals } from '@/types/budget';
+import type { Database } from '@/lib/supabase';
+
+type CashFlowEntry = Database['public']['Tables']['cash_flow_entries']['Row'];
 
 interface BudgetOverviewProps {
   categories: BudgetCategory[];
@@ -25,6 +28,7 @@ interface BudgetOverviewProps {
   isDarkMode: boolean;
   getCurrentMonthName: () => string;
   getCurrentYear: () => string;
+  getCategoryEntries?: (categoryName: string, period: 'monthly' | 'yearly') => CashFlowEntry[];
   onViewDetails: (category: BudgetCategory) => void;
   onAddExpense: (category: BudgetCategory | AnnualBudgetItem) => void;
   onEditCategory: (category: BudgetCategory) => void;
@@ -32,6 +36,8 @@ interface BudgetOverviewProps {
   onDeleteItem: (item: AnnualBudgetItem) => void;
   onAddCategory: () => void;
   onAddAnnualItem: () => void;
+  onViewAnnualDetails?: (item: AnnualBudgetItem) => void;
+  onEditAnnualItem?: (item: AnnualBudgetItem) => void;
 }
 
 export function BudgetOverview({
@@ -43,13 +49,16 @@ export function BudgetOverview({
   isDarkMode,
   getCurrentMonthName,
   getCurrentYear,
+  getCategoryEntries,
   onViewDetails,
   onAddExpense,
   onEditCategory,
   onDeleteCategory,
   onDeleteItem,
   onAddCategory,
-  onAddAnnualItem
+  onAddAnnualItem,
+  onViewAnnualDetails,
+  onEditAnnualItem
 }: BudgetOverviewProps) {
   console.log('📊 Rendering OVERVIEW');
 
@@ -89,6 +98,7 @@ export function BudgetOverview({
           <BudgetCharts 
             chartData={chartData}
             pieData={pieData}
+            annualItems={annualItems}
             isDarkMode={isDarkMode}
           />
 
@@ -110,6 +120,8 @@ export function BudgetOverview({
               getCurrentYear={getCurrentYear}
               onAddExpense={onAddExpense}
               onDeleteItem={onDeleteItem}
+              onViewDetails={onViewAnnualDetails}
+              onEditItem={onEditAnnualItem}
             />
           )}
         </>

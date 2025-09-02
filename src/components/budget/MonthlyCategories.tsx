@@ -39,7 +39,7 @@ export function MonthlyCategories({
                   <div className="flex items-center gap-3">
                     <div 
                       className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: category.color }}
+                      data-color={category.color}
                     />
                     <span className="font-medium">{category.name}</span>
                   </div>

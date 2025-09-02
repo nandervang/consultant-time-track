@@ -13,12 +13,12 @@ interface MonthlyRevenueChartProps {
 export function MonthlyRevenueChart({ items, loading }: MonthlyRevenueChartProps) {
   if (loading) {
     return (
-      <Card className="h-[400px]">
+      <Card className="h-full flex flex-col">
         <CardHeader>
           <CardTitle className="text-lg">Monthly Revenue</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="w-full h-64 bg-gray-100 rounded animate-pulse"></div>
+        <CardContent className="flex-1">
+          <div className="w-full h-full bg-gray-100 rounded animate-pulse min-h-[300px]"></div>
         </CardContent>
       </Card>
     );
@@ -105,8 +105,8 @@ export function MonthlyRevenueChart({ items, loading }: MonthlyRevenueChartProps
   };
 
   return (
-    <Card className="h-[400px]">
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="h-full flex flex-col">
+      <CardHeader className="flex flex-row items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-green-600" />
           <CardTitle className="text-lg">Monthly Revenue</CardTitle>
@@ -115,9 +115,9 @@ export function MonthlyRevenueChart({ items, loading }: MonthlyRevenueChartProps
           <MoreVertical className="h-4 w-4" />
         </Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 flex flex-col">
         {!hasData ? (
-          <div className="flex items-center justify-center h-64 text-gray-500">
+          <div className="flex items-center justify-center flex-1 text-gray-500 min-h-[300px]">
             <div className="text-center">
               <TrendingUp className="h-8 w-8 mx-auto mb-2 opacity-50" />
               <p>No revenue data yet</p>
@@ -125,45 +125,47 @@ export function MonthlyRevenueChart({ items, loading }: MonthlyRevenueChartProps
             </div>
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={monthlyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="month" 
-                axisLine={false}
-                tickLine={false}
-                fontSize={12}
-              />
-              <YAxis 
-                axisLine={false}
-                tickLine={false}
-                fontSize={12}
-                tickFormatter={(value) => `${value / 1000}k`}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar 
-                dataKey="paid" 
-                stackId="a" 
-                fill="#10B981" 
-                name="Paid"
-                radius={[0, 0, 0, 0]}
-              />
-              <Bar 
-                dataKey="invoiced" 
-                stackId="a" 
-                fill="#3B82F6" 
-                name="Invoiced"
-                radius={[0, 0, 0, 0]}
-              />
-              <Bar 
-                dataKey="pending" 
-                stackId="a" 
-                fill="#F59E0B" 
-                name="Pending"
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="flex-1 min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={monthlyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="month" 
+                  axisLine={false}
+                  tickLine={false}
+                  fontSize={12}
+                />
+                <YAxis 
+                  axisLine={false}
+                  tickLine={false}
+                  fontSize={12}
+                  tickFormatter={(value) => `${value / 1000}k`}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar 
+                  dataKey="paid" 
+                  stackId="a" 
+                  fill="#10B981" 
+                  name="Paid"
+                  radius={[0, 0, 0, 0]}
+                />
+                <Bar 
+                  dataKey="invoiced" 
+                  stackId="a" 
+                  fill="#3B82F6" 
+                  name="Invoiced"
+                  radius={[0, 0, 0, 0]}
+                />
+                <Bar 
+                  dataKey="pending" 
+                  stackId="a" 
+                  fill="#F59E0B" 
+                  name="Pending"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         )}
       </CardContent>
     </Card>

@@ -18,6 +18,8 @@ import ProjectsOverviewCard from './widgets/ProjectsOverviewCard';
 import CashFlowCard from './widgets/CashFlowCard';
 import CashFlowProjectionsCard from './widgets/CashFlowProjectionsCard';
 import BlankCard from './widgets/BlankCard';
+import YearlyBudgetChartCard from './widgets/YearlyBudgetChartCard';
+import YearlyExpenseDistributionCard from './widgets/YearlyExpenseDistributionCard';
 import AddWidgetDialog from './AddWidgetDialog';
 import RemoveWidgetButton from './RemoveWidgetButton';
 
@@ -37,6 +39,8 @@ const widgetComponents: Record<string, React.ComponentType<WidgetProps>> = {
   'projects-overview': ProjectsOverviewCard,
   'cash-flow': CashFlowCard,
   'cash-flow-projections': CashFlowProjectionsCard,
+  'yearly-budget-chart': YearlyBudgetChartCard,
+  'yearly-expense-distribution': YearlyExpenseDistributionCard,
   'blank-card': BlankCard,
 };
 
