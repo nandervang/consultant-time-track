@@ -11,7 +11,8 @@ import {
   FileText, 
   Settings,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  User
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,7 @@ const navigation = [
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Clients', href: '/clients', icon: Users },
   { name: 'Invoicing', href: '/invoicing', icon: FileText },
+  { name: 'CV Manager', href: '/cv-manager', icon: User },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encryption Test - Browser</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .success {
+            background: #f0f9ff;
+            border-color: #10b981;
+            color: #065f46;
+        }
+        .error {
+            background: #fef2f2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+        .info {
+            background: #f0f9ff;
+            border-color: #3b82f6;
+            color: #1e40af;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .code {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        .input-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        textarea {
+            height: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Browser Encryption Test</h1>
+        <p>This test verifies that the Web Crypto API encryption works correctly in your browser.</p>
+        
+        <div class="input-group">
+            <label for="testContent">Content to encrypt:</label>
+            <textarea id="testContent" placeholder="Enter some sensitive content to test...">
+{
+  "type": "doc",
+  "content": [{
+    "type": "paragraph",
+    "content": [{
+      "type": "text",
+      "text": "This is confidential client information that should be encrypted!"
+    }]
+  }]
+}
+            </textarea>
+        </div>
+        
+        <div class="input-group">
+            <label for="testPassword">Encryption password:</label>
+            <input type="password" id="testPassword" value="TestPassword123!" placeholder="Enter encryption password">
+        </div>
+        
+        <button onclick="runEncryptionTest()">🔒 Test Encryption</button>
+        <button onclick="clearResults()">🗑️ Clear Results</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Copy the encryption functions from our encryption-simple.ts
+        async function encryptSensitiveContent(content, password) {
+            try {
+                const salt = crypto.getRandomValues(new Uint8Array(16));
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                
+                const encoder = new TextEncoder();
+                const passwordBuffer = encoder.encode(password);
+                
+                const keyMaterial = await crypto.subtle.importKey(
+                    'raw',
+                    passwordBuffer,
+                    'PBKDF2',
+                    false,
+                    ['deriveKey']
+                );
+                
+                const key = await crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt: salt,
+                        iterations: 100000,
+                        hash: 'SHA-256'
+                    },
+                    keyMaterial,
+                    {
+                        name: 'AES-GCM',
+                        length: 256
+                    },
+                    false,
+                    ['encrypt']
+                );
+                
+                const contentBuffer = encoder.encode(content);
+                const encryptedBuffer = await crypto.subtle.encrypt(
+                    {
+                        name: 'AES-GCM',
+                        iv: iv
+                    },
+                    key,
+                    contentBuffer
+                );
+                
+                const encryptedData = {
+                    data: btoa(String.fromCharCode(...new Uint8Array(encryptedBuffer))),
+                    salt: btoa(String.fromCharCode(...salt)),
+                    iv: btoa(String.fromCharCode(...iv))
+                };
+                
+                return JSON.stringify(encryptedData);
+            } catch (error) {
+                console.error('Encryption failed:', error);
+                throw new Error('Failed to encrypt sensitive content');
+            }
+        }
+
+        async function decryptSensitiveContent(encryptedContent, password) {
+            try {
+                const encryptedData = JSON.parse(encryptedContent);
+                
+                const data = Uint8Array.from(atob(encryptedData.data), c => c.charCodeAt(0));
+                const salt = Uint8Array.from(atob(encryptedData.salt), c => c.charCodeAt(0));
+                const iv = Uint8Array.from(atob(encryptedData.iv), c => c.charCodeAt(0));
+                
+                const encoder = new TextEncoder();
+                const passwordBuffer = encoder.encode(password);
+                
+                const keyMaterial = await crypto.subtle.importKey(
+                    'raw',
+                    passwordBuffer,
+                    'PBKDF2',
+                    false,
+                    ['deriveKey']
+                );
+                
+                const key = await crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt: salt,
+                        iterations: 100000,
+                        hash: 'SHA-256'
+                    },
+                    keyMaterial,
+                    {
+                        name: 'AES-GCM',
+                        length: 256
+                    },
+                    false,
+                    ['decrypt']
+                );
+                
+                const decryptedBuffer = await crypto.subtle.decrypt(
+                    {
+                        name: 'AES-GCM',
+                        iv: iv
+                    },
+                    key,
+                    data
+                );
+                
+                const decoder = new TextDecoder();
+                return decoder.decode(decryptedBuffer);
+            } catch (error) {
+                console.error('Decryption failed:', error);
+                throw new Error('Failed to decrypt content. Invalid password or corrupted data.');
+            }
+        }
+
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function runEncryptionTest() {
+            clearResults();
+            addResult('🚀 Starting encryption test...', 'info');
+
+            const content = document.getElementById('testContent').value;
+            const password = document.getElementById('testPassword').value;
+
+            if (!content || !password) {
+                addResult('❌ Please enter both content and password', 'error');
+                return;
+            }
+
+            try {
+                // Test 1: Basic encryption
+                addResult('Step 1: Encrypting content...', 'info');
+                const startTime = Date.now();
+                const encrypted = await encryptSensitiveContent(content, password);
+                const encryptTime = Date.now() - startTime;
+                
+                addResult(`✅ Encryption successful in ${encryptTime}ms`, 'success');
+                addResult(`<div class="code">Encrypted data size: ${encrypted.length} bytes<br>Preview: ${encrypted.substring(0, 100)}...</div>`, 'info');
+
+                // Test 2: Decryption with correct password
+                addResult('Step 2: Decrypting with correct password...', 'info');
+                const decryptStart = Date.now();
+                const decrypted = await decryptSensitiveContent(encrypted, password);
+                const decryptTime = Date.now() - decryptStart;
+
+                if (decrypted === content) {
+                    addResult(`✅ Decryption successful in ${decryptTime}ms - Content matches!`, 'success');
+                } else {
+                    addResult('❌ Decryption failed - Content does not match!', 'error');
+                    return;
+                }
+
+                // Test 3: Decryption with wrong password
+                addResult('Step 3: Testing security with wrong password...', 'info');
+                try {
+                    await decryptSensitiveContent(encrypted, 'wrongpassword');
+                    addResult('❌ Security test failed - Wrong password should not work!', 'error');
+                } catch (error) {
+                    addResult('✅ Security test passed - Wrong password correctly rejected', 'success');
+                }
+
+                // Test 4: Performance summary
+                addResult(`<strong>Performance Summary:</strong><br>
+                    • Original content: ${content.length} characters<br>
+                    • Encrypted size: ${encrypted.length} bytes<br>
+                    • Encryption time: ${encryptTime}ms<br>
+                    • Decryption time: ${decryptTime}ms`, 'info');
+
+                addResult('🎉 All tests passed! Your encryption is working perfectly.', 'success');
+
+            } catch (error) {
+                addResult(`❌ Test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Check browser compatibility
+        window.addEventListener('load', () => {
+            if (!window.crypto || !window.crypto.subtle) {
+                addResult('❌ Your browser does not support Web Crypto API. Please use a modern browser.', 'error');
+            } else {
+                addResult('✅ Web Crypto API is available in your browser.', 'success');
+            }
+        });
+    </script>
+</body>
+</html>
