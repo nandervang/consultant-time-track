@@ -16,14 +16,13 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  FileText,
-  BookOpen
+  FileText
 } from 'lucide-react';
 import { useClients, Client, CreateClientData } from '../hooks/useClients';
-import ClientDocumentation from '../components/wiki/ClientDocumentation';
 import { formatSEK } from '../lib/currency';
+import ClientDocumentation from '../components/wiki/ClientDocumentation';
 
-export default function ClientsPage() {
+export default function EnhancedClientsPage() {
   const { 
     clients, 
     loading, 
@@ -39,7 +38,7 @@ export default function ClientsPage() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'archived'>('all');
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [selectedClientForDocs, setSelectedClientForDocs] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('clients');
 
   // Form state
@@ -155,6 +154,11 @@ export default function ClientsPage() {
     }
   };
 
+  const handleViewDocumentation = (clientId: string) => {
+    setSelectedClientForDocs(clientId);
+    setActiveTab('documentation');
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -168,13 +172,47 @@ export default function ClientsPage() {
     );
   }
 
+  // If viewing specific client documentation
+  if (selectedClientForDocs && activeTab === 'documentation') {
+    const selectedClient = clients.find(c => c.id === selectedClientForDocs);
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="ghost" 
+            onClick={() => {
+              setSelectedClientForDocs(null);
+              setActiveTab('clients');
+            }}
+          >
+            ← Back to Clients
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">
+              Documentation for {selectedClient?.name}
+              {selectedClient?.company && ` (${selectedClient.company})`}
+            </h1>
+          </div>
+        </div>
+        
+        <ClientDocumentation 
+          clientId={selectedClientForDocs}
+          onBack={() => {
+            setSelectedClientForDocs(null);
+            setActiveTab('clients');
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Clients</h1>
+          <h1 className="text-3xl font-bold">Clients & Documentation</h1>
           <p className="text-muted-foreground">
-            Manage your clients and track relationships
+            Manage your clients and their documentation
           </p>
         </div>
         <Button 
@@ -194,15 +232,15 @@ export default function ClientsPage() {
         </Card>
       )}
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="clients" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Clients
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="clients">
+            <Users className="h-4 w-4 mr-2" />
+            Clients ({filteredClients.length})
           </TabsTrigger>
-          <TabsTrigger value="documentation" className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4" />
-            Documentation
+          <TabsTrigger value="documentation">
+            <FileText className="h-4 w-4 mr-2" />
+            All Documentation
           </TabsTrigger>
         </TabsList>
 
@@ -441,16 +479,15 @@ export default function ClientsPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => {
-                            setSelectedClient(client);
-                            setActiveTab('documentation');
-                          }}
+                          onClick={() => handleViewDocumentation(client.id)}
                           className="flex-1"
                         >
                           <FileText className="h-3 w-3 mr-1" />
                           Docs
                         </Button>
-                        
+                      </div>
+
+                      <div className="flex gap-2">
                         {client.status === 'active' ? (
                           <Button
                             size="sm"
@@ -519,31 +556,7 @@ export default function ClientsPage() {
         </TabsContent>
 
         <TabsContent value="documentation" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5" />
-                Client Documentation
-                {selectedClient && (
-                  <span className="text-sm font-normal text-muted-foreground">
-                    → {selectedClient.name}
-                  </span>
-                )}
-              </CardTitle>
-              <p className="text-muted-foreground">
-                {selectedClient 
-                  ? `Managing documentation for ${selectedClient.name}${selectedClient.company ? ` (${selectedClient.company})` : ''}`
-                  : 'Manage all client documentation'
-                }
-              </p>
-            </CardHeader>
-            <CardContent>
-              <ClientDocumentation 
-                clientId={selectedClient?.id} 
-                onBack={selectedClient ? () => setSelectedClient(null) : undefined}
-              />
-            </CardContent>
-          </Card>
+          <ClientDocumentation />
         </TabsContent>
       </Tabs>
     </div>
