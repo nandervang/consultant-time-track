@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Edit, Receipt } from 'lucide-react';
 import { formatSEK } from '@/lib/currency';
 import type { BudgetCategory, AnnualBudgetItem } from '@/types/budget';
 
@@ -88,6 +88,12 @@ export function BudgetDialogs({
   const [expenseDescription, setExpenseDescription] = useState('');
   const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split('T')[0]);
 
+  // Edit expense states
+  const [editingExpense, setEditingExpense] = useState<any>(null);
+  const [showEditExpenseDialog, setShowEditExpenseDialog] = useState(false);
+  const [showDeleteExpenseDialog, setShowDeleteExpenseDialog] = useState(false);
+  const [expenseToDelete, setExpenseToDelete] = useState<any>(null);
+
   // Dialog handlers
   const openAddCategoryDialog = () => setShowAddCategoryDialog(true);
   const openEditCategoryDialog = (category: BudgetCategory) => {
@@ -105,6 +111,21 @@ export function BudgetDialogs({
     setExpenseDescription('');
     setExpenseDate(new Date().toISOString().split('T')[0]);
     setShowAddExpenseDialog(true);
+  };
+
+  // Edit expense handler
+  const openEditExpenseDialog = (expense: any) => {
+    setEditingExpense(expense);
+    setExpenseAmount(expense.amount.toString());
+    setExpenseDescription(expense.description);
+    setExpenseDate(expense.date);
+    setShowEditExpenseDialog(true);
+  };
+
+  // Delete expense handler
+  const openDeleteExpenseDialog = (expense: any) => {
+    setExpenseToDelete(expense);
+    setShowDeleteExpenseDialog(true);
   };
 
   // Annual item dialog handlers
@@ -126,6 +147,12 @@ export function BudgetDialogs({
   const openDetailDialog = (category: BudgetCategory) => {
     setSelectedCategory(category);
     setShowDetailDialog(true);
+  };
+
+  // Get expenses for the selected category
+  const getCategoryExpenses = () => {
+    if (!selectedCategory) return [];
+    return getCategoryEntries(selectedCategory.name, 'monthly');
   };
 
   // Form handlers
@@ -218,6 +245,81 @@ export function BudgetDialogs({
       toast({
         title: "Fel",
         description: "Kunde inte lägga till utgift.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteExpenseConfirm = async () => {
+    if (!expenseToDelete) return;
+
+    try {
+      const success = await deleteEntry(expenseToDelete.id);
+      if (success) {
+        toast({
+          title: "Utgift borttagen",
+          description: `${expenseToDelete.description} har tagits bort`,
+        });
+        setExpenseToDelete(null);
+        setShowDeleteExpenseDialog(false);
+      }
+    } catch {
+      toast({
+        title: "Fel",
+        description: "Kunde inte ta bort utgift.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleEditExpenseSubmit = async () => {
+    if (!editingExpense || !expenseAmount || !expenseDescription) {
+      toast({
+        title: "Fel",
+        description: "Fyll i alla fält.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const amount = parseFloat(expenseAmount);
+    if (amount <= 0) {
+      toast({
+        title: "Fel",
+        description: "Beloppet måste vara större än 0.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // For now, we'll delete the old expense and create a new one
+      // In a real app, you'd want an updateEntry function
+      await deleteEntry(editingExpense.id);
+      await addEntry({
+        type: 'expense',
+        amount,
+        description: expenseDescription,
+        category: editingExpense.category,
+        date: expenseDate,
+        is_recurring: false,
+        is_budget_entry: false
+      });
+
+      toast({
+        title: "Utgift uppdaterad",
+        description: `${expenseDescription} har uppdaterats`,
+      });
+
+      setEditingExpense(null);
+      setExpenseAmount('');
+      setExpenseDescription('');
+      setExpenseDate(new Date().toISOString().split('T')[0]);
+      setShowEditExpenseDialog(false);
+    } catch {
+      toast({
+        title: "Fel",
+        description: "Kunde inte uppdatera utgift.",
         variant: "destructive"
       });
     }
@@ -411,6 +513,71 @@ export function BudgetDialogs({
         </DialogContent>
       </Dialog>
 
+      {/* Edit Expense Dialog */}
+      <Dialog open={showEditExpenseDialog} onOpenChange={setShowEditExpenseDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Redigera utgift</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="editExpenseAmount">Belopp (kr)</Label>
+              <Input
+                id="editExpenseAmount"
+                type="number"
+                value={expenseAmount}
+                onChange={(e) => setExpenseAmount(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <Label htmlFor="editExpenseDescription">Beskrivning</Label>
+              <Textarea
+                id="editExpenseDescription"
+                value={expenseDescription}
+                onChange={(e) => setExpenseDescription(e.target.value)}
+                placeholder="Vad köpte du?"
+              />
+            </div>
+            <div>
+              <Label htmlFor="editExpenseDate">Datum</Label>
+              <Input
+                id="editExpenseDate"
+                type="date"
+                value={expenseDate}
+                onChange={(e) => setExpenseDate(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowEditExpenseDialog(false)}>
+                Avbryt
+              </Button>
+              <Button onClick={handleEditExpenseSubmit}>
+                Spara ändringar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Expense Dialog */}
+      <Dialog open={showDeleteExpenseDialog} onOpenChange={setShowDeleteExpenseDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ta bort utgift</DialogTitle>
+          </DialogHeader>
+          <p>Är du säker på att du vill ta bort utgiften "{expenseToDelete?.description}"?</p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowDeleteExpenseDialog(false)}>
+              Avbryt
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteExpenseConfirm}>
+              Ta bort
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Add Annual Item Dialog */}
       <Dialog open={showAddAnnualItemDialog} onOpenChange={setShowAddAnnualItemDialog}>
         <DialogContent>
@@ -564,6 +731,125 @@ export function BudgetDialogs({
                 )}
               </div>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Category Detail Dialog */}
+      <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle>
+              Detaljer för {selectedCategory?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 flex-1 overflow-y-auto">
+            {selectedCategory && (
+              <>
+                {/* Budget Summary */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div>
+                    <div className="text-sm text-muted-foreground">Budget denna månad</div>
+                    <div className="text-lg font-semibold">{formatSEK(selectedCategory.budgeted)}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Spenderat</div>
+                    <div className="text-lg font-semibold">{formatSEK(selectedCategory.spent)}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Kvar</div>
+                    <div className={`text-lg font-semibold ${(selectedCategory.budgeted - selectedCategory.spent) < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                      {formatSEK(selectedCategory.budgeted - selectedCategory.spent)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Procent använt</div>
+                    <div className={`text-lg font-semibold ${(selectedCategory.spent / selectedCategory.budgeted * 100) > 100 ? 'text-red-600' : 'text-blue-600'}`}>
+                      {((selectedCategory.spent / selectedCategory.budgeted) * 100).toFixed(1)}%
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Expense List with Edit/Delete */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">Utgifter i denna kategori</h3>
+                    <Button onClick={() => {
+                      setShowDetailDialog(false);
+                      openAddExpenseDialog(selectedCategory);
+                    }}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Ny utgift
+                    </Button>
+                  </div>
+                  
+                  <div className="border rounded-lg overflow-hidden">
+                    <table className="w-full">
+                      <thead className="bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                          <th className="text-left p-3 font-medium">Datum</th>
+                          <th className="text-left p-3 font-medium">Beskrivning</th>
+                          <th className="text-right p-3 font-medium">Belopp</th>
+                          <th className="text-center p-3 font-medium">Åtgärder</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {getCategoryExpenses().length > 0 ? (
+                          getCategoryExpenses().map((expense) => (
+                            <tr key={expense.id}>
+                              <td className="p-3">{expense.date}</td>
+                              <td className="p-3">{expense.description}</td>
+                              <td className="p-3 text-right font-medium">{formatSEK(expense.amount)}</td>
+                              <td className="p-3">
+                                <div className="flex items-center justify-center gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => openEditExpenseDialog(expense)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => openDeleteExpenseDialog(expense)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="p-8 text-center text-gray-500">
+                              <Receipt className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                              <p>Inga utgifter ännu</p>
+                              <p className="text-sm mt-1">
+                                Klicka på "Ny utgift" för att lägga till en utgift
+                              </p>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+          <div className="flex justify-end gap-2 pt-4 border-t flex-shrink-0">
+            <Button variant="outline" onClick={() => setShowDetailDialog(false)}>
+              Stäng
+            </Button>
+            {selectedCategory && (
+              <Button onClick={() => {
+                setShowDetailDialog(false);
+                openAddExpenseDialog(selectedCategory);
+              }}>
+                Lägg till utgift
+              </Button>
+            )}
           </div>
         </DialogContent>
       </Dialog>
