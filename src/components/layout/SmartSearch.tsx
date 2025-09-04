@@ -374,10 +374,10 @@ export default function SmartSearch({ className }: SmartSearchProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Global keyboard shortcut (Ctrl+K or Cmd+K)
+  // Global keyboard shortcut (Ctrl+W or Cmd+W)
   useEffect(() => {
     const handleGlobalKeydown = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'w') {
         event.preventDefault();
         inputRef.current?.focus();
         setIsOpen(true);
@@ -394,7 +394,7 @@ export default function SmartSearch({ className }: SmartSearchProps) {
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           ref={inputRef}
-          placeholder="Search or command... (Ctrl+K to focus, try '+i', '/clients')"
+          placeholder="Search or command... (Ctrl+W to focus, try '+i', '/clients')"
           className="pl-10"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
