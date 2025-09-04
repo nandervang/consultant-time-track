@@ -71,32 +71,30 @@ export function QuickActionsCard({
   ];
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="flex-shrink-0">
+    <Card className="h-full">
+      <CardHeader className="pb-4">
         <CardTitle className="text-lg">Quick Actions</CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col">
-        <div className="grid grid-cols-1 gap-3 flex-1">
+      <CardContent>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {actions.map((action) => {
             const Icon = action.icon;
             return (
               <Button
                 key={action.title}
                 variant="outline"
-                className={`h-auto p-4 justify-start flex-1 min-h-[70px] ${
+                className={`h-auto p-4 flex-col gap-2 min-h-[100px] ${
                   action.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'
                 }`}
                 onClick={action.disabled ? undefined : action.onClick}
                 disabled={action.disabled}
               >
-                <div className="flex items-center gap-3 w-full">
-                  <div className={`p-2 rounded-full ${action.color} flex-shrink-0`}>
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <div className="text-left flex-1">
-                    <div className="font-medium">{action.title}</div>
-                    <div className="text-sm text-gray-500">{action.description}</div>
-                  </div>
+                <div className={`p-3 rounded-full ${action.color} flex-shrink-0`}>
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div className="text-center">
+                  <div className="font-medium text-sm leading-tight">{action.title}</div>
+                  <div className="text-xs text-gray-500 mt-1 leading-tight">{action.description}</div>
                 </div>
               </Button>
             );

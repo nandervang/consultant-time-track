@@ -14,12 +14,19 @@ import { CreateInvoiceItemDialog } from '@/components/invoicing/CreateInvoiceIte
 import { TimeEntryToInvoiceDialog } from '@/components/invoicing/TimeEntryToInvoiceDialog';
 import { FortnoxExportDialog } from '@/components/invoicing/FortnoxExportDialog';
 import { PlainTextExportDialog } from '@/components/invoicing/PlainTextExportDialog';
+import { ClientDetailDialog } from '@/components/invoicing/ClientDetailDialog';
+import { MarkAsInvoicedDialog } from '@/components/invoicing/MarkAsInvoicedDialog';
+import { MarkAsPaidDialog } from '@/components/invoicing/MarkAsPaidDialog';
 
 export default function InvoicingPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [timeEntryDialogOpen, setTimeEntryDialogOpen] = useState(false);
   const [fortnoxDialogOpen, setFortnoxDialogOpen] = useState(false);
   const [plainTextDialogOpen, setPlainTextDialogOpen] = useState(false);
+  const [clientDetailDialogOpen, setClientDetailDialogOpen] = useState(false);
+  const [selectedClientId, setSelectedClientId] = useState<string>('');
+  const [markAsInvoicedDialogOpen, setMarkAsInvoicedDialogOpen] = useState(false);
+  const [markAsPaidDialogOpen, setMarkAsPaidDialogOpen] = useState(false);
   
   const { 
     invoiceItems, 
@@ -44,13 +51,11 @@ export default function InvoicingPage() {
   };
 
   const handleMarkAsInvoiced = () => {
-    // TODO: Open dialog to mark items as invoiced
-    console.log('Mark as invoiced');
+    setMarkAsInvoicedDialogOpen(true);
   };
 
   const handleMarkAsPaid = () => {
-    // TODO: Open dialog to mark items as paid
-    console.log('Mark as paid');
+    setMarkAsPaidDialogOpen(true);
   };
 
   const handleExportToFortnox = () => {
@@ -62,8 +67,8 @@ export default function InvoicingPage() {
   };
 
   const handleClientClick = (clientId: string) => {
-    // TODO: Navigate to client detail view or open modal
-    console.log('Client clicked:', clientId);
+    setSelectedClientId(clientId);
+    setClientDetailDialogOpen(true);
   };
 
   const handleItemClick = (itemId: string) => {
@@ -90,10 +95,22 @@ export default function InvoicingPage() {
       {/* Summary Cards */}
       <InvoiceSummaryCards summary={summary} loading={loading} />
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[600px]">
-        {/* Client Overview - Takes 4 columns on large screens */}
-        <div className="lg:col-span-4 xl:col-span-3">
+      {/* Quick Actions Row */}
+      <div className="w-full">
+        <QuickActionsCard
+          onCreateInvoiceItem={handleCreateInvoiceItem}
+          onCreateFromTime={handleCreateFromTime}
+          onMarkAsInvoiced={handleMarkAsInvoiced}
+          onMarkAsPaid={handleMarkAsPaid}
+          onExportToFortnox={handleExportToFortnox}
+          onExportPlainText={handleExportPlainText}
+        />
+      </div>
+
+      {/* Main Content Grid - 50/50 split */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[600px]">
+        {/* Client Overview - Takes 50% on large screens */}
+        <div className="lg:col-span-1">
           <ClientOverviewCard
             clients={clientSummaries}
             loading={loading}
@@ -101,26 +118,14 @@ export default function InvoicingPage() {
           />
         </div>
 
-        {/* Recent Items - Takes 5 columns on large screens */}
-        <div className="lg:col-span-5 xl:col-span-6">
+        {/* Recent Items - Takes 50% on large screens */}
+        <div className="lg:col-span-1">
           <RecentInvoiceItems
             items={invoiceItems}
             loading={loading}
             onItemClick={handleItemClick}
             clients={clients}
             projects={projects}
-          />
-        </div>
-
-        {/* Quick Actions - Takes 3 columns on large screens */}
-        <div className="lg:col-span-3 xl:col-span-3">
-          <QuickActionsCard
-            onCreateInvoiceItem={handleCreateInvoiceItem}
-            onCreateFromTime={handleCreateFromTime}
-            onMarkAsInvoiced={handleMarkAsInvoiced}
-            onMarkAsPaid={handleMarkAsPaid}
-            onExportToFortnox={handleExportToFortnox}
-            onExportPlainText={handleExportPlainText}
           />
         </div>
       </div>
@@ -170,6 +175,19 @@ export default function InvoicingPage() {
       <PlainTextExportDialog
         open={plainTextDialogOpen}
         onOpenChange={setPlainTextDialogOpen}
+      />
+      <ClientDetailDialog
+        open={clientDetailDialogOpen}
+        onOpenChange={setClientDetailDialogOpen}
+        clientId={selectedClientId}
+      />
+      <MarkAsInvoicedDialog
+        open={markAsInvoicedDialogOpen}
+        onOpenChange={setMarkAsInvoicedDialogOpen}
+      />
+      <MarkAsPaidDialog
+        open={markAsPaidDialogOpen}
+        onOpenChange={setMarkAsPaidDialogOpen}
       />
     </div>
   );
