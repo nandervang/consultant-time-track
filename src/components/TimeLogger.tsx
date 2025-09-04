@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Clock, Plus, Calendar, User, Building } from 'lucide-react';
 import { useProjects, Project } from '../hooks/useProjects';
 import { useTimeEntries } from '../hooks/useTimeEntries';
@@ -7,9 +7,10 @@ import { useClients } from '../hooks/useClients';
 interface TimeLoggerProps {
   isDarkMode: boolean;
   onTimeLogged?: () => void;
+  shouldFocus?: boolean;
 }
 
-export default function TimeLogger({ isDarkMode, onTimeLogged }: TimeLoggerProps) {
+export default function TimeLogger({ isDarkMode, onTimeLogged, shouldFocus }: TimeLoggerProps) {
   const { projects } = useProjects();
   const { clients } = useClients();
   const { createTimeEntry } = useTimeEntries();
@@ -19,6 +20,14 @@ export default function TimeLogger({ isDarkMode, onTimeLogged }: TimeLoggerProps
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const hoursInputRef = useRef<HTMLInputElement>(null);
+
+  // Focus on hours input when shouldFocus is true
+  useEffect(() => {
+    if (shouldFocus && hoursInputRef.current) {
+      hoursInputRef.current.focus();
+    }
+  }, [shouldFocus]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,6 +152,7 @@ export default function TimeLogger({ isDarkMode, onTimeLogged }: TimeLoggerProps
               Hours
             </label>
             <input
+              ref={hoursInputRef}
               type="number"
               step="0.25"
               min="0"
@@ -219,6 +229,7 @@ export default function TimeLogger({ isDarkMode, onTimeLogged }: TimeLoggerProps
           type="submit"
           disabled={isSubmitting}
           className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+          data-testid="log-time-btn"
         >
           {isSubmitting ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

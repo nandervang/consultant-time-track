@@ -88,6 +88,7 @@ export function QuickActionsCard({
                 }`}
                 onClick={action.disabled ? undefined : action.onClick}
                 disabled={action.disabled}
+                data-testid={action.title === 'New Invoice Item' ? 'new-invoice-btn' : undefined}
               >
                 <div className={`p-3 rounded-full ${action.color} flex-shrink-0`}>
                   <Icon className="h-5 w-5" />

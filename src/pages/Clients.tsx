@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useModalContext } from '@/contexts/ModalContext';
 import { 
   Plus, 
   Search, 
@@ -35,12 +36,22 @@ export default function ClientsPage() {
     activateClient 
   } = useClients();
   
+  const modalContext = useModalContext();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'archived'>('all');
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [activeTab, setActiveTab] = useState('clients');
+
+  // Connect modal context to local state
+  useEffect(() => {
+    if (modalContext.clientModalOpen) {
+      setShowAddForm(true);
+      modalContext.setClientModalOpen(false);
+    }
+  }, [modalContext.clientModalOpen, modalContext]);
 
   // Form state
   const [formData, setFormData] = useState<CreateClientData>({
@@ -180,6 +191,7 @@ export default function ClientsPage() {
         <Button 
           onClick={() => setShowAddForm(true)}
           className="flex items-center gap-2"
+          data-testid="new-client-btn"
         >
           <Plus className="h-4 w-4" />
           Add Client

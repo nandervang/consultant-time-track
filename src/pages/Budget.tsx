@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Eye, Plus } from 'lucide-react';
 import { useBudgetLogic } from '../hooks/useBudgetLogic';
+import { useModalContext } from '@/contexts/ModalContext';
 import { BudgetOverview } from '../components/budget/BudgetOverview';
 import { BudgetDetailView } from '../components/budget/BudgetDetailView';
 import { BudgetDialogs } from '../components/budget/BudgetDialogs';
@@ -13,6 +14,7 @@ interface BudgetPageProps {
 export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
   const [isDetailedView, setIsDetailedView] = useState(false);
   const budgetLogic = useBudgetLogic();
+  const modalContext = useModalContext();
 
   // Dialog states
   const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
@@ -20,13 +22,27 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [showAddExpenseDialog, setShowAddExpenseDialog] = useState(false);
   const [showEditCategoryDialog, setShowEditCategoryDialog] = useState(false);
+  const [showDeleteCategoryDialog, setShowDeleteCategoryDialog] = useState(false);
+  const [showExpenseDetailDialog, setShowExpenseDetailDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
   // Selected items for dialogs
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
   const [selectedExpenseCategory, setSelectedExpenseCategory] = useState<any>(null);
 
-  console.log('🔍 Budget component render - isDetailedView:', isDetailedView);
+  // Connect modal context to expense dialog
+  useEffect(() => {
+    if (modalContext.expenseModalOpen && !budgetLogic.budgetsLoading) {
+      // Open add expense dialog
+      // Set a default category if available
+      if (budgetLogic.categories && budgetLogic.categories.length > 0) {
+        setSelectedExpenseCategory(budgetLogic.categories[0]);
+      }
+      
+      setShowAddExpenseDialog(true);
+      modalContext.setExpenseModalOpen(false);
+    }
+  }, [modalContext.expenseModalOpen, modalContext, budgetLogic.categories, budgetLogic.budgetsLoading]);
 
   if (budgetLogic.budgetsLoading) {
     return (

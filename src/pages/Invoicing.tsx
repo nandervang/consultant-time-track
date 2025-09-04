@@ -1,10 +1,11 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Receipt, Clock } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useInvoices } from '@/hooks/useInvoices';
 import { useClients } from '@/hooks/useClients';
 import { useProjects } from '@/hooks/useProjects';
+import { useModalContext } from '@/contexts/ModalContext';
 import { InvoiceSummaryCards } from '@/components/invoicing/InvoiceSummaryCards';
 import { ClientOverviewCard } from '@/components/invoicing/ClientOverviewCard';
 import { RecentInvoiceItems } from '@/components/invoicing/RecentInvoiceItems';
@@ -28,6 +29,8 @@ export default function InvoicingPage() {
   const [markAsInvoicedDialogOpen, setMarkAsInvoicedDialogOpen] = useState(false);
   const [markAsPaidDialogOpen, setMarkAsPaidDialogOpen] = useState(false);
   
+  const modalContext = useModalContext();
+  
   const { 
     invoiceItems, 
     loading: invoicesLoading, 
@@ -37,6 +40,14 @@ export default function InvoicingPage() {
   
   const { clients, loading: clientsLoading } = useClients();
   const { projects, loading: projectsLoading } = useProjects();
+
+  // Connect modal context to local state
+  useEffect(() => {
+    if (modalContext.invoiceModalOpen) {
+      setCreateDialogOpen(true);
+      modalContext.setInvoiceModalOpen(false);
+    }
+  }, [modalContext.invoiceModalOpen, modalContext]);
 
   const loading = invoicesLoading || clientsLoading || projectsLoading;
   const summary = getInvoiceSummary();

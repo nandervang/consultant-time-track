@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import TimeLogger from '@/components/TimeLogger';
 import DailySummary from '@/components/DailySummary';
 import TableView from '@/components/TableView';
@@ -7,6 +7,7 @@ import QuarterView from '@/components/QuarterView';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock, BarChart3, Calendar, Table, RefreshCw } from 'lucide-react';
 import { useTimeEntries } from '@/hooks/useTimeEntries';
+import { useModalContext } from '@/contexts/ModalContext';
 
 interface TimeTrackingPageProps {
   isDarkMode: boolean;
@@ -17,7 +18,9 @@ type ViewType = 'overview' | 'daily' | 'summary' | 'quarterly' | 'table';
 export default function TimeTrackingPage({ isDarkMode }: TimeTrackingPageProps) {
   const [activeView, setActiveView] = useState<ViewType>('daily');
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [focusTimeLogger, setFocusTimeLogger] = useState(false);
   const { refetch, loading } = useTimeEntries();
+  const modalContext = useModalContext();
 
   const handleRefresh = useCallback(async () => {
     await refetch();
@@ -28,6 +31,17 @@ export default function TimeTrackingPage({ isDarkMode }: TimeTrackingPageProps) 
     // The useTimeEntries hook already handles auto-updating the state
     // when createTimeEntry is called, so no additional action needed here
   }, []);
+
+  // Connect modal context to focus time logger
+  useEffect(() => {
+    if (modalContext.timeModalOpen) {
+      setActiveView('daily'); // Switch to daily view where TimeLogger is visible
+      setFocusTimeLogger(true);
+      modalContext.setTimeModalOpen(false);
+      // Reset focus after a brief delay
+      setTimeout(() => setFocusTimeLogger(false), 1000);
+    }
+  }, [modalContext.timeModalOpen, modalContext]);
 
   const viewConfig = [
     {
@@ -117,7 +131,11 @@ export default function TimeTrackingPage({ isDarkMode }: TimeTrackingPageProps) 
                 <CardTitle>Log Time</CardTitle>
               </CardHeader>
               <CardContent>
-                <TimeLogger isDarkMode={isDarkMode} onTimeLogged={handleTimeLogged} />
+                <TimeLogger 
+                  isDarkMode={isDarkMode} 
+                  onTimeLogged={handleTimeLogged} 
+                  shouldFocus={focusTimeLogger} 
+                />
               </CardContent>
             </Card>
           </div>

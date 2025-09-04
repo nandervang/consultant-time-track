@@ -1,6 +1,6 @@
-import { Bell, Search, User, LogOut, Moon, Sun } from 'lucide-react';
+import { Bell, User, LogOut, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import SmartSearch from './SmartSearch';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -13,18 +13,12 @@ interface HeaderProps {
 export default function Header({ isDarkMode, onToggleDarkMode, onSignOut, user }: HeaderProps) {
   return (
     <header className={cn(
-      "flex items-center justify-between px-6 py-4 border-b",
-      "bg-background border-border"
+      "flex items-center justify-between px-6 py-4 border-b bg-background border-border flex-shrink-0",
+      "min-h-[4rem]"
     )}>
-      {/* Search */}
+      {/* Smart Search */}
       <div className="flex items-center gap-4 flex-1 max-w-md">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search..."
-            className="pl-10"
-          />
-        </div>
+        <SmartSearch className="flex-1" />
       </div>
 
       {/* Actions */}

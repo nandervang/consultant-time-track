@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { ModalProvider } from '@/contexts/ModalContext';
 import AuthForm from '@/components/AuthForm';
 import MainLayout from '@/components/layout/MainLayout';
 import Dashboard from '@/pages/Dashboard';
@@ -62,27 +63,29 @@ function App() {
   }
 
   return (
-    <Router>
-      <MainLayout
-        isDarkMode={isDarkMode}
-        onToggleDarkMode={handleToggleDarkMode}
-        onSignOut={handleSignOut}
-        user={user}
-      >
-        <Routes>
-          <Route path="/" element={<Dashboard isDarkMode={isDarkMode} />} />
-          <Route path="/time-tracking" element={<TimeTracking isDarkMode={isDarkMode} />} />
-          <Route path="/budget" element={<Budget isDarkMode={isDarkMode} />} />
-          <Route path="/cash-flow" element={<CashFlow isDarkMode={isDarkMode} />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/clients" element={<Clients />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/cv-manager" element={<CVManager />} />
-          <Route path="/invoicing" element={<Invoicing />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
-      </MainLayout>
-    </Router>
+    <ModalProvider>
+      <Router>
+        <MainLayout
+          isDarkMode={isDarkMode}
+          onToggleDarkMode={handleToggleDarkMode}
+          onSignOut={handleSignOut}
+          user={user}
+        >
+          <Routes>
+            <Route path="/" element={<Dashboard isDarkMode={isDarkMode} />} />
+            <Route path="/time-tracking" element={<TimeTracking isDarkMode={isDarkMode} />} />
+            <Route path="/budget" element={<Budget isDarkMode={isDarkMode} />} />
+            <Route path="/cash-flow" element={<CashFlow isDarkMode={isDarkMode} />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/clients" element={<Clients />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/cv-manager" element={<CVManager />} />
+            <Route path="/invoicing" element={<Invoicing />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </MainLayout>
+      </Router>
+    </ModalProvider>
   );
 }
 

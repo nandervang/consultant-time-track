@@ -58,6 +58,7 @@ export function MonthlyCategories({
                       size="sm"
                       onClick={() => onAddExpense(category)}
                       className="h-8"
+                      data-testid="add-expense-btn"
                     >
                       <Receipt className="h-4 w-4 mr-1" />
                       Lägg till

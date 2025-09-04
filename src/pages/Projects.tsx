@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useProjects, Project, CreateProjectData } from '../hooks/useProjects';
 import { useClients } from '../hooks/useClients';
+import { useModalContext } from '@/contexts/ModalContext';
 import { formatSEK } from '../lib/currency';
 
 export default function ProjectsPage() {
@@ -34,12 +35,21 @@ export default function ProjectsPage() {
   } = useProjects();
   
   const { clients, loading: clientsLoading } = useClients();
+  const modalContext = useModalContext();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'planning' | 'active' | 'on-hold' | 'completed' | 'cancelled'>('all');
   const [clientFilter, setClientFilter] = useState<string>('all');
+
+  // Connect modal context to project form
+  useEffect(() => {
+    if (modalContext.projectModalOpen) {
+      setShowAddForm(true);
+      modalContext.setProjectModalOpen(false);
+    }
+  }, [modalContext.projectModalOpen, modalContext]);
 
   // Form state
   const [formData, setFormData] = useState<CreateProjectData>({

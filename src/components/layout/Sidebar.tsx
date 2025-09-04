@@ -11,7 +11,6 @@ import {
   FileText, 
   Settings,
   ChevronLeft,
-  ChevronRight,
   User
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -36,42 +35,39 @@ const navigation = [
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
-export default function Sidebar({ collapsed, onToggle, isDarkMode }: SidebarProps) {
+export default function Sidebar({ collapsed, onToggle }: Omit<SidebarProps, 'isDarkMode'>) {
   return (
-    <div className={cn(
-      "flex flex-col h-full border-r transition-all duration-300",
-      collapsed ? "w-16" : "w-64",
-      isDarkMode ? "bg-card border-border" : "bg-card border-border"
+    <aside className={cn(
+      "bg-card border-r border-border transition-all duration-300 flex flex-col",
+      "h-full", // Changed from h-screen since header is now separate
+      collapsed ? "w-16" : "w-64"
     )}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border">
-        {!collapsed && (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <BarChart3 className="w-5 h-5 text-primary-foreground" />
-            </div>
+      <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
+        <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-sm">C</span>
+          </div>
+          {!collapsed && (
             <div>
-              <h1 className="font-semibold text-sm">ConsultantHub</h1>
+              <h1 className="font-semibold text-foreground">ConsultantHub</h1>
               <p className="text-xs text-muted-foreground">Dashboard</p>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+        
         <Button
           variant="ghost"
           size="icon"
           onClick={onToggle}
           className="h-8 w-8"
         >
-          {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <ChevronLeft className="h-4 w-4" />
-          )}
+          <ChevronLeft className={cn("h-4 w-4 transition-transform", collapsed && "rotate-180")} />
         </Button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-2">
+      <nav className="flex-1 p-2 overflow-y-auto">
         <ul className="space-y-1">
           {navigation.map((item) => {
             const Icon = item.icon;
@@ -101,7 +97,7 @@ export default function Sidebar({ collapsed, onToggle, isDarkMode }: SidebarProp
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-border">
+      <div className="p-4 border-t border-border flex-shrink-0">
         {!collapsed && (
           <div className="text-xs text-muted-foreground">
             <p>© 2025 ConsultantHub</p>
@@ -109,6 +105,6 @@ export default function Sidebar({ collapsed, onToggle, isDarkMode }: SidebarProp
           </div>
         )}
       </div>
-    </div>
+    </aside>
   );
 }
