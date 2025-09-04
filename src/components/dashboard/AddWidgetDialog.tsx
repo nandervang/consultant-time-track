@@ -143,6 +143,14 @@ const availableWidgets = [
     icon: CreditCard,
     category: 'Finance',
     size: { w: 1 as const, h: 1 }
+  },
+  {
+    type: 'uptime-monitor' as WidgetType,
+    name: 'Uptime Monitor',
+    description: 'Monitor website uptime and response times',
+    icon: Activity,
+    category: 'Custom',
+    size: { w: 2 as const, h: 1 }
   }
 ];
 

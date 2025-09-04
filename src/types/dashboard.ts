@@ -33,6 +33,7 @@ export type WidgetType =
   | 'yearly-budget-chart'
   | 'yearly-expense-distribution'
   | 'payment-sources'
+  | 'uptime-monitor'
   | 'blank-card';
 
 export interface WidgetConfig {

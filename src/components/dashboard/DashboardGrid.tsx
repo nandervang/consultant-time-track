@@ -21,6 +21,7 @@ import BlankCard from './widgets/BlankCard';
 import YearlyBudgetChartCard from './widgets/YearlyBudgetChartCard';
 import YearlyExpenseDistributionCard from './widgets/YearlyExpenseDistributionCard';
 import { PaymentSourcesCard } from './widgets/PaymentSourcesCard';
+import UptimeMonitorCard from './widgets/UptimeMonitorCard';
 import AddWidgetDialog from './AddWidgetDialog';
 import RemoveWidgetButton from './RemoveWidgetButton';
 
@@ -43,6 +44,7 @@ const widgetComponents: Record<string, React.ComponentType<WidgetProps>> = {
   'yearly-budget-chart': YearlyBudgetChartCard,
   'yearly-expense-distribution': YearlyExpenseDistributionCard,
   'payment-sources': PaymentSourcesCard,
+  'uptime-monitor': UptimeMonitorCard,
   'blank-card': BlankCard,
 };
 
