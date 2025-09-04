@@ -11,7 +11,8 @@ import {
   Wallet,
   Target,
   Zap,
-  PieChart
+  PieChart,
+  CreditCard
 } from 'lucide-react';
 import {
   Dialog,
@@ -134,6 +135,14 @@ const availableWidgets = [
     icon: PieChart,
     category: 'Finance',
     size: { w: 2 as const, h: 1 }
+  },
+  {
+    type: 'payment-sources' as WidgetType,
+    name: 'Betalningskällor',
+    description: 'Overview of payment sources with expense counts',
+    icon: CreditCard,
+    category: 'Finance',
+    size: { w: 1 as const, h: 1 }
   }
 ];
 

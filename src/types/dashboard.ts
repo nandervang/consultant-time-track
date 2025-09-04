@@ -32,6 +32,7 @@ export type WidgetType =
   | 'invoice-status'
   | 'yearly-budget-chart'
   | 'yearly-expense-distribution'
+  | 'payment-sources'
   | 'blank-card';
 
 export interface WidgetConfig {

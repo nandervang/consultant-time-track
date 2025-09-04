@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, Edit, Receipt } from 'lucide-react';
 import { formatSEK } from '@/lib/currency';
 import type { BudgetCategory, AnnualBudgetItem } from '@/types/budget';
@@ -87,6 +88,7 @@ export function BudgetDialogs({
   const [expenseAmount, setExpenseAmount] = useState('');
   const [expenseDescription, setExpenseDescription] = useState('');
   const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split('T')[0]);
+  const [expensePaymentSource, setExpensePaymentSource] = useState('Privat utlägg');
 
   // Edit expense states
   const [editingExpense, setEditingExpense] = useState<any>(null);
@@ -110,6 +112,7 @@ export function BudgetDialogs({
     setExpenseAmount('');
     setExpenseDescription('');
     setExpenseDate(new Date().toISOString().split('T')[0]);
+    setExpensePaymentSource('Privat utlägg');
     setShowAddExpenseDialog(true);
   };
 
@@ -119,6 +122,7 @@ export function BudgetDialogs({
     setExpenseAmount(expense.amount.toString());
     setExpenseDescription(expense.description);
     setExpenseDate(expense.date);
+    setExpensePaymentSource(expense.payment_source || 'Privat utlägg');
     setShowEditExpenseDialog(true);
   };
 
@@ -227,6 +231,7 @@ export function BudgetDialogs({
         description: expenseDescription,
         category: selectedExpenseCategory.name,
         date: expenseDate,
+        payment_source: expensePaymentSource,
         is_recurring: false,
         is_budget_entry: false
       });
@@ -239,6 +244,7 @@ export function BudgetDialogs({
       setExpenseAmount('');
       setExpenseDescription('');
       setExpenseDate(new Date().toISOString().split('T')[0]);
+      setExpensePaymentSource('Privat utlägg');
       setShowAddExpenseDialog(false);
       setSelectedExpenseCategory(null);
     } catch {
@@ -302,6 +308,7 @@ export function BudgetDialogs({
         description: expenseDescription,
         category: editingExpense.category,
         date: expenseDate,
+        payment_source: expensePaymentSource,
         is_recurring: false,
         is_budget_entry: false
       });
@@ -315,6 +322,7 @@ export function BudgetDialogs({
       setExpenseAmount('');
       setExpenseDescription('');
       setExpenseDate(new Date().toISOString().split('T')[0]);
+      setExpensePaymentSource('Privat utlägg');
       setShowEditExpenseDialog(false);
     } catch {
       toast({
@@ -501,6 +509,20 @@ export function BudgetDialogs({
                 onChange={(e) => setExpenseDate(e.target.value)}
               />
             </div>
+            <div>
+              <Label htmlFor="expensePaymentSource">Betalningskälla</Label>
+              <Select value={expensePaymentSource} onValueChange={setExpensePaymentSource}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Välj betalningskälla" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Privat utlägg">Privat utlägg</SelectItem>
+                  <SelectItem value="Mynt kortet">Mynt kortet</SelectItem>
+                  <SelectItem value="Faktura">Faktura</SelectItem>
+                  <SelectItem value="Annat">Annat</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowAddExpenseDialog(false)}>
                 Avbryt
@@ -547,6 +569,20 @@ export function BudgetDialogs({
                 value={expenseDate}
                 onChange={(e) => setExpenseDate(e.target.value)}
               />
+            </div>
+            <div>
+              <Label htmlFor="editExpensePaymentSource">Betalningskälla</Label>
+              <Select value={expensePaymentSource} onValueChange={setExpensePaymentSource}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Välj betalningskälla" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Privat utlägg">Privat utlägg</SelectItem>
+                  <SelectItem value="Mynt kortet">Mynt kortet</SelectItem>
+                  <SelectItem value="Faktura">Faktura</SelectItem>
+                  <SelectItem value="Annat">Annat</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowEditExpenseDialog(false)}>
@@ -789,6 +825,7 @@ export function BudgetDialogs({
                         <tr>
                           <th className="text-left p-3 font-medium">Datum</th>
                           <th className="text-left p-3 font-medium">Beskrivning</th>
+                          <th className="text-left p-3 font-medium">Betalningskälla</th>
                           <th className="text-right p-3 font-medium">Belopp</th>
                           <th className="text-center p-3 font-medium">Åtgärder</th>
                         </tr>
@@ -799,6 +836,7 @@ export function BudgetDialogs({
                             <tr key={expense.id}>
                               <td className="p-3">{expense.date}</td>
                               <td className="p-3">{expense.description}</td>
+                              <td className="p-3">{expense.payment_source || 'Okänd'}</td>
                               <td className="p-3 text-right font-medium">{formatSEK(expense.amount)}</td>
                               <td className="p-3">
                                 <div className="flex items-center justify-center gap-2">
@@ -822,7 +860,7 @@ export function BudgetDialogs({
                           ))
                         ) : (
                           <tr>
-                            <td colSpan={4} className="p-8 text-center text-gray-500">
+                            <td colSpan={5} className="p-8 text-center text-gray-500">
                               <Receipt className="h-8 w-8 mx-auto mb-2 opacity-50" />
                               <p>Inga utgifter ännu</p>
                               <p className="text-sm mt-1">
