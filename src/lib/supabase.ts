@@ -423,6 +423,126 @@ export interface Database {
           updated_at?: string;
         };
       };
+      ping_targets: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          url: string;
+          method: string;
+          headers: Record<string, unknown>;
+          body: string | null;
+          timeout: number;
+          expected_status: number[];
+          expected_text: string | null;
+          enabled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          url: string;
+          method?: string;
+          headers?: Record<string, unknown>;
+          body?: string | null;
+          timeout?: number;
+          expected_status?: number[];
+          expected_text?: string | null;
+          enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          url?: string;
+          method?: string;
+          headers?: Record<string, unknown>;
+          body?: string | null;
+          timeout?: number;
+          expected_status?: number[];
+          expected_text?: string | null;
+          enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      ping_results: {
+        Row: {
+          id: string;
+          target_id: string;
+          user_id: string;
+          timestamp: string;
+          response_time: number | null;
+          status: string;
+          status_code: number | null;
+          response_text: string | null;
+          response_size: number | null;
+          error_message: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          target_id: string;
+          user_id: string;
+          timestamp?: string;
+          response_time?: number | null;
+          status: string;
+          status_code?: number | null;
+          response_text?: string | null;
+          response_size?: number | null;
+          error_message?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          target_id?: string;
+          user_id?: string;
+          timestamp?: string;
+          response_time?: number | null;
+          status?: string;
+          status_code?: number | null;
+          response_text?: string | null;
+          response_size?: number | null;
+          error_message?: string | null;
+          created_at?: string;
+        };
+      };
+      ping_settings: {
+        Row: {
+          id: string;
+          user_id: string;
+          interval_minutes: number;
+          timeout_seconds: number;
+          retries: number;
+          enabled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          interval_minutes?: number;
+          timeout_seconds?: number;
+          retries?: number;
+          enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          interval_minutes?: number;
+          timeout_seconds?: number;
+          retries?: number;
+          enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       cash_flow_summary: {
@@ -445,6 +565,20 @@ export interface Database {
           spent_amount: number;
           remaining_amount: number;
           usage_percentage: number;
+        };
+      };
+      ping_uptime_stats: {
+        Row: {
+          target_id: string;
+          target_name: string;
+          url: string;
+          user_id: string;
+          total_checks: number;
+          successful_checks: number;
+          uptime_percentage: number;
+          avg_response_time: number;
+          last_check: string;
+          current_status: string;
         };
       };
     };

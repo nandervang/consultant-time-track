@@ -1,0 +1,19 @@
+{
+  "name": "mongodb-monitoring-service",
+  "version": "1.0.0",
+  "description": "MongoDB monitoring service for ping widget",
+  "main": "mongodb-monitoring-service.js",
+  "scripts": {
+    "start": "node mongodb-monitoring-service.js",
+    "dev": "nodemon mongodb-monitoring-service.js"
+  },
+  "dependencies": {
+    "mongodb": "^6.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
