@@ -102,28 +102,35 @@ export function BudgetOverview({
             isDarkMode={isDarkMode}
           />
 
-          {/* Monthly Categories */}
-          {categories.length > 0 && (
-            <MonthlyCategories
-              categories={categories}
-              onViewDetails={onViewDetails}
-              onAddExpense={onAddExpense}
-              onEditCategory={onEditCategory}
-              onDeleteCategory={onDeleteCategory}
-            />
-          )}
+          {/* Monthly Categories and Annual Items - Side by Side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Monthly Categories */}
+            {categories.length > 0 && (
+              <div className="min-w-0">
+                <MonthlyCategories
+                  categories={categories}
+                  onViewDetails={onViewDetails}
+                  onAddExpense={onAddExpense}
+                  onEditCategory={onEditCategory}
+                  onDeleteCategory={onDeleteCategory}
+                />
+              </div>
+            )}
 
-          {/* Annual Items */}
-          {annualItems.length > 0 && (
-            <AnnualItems
-              annualItems={annualItems}
-              getCurrentYear={getCurrentYear}
-              onAddExpense={onAddExpense}
-              onDeleteItem={onDeleteItem}
-              onViewDetails={onViewAnnualDetails}
-              onEditItem={onEditAnnualItem}
-            />
-          )}
+            {/* Annual Items */}
+            {annualItems.length > 0 && (
+              <div className="min-w-0">
+                <AnnualItems
+                  annualItems={annualItems}
+                  getCurrentYear={getCurrentYear}
+                  onAddExpense={onAddExpense}
+                  onDeleteItem={onDeleteItem}
+                  onViewDetails={onViewAnnualDetails}
+                  onEditItem={onEditAnnualItem}
+                />
+              </div>
+            )}
+          </div>
         </>
       )}
     </div>

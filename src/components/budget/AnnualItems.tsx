@@ -29,7 +29,7 @@ export function AnnualItems({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Target className="h-5 w-5" />
-          Årliga budgetposter {getCurrentYear()}
+          Budget (årsbas)
         </CardTitle>
       </CardHeader>
       <CardContent>

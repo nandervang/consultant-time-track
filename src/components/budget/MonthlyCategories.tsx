@@ -25,7 +25,7 @@ export function MonthlyCategories({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Månadskategorier</CardTitle>
+        <CardTitle>Budget (månadsvis)</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
