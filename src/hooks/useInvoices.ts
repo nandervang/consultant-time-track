@@ -73,7 +73,8 @@ export function useInvoices(userId?: string | null) {
       if (itemData.type === 'hourly') {
         totalAmount = (itemData.quantity || 0) * (itemData.rate || 0);
       } else {
-        totalAmount = itemData.rate || 0; // For fixed type, rate is the fixed amount
+        // For fixed type, rate is the unit price, total = quantity * unit_price
+        totalAmount = (itemData.quantity || 1) * (itemData.rate || 0);
       }
 
       const newItem = {
@@ -117,7 +118,7 @@ export function useInvoices(userId?: string | null) {
       // Fallback to localStorage
       const totalAmount = itemData.type === 'hourly' 
         ? (itemData.quantity || 0) * (itemData.rate || 0)
-        : (itemData.rate || 0);
+        : (itemData.quantity || 1) * (itemData.rate || 0);
         
       const fallbackItem: InvoiceItem = {
         id: `local_${Date.now()}`,
@@ -162,7 +163,19 @@ export function useInvoices(userId?: string | null) {
         const currentItem = invoiceItems.find(item => item.id === id);
         if (currentItem) {
           const type = itemData.type || (currentItem.hours ? 'hourly' : 'fixed');
-          const quantity = itemData.quantity ?? (currentItem.hours || 1);
+          
+          // For hourly items, quantity is stored in hours field
+          // For fixed items, we need to extract quantity from total_amount and rate
+          let currentQuantity = 1;
+          if (currentItem.hours) {
+            // This is an hourly item
+            currentQuantity = currentItem.hours;
+          } else if (currentItem.fixed_amount && currentItem.fixed_amount > 0) {
+            // This is a fixed item, calculate current quantity from total/rate
+            currentQuantity = currentItem.total_amount / currentItem.fixed_amount;
+          }
+          
+          const quantity = itemData.quantity ?? currentQuantity;
           const rate = itemData.rate ?? (currentItem.hourly_rate || currentItem.fixed_amount || 0);
           
           if (type === 'hourly') {
@@ -174,7 +187,7 @@ export function useInvoices(userId?: string | null) {
             updatedData.hours = null;
             updatedData.hourly_rate = null;
             updatedData.fixed_amount = rate;
-            updatedData.total_amount = rate;
+            updatedData.total_amount = quantity * rate; // For fixed items, total = quantity * unit_price
           }
         }
       }

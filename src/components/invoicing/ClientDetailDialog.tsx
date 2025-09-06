@@ -19,6 +19,7 @@ import {
   FileText
 } from 'lucide-react';
 import { formatSEK } from '@/lib/currency';
+import { getInvoiceItemQuantity, getInvoiceItemUnitRate, getInvoiceItemType } from '@/lib/utils';
 import { useInvoices } from '@/hooks/useInvoices';
 import { useClients } from '@/hooks/useClients';
 import { useProjects } from '@/hooks/useProjects';
@@ -54,14 +55,15 @@ export function ClientDetailDialog({ open, onOpenChange, clientId }: ClientDetai
 
   const handleEditStart = (item: InvoiceItem) => {
     setEditingItem(item.id);
+    
     setEditForm({
       id: item.id,
       description: item.description,
       client_id: item.client_id || undefined,
       project_id: item.project_id || undefined,
-      quantity: item.hours || 1,
-      rate: item.hourly_rate || item.fixed_amount || 0,
-      type: item.hours ? 'hourly' : 'fixed',
+      quantity: getInvoiceItemQuantity(item),
+      rate: getInvoiceItemUnitRate(item),
+      type: getInvoiceItemType(item),
       date: item.invoice_date,
       status: item.status,
       notes: item.notes || undefined,
@@ -450,7 +452,7 @@ export function ClientDetailDialog({ open, onOpenChange, clientId }: ClientDetai
                                   {item.hours ? 'Hours:' : 'Quantity:'}
                                 </span>
                                 <div className="font-medium">
-                                  {item.hours || 1}
+                                  {getInvoiceItemQuantity(item)}
                                 </div>
                               </div>
                               <div>
