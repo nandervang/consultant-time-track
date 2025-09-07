@@ -6,13 +6,14 @@ import {
   BarChart3, 
   FolderOpen, 
   Activity, 
-  MessageSquare,
   Plus,
   Wallet,
   Target,
   Zap,
   PieChart,
-  CreditCard
+  CreditCard,
+  Calendar,
+  AlertTriangle
 } from 'lucide-react';
 import {
   Dialog,
@@ -151,6 +152,22 @@ const availableWidgets = [
     icon: Activity,
     category: 'Custom',
     size: { w: 2 as const, h: 1 }
+  },
+  {
+    type: 'upcoming-invoices' as WidgetType,
+    name: 'Ready to Create',
+    description: 'Invoices ready to be created in the next 7 days',
+    icon: Calendar,
+    category: 'Finance',
+    size: { w: 1 as const, h: 1 }
+  },
+  {
+    type: 'overdue-invoices' as WidgetType,
+    name: 'Overdue Invoices',
+    description: 'Invoices past their due date that need attention',
+    icon: AlertTriangle,
+    category: 'Finance',
+    size: { w: 1 as const, h: 1 }
   }
 ];
 

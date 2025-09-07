@@ -34,6 +34,8 @@ export type WidgetType =
   | 'yearly-expense-distribution'
   | 'payment-sources'
   | 'uptime-monitor'
+  | 'upcoming-invoices'
+  | 'overdue-invoices'
   | 'blank-card';
 
 export interface WidgetConfig {

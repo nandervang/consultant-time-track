@@ -40,6 +40,79 @@ export function ClientDetailDialog({ open, onOpenChange, clientId }: ClientDetai
   
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<UpdateInvoiceItemData>>({});
+  const [editDueDateOption, setEditDueDateOption] = useState<'20' | '30' | '90' | 'custom'>('20');
+  const [sortBy, setSortBy] = useState<'invoice_date' | 'created_at' | 'total_amount' | 'status' | 'description'>('invoice_date');
+
+  // Helper function to calculate due date based on invoice date and days
+  const calculateDueDate = (invoiceDate: string, days: number): string => {
+    const date = new Date(invoiceDate);
+    date.setDate(date.getDate() + days);
+    return date.toISOString().split('T')[0];
+  };
+
+  // Determine which due date option is currently selected based on the dates
+  const determineDueDateOption = (invoiceDate: string, dueDate: string): '20' | '30' | '90' | 'custom' => {
+    const invoiceDateObj = new Date(invoiceDate);
+    const dueDateObj = new Date(dueDate);
+    const diffTime = dueDateObj.getTime() - invoiceDateObj.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 20) return '20';
+    if (diffDays === 30) return '30';
+    if (diffDays === 90) return '90';
+    return 'custom';
+  };
+
+  // Handle due date option change in edit mode
+  const handleEditDueDateOptionChange = (option: '20' | '30' | '90' | 'custom') => {
+    setEditDueDateOption(option);
+    
+    if (option !== 'custom' && editForm.invoice_date) {
+      const days = parseInt(option);
+      const newDueDate = calculateDueDate(editForm.invoice_date, days);
+      setEditForm(prev => ({ ...prev, due_date: newDueDate }));
+    }
+  };
+
+  // Sort items function
+  const sortItems = (items: InvoiceItem[]) => {
+    return [...items].sort((a, b) => {
+      switch (sortBy) {
+        case 'invoice_date': {
+          // For invoice date, sort chronologically with closest dates first
+          const aDate = new Date(a.invoice_date).getTime();
+          const bDate = new Date(b.invoice_date).getTime();
+          
+          // Simple chronological sort - closest dates first
+          return aDate - bDate;
+        }
+        case 'created_at': {
+          const aDate = new Date(a.created_at).getTime();
+          const bDate = new Date(b.created_at).getTime();
+          return bDate - aDate; // Newest created first
+        }
+        case 'total_amount': {
+          return b.total_amount - a.total_amount; // Highest amount first
+        }
+        case 'status': {
+          // Sort by status priority: draft, sent, overdue, paid
+          const statusOrder = { draft: 1, sent: 2, overdue: 3, paid: 4 };
+          const aValue = statusOrder[a.status as keyof typeof statusOrder] || 5;
+          const bValue = statusOrder[b.status as keyof typeof statusOrder] || 5;
+          return aValue - bValue;
+        }
+        case 'description': {
+          return a.description.toLowerCase().localeCompare(b.description.toLowerCase());
+        }
+        default: {
+          // Default to invoice_date sorting
+          const aDate = new Date(a.invoice_date).getTime();
+          const bDate = new Date(b.invoice_date).getTime();
+          return aDate - bDate;
+        }
+      }
+    });
+  };
 
   const client = clients.find(c => c.id === clientId);
   const clientItems = invoiceItems.filter(item => item.client_id === clientId);
@@ -56,7 +129,7 @@ export function ClientDetailDialog({ open, onOpenChange, clientId }: ClientDetai
   const handleEditStart = (item: InvoiceItem) => {
     setEditingItem(item.id);
     
-    setEditForm({
+    const editData = {
       id: item.id,
       description: item.description,
       client_id: item.client_id || undefined,
@@ -64,10 +137,21 @@ export function ClientDetailDialog({ open, onOpenChange, clientId }: ClientDetai
       quantity: getInvoiceItemQuantity(item),
       rate: getInvoiceItemUnitRate(item),
       type: getInvoiceItemType(item),
-      date: item.invoice_date,
+      invoice_date: item.invoice_date,
+      due_date: item.due_date || undefined,
       status: item.status,
       notes: item.notes || undefined,
-    });
+    };
+    
+    setEditForm(editData);
+    
+    // Determine due date option
+    if (item.invoice_date && item.due_date) {
+      const option = determineDueDateOption(item.invoice_date, item.due_date);
+      setEditDueDateOption(option);
+    } else {
+      setEditDueDateOption('20');
+    }
   };
 
   const handleEditCancel = () => {
@@ -77,6 +161,21 @@ export function ClientDetailDialog({ open, onOpenChange, clientId }: ClientDetai
 
   const handleEditSave = async () => {
     if (!editingItem || !editForm.id) return;
+
+    // Validate dates
+    if (editForm.invoice_date && editForm.due_date) {
+      const invoiceDate = new Date(editForm.invoice_date);
+      const dueDate = new Date(editForm.due_date);
+      
+      if (invoiceDate > dueDate) {
+        toast({
+          title: 'Error',
+          description: 'Invoice date cannot be after due date',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
 
     try {
       await updateInvoiceItem(editForm as UpdateInvoiceItemData);
@@ -266,10 +365,29 @@ export function ClientDetailDialog({ open, onOpenChange, clientId }: ClientDetai
                   <p className="text-sm">Create some invoice items to see them here</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {clientItems
-                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                    .map((item) => (
+                <>
+                  {/* Sorting Controls */}
+                  <div className="flex items-center gap-4 mb-4 pb-4 border-b">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="sort-by" className="text-sm font-medium">Sort by:</Label>
+                      <select
+                        id="sort-by"
+                        title="Sort items by"
+                        className="flex h-9 w-auto rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                      >
+                        <option value="invoice_date">Invoice Date</option>
+                        <option value="created_at">Created Date</option>
+                        <option value="total_amount">Amount</option>
+                        <option value="status">Status</option>
+                        <option value="description">Description</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {sortItems(clientItems).map((item) => (
                       <div
                         key={item.id}
                         className="border rounded-lg p-4 space-y-3"
@@ -375,14 +493,61 @@ export function ClientDetailDialog({ open, onOpenChange, clientId }: ClientDetai
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
-                                <Label htmlFor={`date-${item.id}`}>Date</Label>
+                                <Label htmlFor={`invoice_date-${item.id}`}>Invoice Date</Label>
                                 <Input
-                                  id={`date-${item.id}`}
+                                  id={`invoice_date-${item.id}`}
                                   type="date"
-                                  value={editForm.date || ''}
-                                  onChange={(e) => setEditForm(prev => ({ ...prev, date: e.target.value }))}
+                                  value={editForm.invoice_date || ''}
+                                  onChange={(e) => {
+                                    const invoiceDate = e.target.value;
+                                    setEditForm(prev => ({ 
+                                      ...prev, 
+                                      invoice_date: invoiceDate
+                                    }));
+                                    
+                                    // Auto-update due date if not custom
+                                    if (editDueDateOption !== 'custom') {
+                                      const days = parseInt(editDueDateOption);
+                                      const newDueDate = calculateDueDate(invoiceDate, days);
+                                      setEditForm(prev => ({ ...prev, due_date: newDueDate }));
+                                    }
+                                  }}
                                 />
                               </div>
+                              <div>
+                                <Label htmlFor={`due_date-${item.id}`}>Due Date</Label>
+                                <div className="space-y-2">
+                                  <select
+                                    title="Select due date option"
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    value={editDueDateOption}
+                                    onChange={(e) => handleEditDueDateOptionChange(e.target.value as '20' | '30' | '90' | 'custom')}
+                                  >
+                                    <option value="20">20 days</option>
+                                    <option value="30">30 days</option>
+                                    <option value="90">90 days</option>
+                                    <option value="custom">Custom date</option>
+                                  </select>
+                                  
+                                  {editDueDateOption === 'custom' && (
+                                    <Input
+                                      id={`due_date-${item.id}`}
+                                      type="date"
+                                      value={editForm.due_date || ''}
+                                      onChange={(e) => setEditForm(prev => ({ ...prev, due_date: e.target.value }))}
+                                    />
+                                  )}
+                                  
+                                  {editDueDateOption !== 'custom' && (
+                                    <div className="text-sm text-muted-foreground">
+                                      Due: {editForm.due_date && new Date(editForm.due_date).toLocaleDateString('sv-SE')}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
                               <div>
                                 <Label>Total Amount</Label>
                                 <div className="text-lg font-semibold mt-2">
@@ -472,8 +637,14 @@ export function ClientDetailDialog({ open, onOpenChange, clientId }: ClientDetai
                             <div className="flex items-center gap-4 text-xs text-muted-foreground mt-3 pt-3 border-t">
                               <div className="flex items-center gap-1">
                                 <Calendar className="h-3 w-3" />
-                                {new Date(item.invoice_date).toLocaleDateString('sv-SE')}
+                                Invoice: {new Date(item.invoice_date).toLocaleDateString('sv-SE')}
                               </div>
+                              {item.due_date && (
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  Due: {new Date(item.due_date).toLocaleDateString('sv-SE')}
+                                </div>
+                              )}
                               <div>
                                 Created: {new Date(item.created_at).toLocaleDateString('sv-SE')}
                               </div>
@@ -487,7 +658,8 @@ export function ClientDetailDialog({ open, onOpenChange, clientId }: ClientDetai
                         )}
                       </div>
                     ))}
-                </div>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>

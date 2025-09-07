@@ -24,7 +24,8 @@ export interface CreateInvoiceItemData {
   quantity: number; // hours for hourly, 1 for fixed
   rate: number; // hourly rate or fixed amount
   type: 'hourly' | 'fixed';
-  date: string;
+  invoice_date: string; // when to create/send invoice
+  due_date: string; // payment deadline
   status?: 'draft' | 'sent' | 'paid' | 'overdue';
   notes?: string;
 }

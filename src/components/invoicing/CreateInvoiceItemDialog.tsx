@@ -31,9 +31,30 @@ export function CreateInvoiceItemDialog({ open, onOpenChange }: CreateInvoiceIte
     quantity: 1,
     rate: 0,
     type: 'hourly',
-    date: new Date().toISOString().split('T')[0],
+    invoice_date: new Date().toISOString().split('T')[0],
+    due_date: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // +20 days
     status: 'draft',
   });
+
+  const [dueDateOption, setDueDateOption] = useState<'20' | '30' | '90' | 'custom'>('20');
+
+  // Helper function to calculate due date based on invoice date and days
+  const calculateDueDate = (invoiceDate: string, days: number): string => {
+    const date = new Date(invoiceDate);
+    date.setDate(date.getDate() + days);
+    return date.toISOString().split('T')[0];
+  };
+
+  // Handle due date option change
+  const handleDueDateOptionChange = (option: '20' | '30' | '90' | 'custom') => {
+    setDueDateOption(option);
+    
+    if (option !== 'custom' && formData.invoice_date) {
+      const days = parseInt(option);
+      const newDueDate = calculateDueDate(formData.invoice_date, days);
+      setFormData(prev => ({ ...prev, due_date: newDueDate }));
+    }
+  };
 
   const [loading, setLoading] = useState(false);
 
@@ -52,6 +73,21 @@ export function CreateInvoiceItemDialog({ open, onOpenChange }: CreateInvoiceIte
       return;
     }
 
+    // Validate dates
+    if (formData.invoice_date && formData.due_date) {
+      const invoiceDate = new Date(formData.invoice_date);
+      const dueDate = new Date(formData.due_date);
+      
+      if (invoiceDate > dueDate) {
+        toast({
+          title: 'Error',
+          description: 'Invoice date cannot be after due date',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       await addInvoiceItem(formData as CreateInvoiceItemData);
@@ -67,9 +103,11 @@ export function CreateInvoiceItemDialog({ open, onOpenChange }: CreateInvoiceIte
         quantity: 1,
         rate: 0,
         type: 'hourly',
-        date: new Date().toISOString().split('T')[0],
+        invoice_date: new Date().toISOString().split('T')[0],
+        due_date: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         status: 'draft',
       });
+      setDueDateOption('20');
     } catch {
       toast({
         title: 'Error',
@@ -209,15 +247,63 @@ export function CreateInvoiceItemDialog({ open, onOpenChange }: CreateInvoiceIte
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
-            <Input
-              id="date"
-              type="date"
-              value={formData.date}
-              onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-              required
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="invoice_date">Invoice Date</Label>
+              <Input
+                id="invoice_date"
+                type="date"
+                value={formData.invoice_date}
+                onChange={(e) => {
+                  const invoiceDate = e.target.value;
+                  setFormData(prev => ({ 
+                    ...prev, 
+                    invoice_date: invoiceDate,
+                  }));
+                  
+                  // Auto-update due date if not custom
+                  if (dueDateOption !== 'custom') {
+                    const days = parseInt(dueDateOption);
+                    const newDueDate = calculateDueDate(invoiceDate, days);
+                    setFormData(prev => ({ ...prev, due_date: newDueDate }));
+                  }
+                }}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="due_date">Due Date</Label>
+              <div className="space-y-2">
+                <select
+                  title="Select due date option"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={dueDateOption}
+                  onChange={(e) => handleDueDateOptionChange(e.target.value as '20' | '30' | '90' | 'custom')}
+                >
+                  <option value="20">20 days</option>
+                  <option value="30">30 days</option>
+                  <option value="90">90 days</option>
+                  <option value="custom">Custom date</option>
+                </select>
+                
+                {dueDateOption === 'custom' && (
+                  <Input
+                    id="due_date"
+                    type="date"
+                    value={formData.due_date}
+                    onChange={(e) => setFormData(prev => ({ ...prev, due_date: e.target.value }))}
+                    required
+                  />
+                )}
+                
+                {dueDateOption !== 'custom' && (
+                  <div className="text-sm text-muted-foreground">
+                    Due: {formData.due_date && new Date(formData.due_date).toLocaleDateString('sv-SE')}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {formData.quantity && formData.rate && (

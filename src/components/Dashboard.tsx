@@ -1,9 +1,10 @@
-import React from 'react';
 import TimeLogger from './TimeLogger';
 import DailySummary from './DailySummary';
 import QuarterView from './QuarterView';
 import TableView from './TableView';
 import MonthlySummary from './MonthlySummary';
+import { UpcomingInvoicesWidget } from './invoicing/UpcomingInvoicesWidget';
+import { OverdueInvoicesWidget } from './invoicing/OverdueInvoicesWidget';
 
 type ViewMode = 'dashboard' | 'quarter' | 'table' | 'summary';
 
@@ -24,6 +25,8 @@ export default function Dashboard({ currentView, currentDate, onDateChange, isDa
           </div>
           <div className="space-y-8">
             <DailySummary isDarkMode={isDarkMode} />
+            <UpcomingInvoicesWidget daysAhead={7} />
+            <OverdueInvoicesWidget />
           </div>
         </div>
       )}

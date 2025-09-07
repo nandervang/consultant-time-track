@@ -131,8 +131,8 @@ export function useInvoices(userId?: string | null) {
         fixed_amount: itemData.type === 'fixed' ? itemData.rate : null,
         total_amount: totalAmount,
         currency: 'SEK',
-        invoice_date: itemData.date || new Date().toISOString().split('T')[0],
-        due_date: null,
+        invoice_date: itemData.invoice_date || new Date().toISOString().split('T')[0],
+        due_date: itemData.due_date || null,
         status: itemData.status || 'draft',
         notes: itemData.notes || null,
         created_at: new Date().toISOString(),
@@ -196,7 +196,8 @@ export function useInvoices(userId?: string | null) {
       if (itemData.description !== undefined) updatedData.description = itemData.description;
       if (itemData.client_id !== undefined) updatedData.client_id = itemData.client_id;
       if (itemData.project_id !== undefined) updatedData.project_id = itemData.project_id;
-      if (itemData.date !== undefined) updatedData.invoice_date = itemData.date;
+      if (itemData.invoice_date !== undefined) updatedData.invoice_date = itemData.invoice_date;
+      if (itemData.due_date !== undefined) updatedData.due_date = itemData.due_date;
       if (itemData.status !== undefined) updatedData.status = itemData.status;
       if (itemData.notes !== undefined) updatedData.notes = itemData.notes;
 
@@ -446,6 +447,8 @@ export function useInvoices(userId?: string | null) {
     if (!project || !client) return null;
 
     const rate = project.hourly_rate || client.hourly_rate || 0;
+    const invoiceDate = new Date().toISOString().split('T')[0];
+    const dueDate = new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // +20 days
     
     return addInvoiceItem({
       client_id: clientId,
@@ -454,7 +457,8 @@ export function useInvoices(userId?: string | null) {
       quantity: totalHours,
       rate,
       type: 'hourly',
-      date: new Date().toISOString().split('T')[0],
+      invoice_date: invoiceDate,
+      due_date: dueDate,
     });
   }, [timeEntries, projects, clients, addInvoiceItem]);
 
