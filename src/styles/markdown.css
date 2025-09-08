@@ -1,0 +1,119 @@
+/* Enhanced Markdown Rendering Styles */
+
+/* Custom list counter styles with tighter spacing */
+.markdown-content .markdown-ordered-list {
+  counter-reset: item;
+}
+
+.markdown-content .markdown-ordered-list .markdown-list-item {
+  counter-increment: item;
+}
+
+.markdown-content .markdown-ordered-list .markdown-list-item .markdown-bullet {
+  width: 20px;
+  height: 20px;
+  left: 0;
+  top: 1px;
+  background: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.markdown-content .markdown-ordered-list .markdown-list-item .markdown-bullet::before {
+  content: counter(item);
+}
+
+/* Tighter spacing within text blocks */
+.markdown-content p + p {
+  margin-top: 0.75rem;
+}
+
+/* More spacing between different section types */
+.markdown-content h1 + *,
+.markdown-content h2 + *,
+.markdown-content h3 + * {
+  margin-top: 0;
+}
+
+.markdown-content * + h1,
+.markdown-content * + h2,
+.markdown-content * + h3 {
+  margin-top: 2rem;
+}
+
+.markdown-content ul + h1,
+.markdown-content ul + h2,
+.markdown-content ul + h3,
+.markdown-content ol + h1,
+.markdown-content ol + h2,
+.markdown-content ol + h3 {
+  margin-top: 2.5rem;
+}
+
+/* Smooth transitions for interactive elements */
+.markdown-content a {
+  transition: all 0.2s ease-in-out;
+}
+
+.markdown-content a:hover {
+  transform: translateY(-1px);
+}
+
+/* Enhanced blockquote styling */
+.markdown-content blockquote {
+  position: relative;
+}
+
+.markdown-content blockquote::before {
+  content: '"';
+  position: absolute;
+  left: -20px;
+  top: -10px;
+  font-size: 4rem;
+  color: #3b82f6;
+  opacity: 0.2;
+  font-family: serif;
+}
+
+/* Code block enhancements */
+.markdown-content pre {
+  position: relative;
+}
+
+.markdown-content pre::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 100%);
+  border-radius: 8px 8px 0 0;
+}
+
+.markdown-content pre code {
+  margin-top: 40px;
+}
+
+/* Table enhancements */
+.markdown-content table {
+  border-spacing: 0;
+}
+
+.markdown-content tbody tr:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Dark mode adjustments */
+.dark .markdown-content pre::before {
+  background: linear-gradient(90deg, #1f2937 0%, #374151 100%);
+}
+
+.dark .markdown-content tbody tr:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+}

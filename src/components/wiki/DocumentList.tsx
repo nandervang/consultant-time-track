@@ -3,6 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { 
   Search, 
   Plus, 
@@ -60,6 +70,35 @@ export default function DocumentList({
   const [sortField, setSortField] = useState<SortField>('updated_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [showFilters, setShowFilters] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<ClientDocument | null>(null);
+
+  // Handle delete dialog
+  const handleDeleteClick = (document: ClientDocument) => {
+    setDocumentToDelete(document);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!documentToDelete || !onDeleteDocument) return;
+
+    try {
+      await onDeleteDocument(documentToDelete.id);
+      setDeleteDialogOpen(false);
+      setDocumentToDelete(null);
+      // Show success message if you have a toast system
+      console.log('Document deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete document:', error);
+      // Keep the dialog open and show error
+      // If you have a toast system, show error message:
+      // toast.error(`Failed to delete document: ${error.message}`);
+      alert(`Failed to delete document: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setDocumentToDelete(null);
+  };
 
   // Get unique clients for filter dropdown
   const uniqueClients = Array.from(
@@ -351,9 +390,7 @@ export default function DocumentList({
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (window.confirm('Are you sure you want to delete this document?')) {
-                              onDeleteDocument(document.id);
-                            }
+                            handleDeleteClick(document);
                           }}
                           className="text-red-600 hover:text-red-700"
                         >
@@ -397,6 +434,27 @@ export default function DocumentList({
           </div>
         )}
       </CardContent>
+
+      {/* Delete Confirmation Modal */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Document</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{documentToDelete?.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDeleteCancel}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

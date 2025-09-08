@@ -371,19 +371,62 @@ export function useClientDocuments() {
     }
   };
 
-  const deleteDocument = async (id: string): Promise<void> => {
+    const deleteDocument = async (documentId: string) => {
     try {
-      const { error: deleteError } = await supabase
+      console.log('Starting document deletion:', documentId);
+      
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      console.log('User authenticated:', user.id);
+
+      // First, check if document exists and get its details
+      const { data: existingDoc, error: fetchError } = await supabase
+        .from('client_documents')
+        .select('id, title, created_by')
+        .eq('id', documentId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching document before delete:', fetchError);
+        throw new Error(`Cannot find document: ${fetchError.message}`);
+      }
+
+      if (!existingDoc) {
+        throw new Error('Document not found');
+      }
+
+      console.log('Document found for deletion:', {
+        id: existingDoc.id,
+        title: existingDoc.title,
+        created_by: existingDoc.created_by,
+        current_user: user.id,
+        can_delete: existingDoc.created_by === user.id
+      });
+
+      // Delete the document
+      const { error } = await supabase
         .from('client_documents')
         .delete()
-        .eq('id', id);
+        .eq('id', documentId);
 
-      if (deleteError) throw deleteError;
+      if (error) {
+        console.error('Delete error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+        throw new Error(`Delete failed: ${error.message}`);
+      }
 
+      console.log('Document deleted successfully');
       await fetchDocuments();
-    } catch (err) {
-      console.error('Error deleting document:', err);
-      throw err;
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      throw error;
     }
   };
 

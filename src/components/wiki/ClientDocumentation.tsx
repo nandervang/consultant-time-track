@@ -235,14 +235,24 @@ export default function ClientDocumentation({
 
   const handleDeleteDocument = async (documentId: string) => {
     try {
+      console.log('Starting delete process for document:', documentId);
       await deleteDocument(documentId);
+      console.log('Delete successful, updating UI');
+      
       if (selectedDocument?.id === documentId) {
         setSelectedDocument(null);
         setMode('view');
       }
       await reloadDocuments();
+      
+      // Show success message
+      console.log('Document deleted successfully');
     } catch (err) {
       console.error('Error deleting document:', err);
+      
+      // Show user-friendly error message
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete document';
+      alert(`Error deleting document: ${errorMessage}`);
     }
   };
 
