@@ -466,7 +466,7 @@ export const useBudgetLogic = () => {
         );
         
         for (const entry of relatedBudgetEntries) {
-          await deleteEntry(entry.id);
+          await deleteBudgetEntry(entry.id);
         }
         
         toast({
@@ -646,6 +646,11 @@ export const useBudgetLogic = () => {
     }
   };
 
+  // Budget-specific delete entry wrapper that allows budget entry deletion
+  const deleteBudgetEntry = async (entryId: string) => {
+    return await deleteEntry(entryId, true); // Allow budget entry deletion
+  };
+
   return {
     // Data
     categories,
@@ -671,7 +676,7 @@ export const useBudgetLogic = () => {
     handleUpdateAnnualItem,
     handleDeleteAnnualItem,
     addEntry,
-    deleteEntry,
+    deleteEntry: deleteBudgetEntry, // Use budget-specific delete function
     addBudget,
     updateBudget,
     deleteBudget,

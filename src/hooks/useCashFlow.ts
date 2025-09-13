@@ -226,7 +226,7 @@ export function useCashFlow(userId: string | null) {
     }
   };
 
-  const deleteEntry = async (entryId: string) => {
+  const deleteEntry = async (entryId: string, allowBudgetEntryDeletion = false) => {
     let entry = entries.find(e => e.id === entryId);
     let actualEntryId = entryId;
     
@@ -250,26 +250,33 @@ export function useCashFlow(userId: string | null) {
       is_editable: entry?.is_editable,
       source: entry?.source,
       is_budget_entry: entry?.is_budget_entry,
+      allowBudgetEntryDeletion,
       totalEntries: entries.length,
       entryIds: entries.map(e => ({ id: e.id, desc: e.description?.substring(0, 20) }))
     });
 
     // Special check for invoice entries - they should never be deletable
     if (actualEntryId.startsWith('invoice_')) {
-      const errorMsg = 'Invoice entries cannot be deleted from cash flow page';
+      const errorMsg = 'Invoice entries cannot be deleted';
       setError(errorMsg);
       console.warn('❌ Delete blocked:', errorMsg, { entryId: actualEntryId });
-      return;
+      return false;
     }
     
-    // Prevent deleting budget-sourced entries
-    if (!entry || !entry.is_editable) {
-      const errorMsg = !entry 
-        ? 'Entry not found' 
-        : `${entry.source} entries cannot be deleted from cash flow page`;
+    // Entry not found check
+    if (!entry) {
+      const errorMsg = 'Entry not found';
       setError(errorMsg);
-      console.warn('❌ Delete blocked:', errorMsg, { entry, entryId: actualEntryId, availableIds: entries.map(e => e.id) });
-      return;
+      console.warn('❌ Delete blocked:', errorMsg, { entryId: actualEntryId, availableIds: entries.map(e => e.id) });
+      return false;
+    }
+    
+    // Prevent deleting budget-sourced entries from cash flow page only
+    if (!entry.is_editable && !allowBudgetEntryDeletion) {
+      const errorMsg = `${entry.source} entries cannot be deleted from cash flow page`;
+      setError(errorMsg);
+      console.warn('❌ Delete blocked:', errorMsg, { entry, entryId: actualEntryId });
+      return false;
     }
 
     try {
@@ -286,10 +293,11 @@ export function useCashFlow(userId: string | null) {
 
       setEntries(prev => prev.filter(entry => entry.id !== actualEntryId));
       console.log('✅ Manual entry deleted');
+      return true; // Return success
     } catch (err) {
       console.error('Error deleting cash flow entry:', err);
       setError(err instanceof Error ? err.message : 'Failed to delete entry');
-      throw err;
+      return false; // Return failure
     } finally {
       setLoading(false);
     }
