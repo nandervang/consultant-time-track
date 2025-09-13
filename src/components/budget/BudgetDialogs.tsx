@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -95,6 +95,14 @@ export function BudgetDialogs({
   const [showEditExpenseDialog, setShowEditExpenseDialog] = useState(false);
   const [showDeleteExpenseDialog, setShowDeleteExpenseDialog] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState<any>(null);
+
+  // Sync selectedCategory with editingCategory when edit dialog opens
+  useEffect(() => {
+    if (showEditCategoryDialog && selectedCategory && !editingCategory) {
+      setEditingCategory(selectedCategory);
+      setNewCategoryBudget(selectedCategory.budgeted.toString());
+    }
+  }, [showEditCategoryDialog, selectedCategory, editingCategory]);
 
   // Dialog handlers
   const openAddCategoryDialog = () => setShowAddCategoryDialog(true);
@@ -225,6 +233,10 @@ export function BudgetDialogs({
     }
 
     try {
+      // Determine if this is a monthly or yearly budget category
+      // Annual items have targetDate property, monthly categories don't
+      const isYearlyCategory = 'targetDate' in selectedExpenseCategory;
+      
       await addEntry({
         type: 'expense',
         amount,
@@ -232,8 +244,13 @@ export function BudgetDialogs({
         category: selectedExpenseCategory.name,
         date: expenseDate,
         payment_source: expensePaymentSource,
-        is_recurring: false,
-        is_budget_entry: false
+        is_recurring: true,
+        recurring_interval: isYearlyCategory ? 'yearly' : 'monthly',
+        next_due_date: isYearlyCategory 
+          ? new Date(new Date(expenseDate).getFullYear() + 1, new Date(expenseDate).getMonth(), new Date(expenseDate).getDate()).toISOString().split('T')[0]
+          : new Date(new Date(expenseDate).getFullYear(), new Date(expenseDate).getMonth() + 1, new Date(expenseDate).getDate()).toISOString().split('T')[0],
+        is_budget_entry: true,
+        is_recurring_instance: false
       });
 
       toast({
@@ -310,7 +327,7 @@ export function BudgetDialogs({
         date: expenseDate,
         payment_source: expensePaymentSource,
         is_recurring: false,
-        is_budget_entry: false
+        is_budget_entry: true
       });
 
       toast({

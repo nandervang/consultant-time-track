@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -12,7 +13,8 @@ import {
   Plus,
   Filter,
   Download,
-  Trash2
+  Trash2,
+  Edit
 } from 'lucide-react';
 import { formatSEK } from '../lib/currency';
 import { 
@@ -34,6 +36,9 @@ import { useCashFlow } from '@/hooks/useCashFlow';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
+// Import the enhanced type from the hook
+type EnhancedCashFlowEntry = ReturnType<typeof useCashFlow>['entries'][0];
+
 interface CashFlowPageProps {
   isDarkMode: boolean;
 }
@@ -45,7 +50,7 @@ interface MonthlyData {
   expenses: number;
   netFlow: number;
   cumulativeBalance: number;
-  entries: any[];
+  entries: EnhancedCashFlowEntry[];
   isPast: boolean;
   isCurrent: boolean;
   isFuture: boolean;
@@ -53,11 +58,18 @@ interface MonthlyData {
 
 export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
   const { user } = useAuth();
-  const { entries, loading, addEntry, deleteEntry, error } = useCashFlow(user?.id || null);
+  const { entries, loading, addEntry, updateEntry, deleteEntry, error } = useCashFlow(user?.id || null);
   const { toast } = useToast();
   const [showAddForm, setShowAddForm] = useState(false);
   const [formType, setFormType] = useState<'income' | 'expense'>('income');
   const [selectedMonth, setSelectedMonth] = useState<string>('');
+  const [editingEntry, setEditingEntry] = useState<EnhancedCashFlowEntry | null>(null);
+  const [showEditForm, setShowEditForm] = useState(false);
+  
+  // Dialog states for consistent modal experience
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState<EnhancedCashFlowEntry | null>(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -147,13 +159,39 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
     // Process all entries (including generating recurring ones)
     const allEntries = generateRecurringEntries(entries, months);
 
+    console.log('=== MONTHLY DATA PROCESSING ===');
     console.log('Total entries after generation:', allEntries.length);
     console.log('Original entries:', entries.length);
     console.log('Generated entries:', allEntries.length - entries.length);
+    
+    // Enhanced logging to track data sources
+    const sourceBreakdown = {
+      manual: allEntries.filter(e => e.source === 'manual').length,
+      budget: allEntries.filter(e => e.source === 'budget').length,
+      invoice: allEntries.filter(e => e.source === 'invoice').length,
+      editable: allEntries.filter(e => e.is_editable).length,
+      readonly: allEntries.filter(e => !e.is_editable).length
+    };
+    
+    console.log('Entry source breakdown:', sourceBreakdown);
+    
+    if (sourceBreakdown.invoice > 0) {
+      console.log(`INFO: ${sourceBreakdown.invoice} invoice entries included (read-only)`);
+    }
+    if (sourceBreakdown.editable > 0) {
+      console.log(`INFO: ${sourceBreakdown.editable} manual entries (editable)`);
+    }
 
     allEntries.forEach((entry) => {
       const entryMonth = entry.date.toString().slice(0, 7);
       const monthData = monthlyMap.get(entryMonth);
+      
+      const sourceLabel = entry.source === 'invoice' ? '[INV]' : 
+                         entry.source === 'manual' ? '[MAN]' : '[GEN]';
+      const isBudget = entry.is_budget_entry === true || 
+                       entry.description?.toLowerCase().includes('budget');
+      
+      console.log(`${sourceLabel} ${entryMonth}: ${entry.type} ${entry.amount} SEK - "${entry.description}" ${isBudget ? '[BUDGET - SHOULD BE FILTERED]' : ''}`);
       
       if (monthData) {
         monthData.entries.push(entry);
@@ -180,22 +218,29 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
       monthName: month.monthName,
       entriesCount: month.entries.length,
       income: month.income,
-      expenses: month.expenses
+      expenses: month.expenses,
+      netFlow: month.netFlow,
+      cumulativeBalance: month.cumulativeBalance
     })));
+    console.log('=== END MONTHLY PROCESSING ===');
     
     setMonthlyData(processedMonths);
   };
 
   // Generate recurring entries - Works with actual database structure
-  const generateRecurringEntries = (baseEntries: any[], months: any[]) => {
+  const generateRecurringEntries = (baseEntries: EnhancedCashFlowEntry[], monthsData: MonthlyData[]): EnhancedCashFlowEntry[] => {
     const allEntries = [...baseEntries];
-    const monthKeys = months.map(m => m.month);
-    
-    // Find recurring entries (all entries with is_recurring = true)
-    const recurringEntries = baseEntries.filter(entry => entry.is_recurring);
-    
-    console.log('Found recurring entries to process:', recurringEntries.length);
-    
+    const monthKeys = monthsData.map(m => m.month);
+
+    // ONLY process recurring entries (no budget entries in cash flow anymore)
+    const recurringEntries = baseEntries.filter(entry => 
+      entry.is_recurring === true
+    );
+
+    console.log('=== RECURRING ENTRY GENERATION ===');
+    console.log('Total base entries:', baseEntries.length);
+    console.log('Found actual recurring entries to process:', recurringEntries.length);
+
     // CRITICAL FIX: Deduplicate recurring entries by description + amount + category
     const uniqueRecurringEntries = new Map();
     recurringEntries.forEach(entry => {
@@ -206,10 +251,10 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
         console.log(`Skipping duplicate recurring entry: ${entry.description}`);
       }
     });
-    
+
     const deduplicatedRecurringEntries = Array.from(uniqueRecurringEntries.values());
-    console.log('Deduplicated recurring entries:', deduplicatedRecurringEntries.length);
-    
+    console.log('Deduplicated actual recurring entries:', deduplicatedRecurringEntries.length);
+
     deduplicatedRecurringEntries.forEach((recurringEntry) => {
       const originalDate = new Date(recurringEntry.date);
       const originalMonth = recurringEntry.date.slice(0, 7);
@@ -233,8 +278,9 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
           // Set to last day of the target month
           recurringDate = new Date(year, month, 0);
         }
-        
-        const generatedDateString = recurringDate.toISOString().split('T')[0];
+
+        // Use timezone-safe date formatting instead of toISOString()
+        const generatedDateString = `${year}-${String(month).padStart(2, '0')}-${String(recurringDate.getDate()).padStart(2, '0')}`;
         const generatedMonth = generatedDateString.slice(0, 7);
         
         // Verify the generated date is in the correct month
@@ -248,7 +294,6 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
           ...recurringEntry,
           id: `${recurringEntry.id}_recurring_${monthKey}`, // Unique ID for recurring instance
           date: generatedDateString,
-          is_generated: true, // Mark as a generated recurring instance
           original_entry_id: recurringEntry.id // Reference to original entry
         };
         
@@ -263,7 +308,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
         allEntries.push(recurringEntryForMonth);
       });
     });
-    
+
     return allEntries;
   };
 
@@ -271,27 +316,50 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
     const incomeCategories = new Map<string, number>();
     const expenseCategories = new Map<string, number>();
 
-    // FIXED: Work with actual database structure
-    // Budget entries typically have "Budget för" in their description
+    // ENHANCED: More comprehensive filtering for actual transactions
+    // Include recurring budget items as they represent actual monthly expenses
     const actualEntries = entries.filter(entry => {
-      const isBudgetEntry = entry.description.toLowerCase().includes('budget för') || 
-                           entry.description.toLowerCase().includes('budget for');
+      const isBudgetEntry = entry.is_budget_entry === true || 
+                           entry.description?.toLowerCase().includes('budget för') || 
+                           entry.description?.toLowerCase().includes('budget for') ||
+                           entry.description?.toLowerCase().startsWith('budget') ||
+                           entry.description?.toLowerCase().includes('årlig budget');
       
-      // Include actual transactions (exclude budget entries)
-      // All recurring entries that are NOT budget entries are actual recurring transactions
-      const isActualTransaction = !isBudgetEntry;
+      // Include recurring budget entries as they represent actual monthly expenses
+      if (isBudgetEntry && entry.is_recurring) {
+        console.log(`Including recurring budget entry as actual expense: "${entry.description}"`);
+        return true;
+      }
       
-      console.log(`Entry "${entry.description}": isBudgetEntry=${isBudgetEntry}, isActualTransaction=${isActualTransaction}`);
-      return isActualTransaction;
+      // Exclude non-recurring budget entries (these are just planning)
+      if (isBudgetEntry && !entry.is_recurring) {
+        console.log(`Excluding non-recurring budget entry: "${entry.description}"`);
+        return false;
+      }
+      
+      return true; // Include all other actual transactions
     });
 
-    console.log('Processing category data:');
-    console.log('Total entries:', entries.length);
-    console.log('Actual transaction entries only:', actualEntries.length);
-    console.log('Filtered out budget entries:', entries.length - actualEntries.length);
+    // ENHANCED: Add detailed logging with source information
+    console.log('=== PROCESSING CATEGORY DATA ===');
+    console.log('Total entries loaded:', entries.length);
+    console.log('Budget entries filtered out:', entries.filter(e => 
+      e.is_budget_entry === true || 
+      e.description?.toLowerCase().includes('budget')).length);
+    console.log('Actual transaction entries:', actualEntries.length);
+    
+    // Break down by source
+    const manualEntries = actualEntries.filter(e => e.source === 'manual' || !e.source);
+    const invoiceEntries = actualEntries.filter(e => e.source === 'invoice');
+    
+    console.log('Manual cash flow entries:', manualEntries.length);
+    console.log('Invoice-derived entries:', invoiceEntries.length);
 
     actualEntries.forEach((entry) => {
-      console.log(`Processing actual entry: ${entry.description} - ${entry.category} - ${entry.amount}`);
+      const sourceLabel = entry.source === 'invoice' ? '[INVOICE]' : 
+                         entry.source === 'budget' ? '[BUDGET]' : '[MANUAL]';
+      console.log(`${sourceLabel} ${entry.type.toUpperCase()}: ${entry.description} - ${entry.category} - ${entry.amount} SEK`);
+      
       if (entry.type === 'income') {
         const currentAmount = incomeCategories.get(entry.category) || 0;
         incomeCategories.set(entry.category, currentAmount + entry.amount);
@@ -303,6 +371,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
 
     console.log('Final income categories:', Array.from(incomeCategories.entries()));
     console.log('Final expense categories:', Array.from(expenseCategories.entries()));
+    console.log('=== END CATEGORY PROCESSING ===');
 
     const colors = ['#2563eb', '#16a34a', '#ca8a04', '#9333ea', '#dc2626', '#06b6d4', '#84cc16', '#f59e0b'];
 
@@ -340,8 +409,12 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
         category: formData.category,
         date: formData.date,
         is_recurring: formData.isRecurring,
-        recurring_interval: formData.isRecurring ? 'monthly' : null,
-        next_due_date: formData.isRecurring ? getNextMonthDate(formData.date) : null
+        recurring_interval: formData.isRecurring ? ('monthly' as const) : null,
+        next_due_date: formData.isRecurring ? formData.date : null,
+        is_budget_entry: false,
+        is_recurring_instance: false,
+        project_id: null,
+        client_id: null
       };
 
       const result = await addEntry(newEntry);
@@ -375,28 +448,115 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
     }
   };
 
-  const handleDeleteTransaction = async (entryId: string, entryDescription: string) => {
-    if (!window.confirm(`Are you sure you want to delete "${entryDescription}"?`)) {
-      return;
-    }
+  const handleEditTransaction = (entry: EnhancedCashFlowEntry) => {
+    setEditingEntry(entry);
+    setFormData({
+      amount: entry.amount.toString(),
+      description: entry.description,
+      category: entry.category,
+      date: entry.date,
+      isRecurring: entry.is_recurring
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleDeleteTransaction = (entry: EnhancedCashFlowEntry) => {
+    setEntryToDelete(entry);
+    setShowDeleteDialog(true);
+  };
+
+  // Dialog handlers for edit and delete operations
+  const handleEditSubmit = async () => {
+    if (!editingEntry) return;
 
     try {
-      const result = await deleteEntry(entryId);
-      
-      if (result) {
-        toast({
-          title: "Success",
-          description: "Transaction deleted successfully",
-        });
-      } else {
-        throw new Error('Failed to delete entry');
-      }
-      
+      await updateEntry(editingEntry.id, {
+        amount: parseFloat(formData.amount),
+        description: formData.description,
+        category: formData.category,
+        date: formData.date,
+        is_recurring: formData.isRecurring
+      });
+
+      setShowEditDialog(false);
+      setEditingEntry(null);
+      toast({
+        title: "Success",
+        description: "Transaction updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update transaction",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!entryToDelete) return;
+
+    try {
+      await deleteEntry(entryToDelete.id);
+      setShowDeleteDialog(false);
+      setEntryToDelete(null);
+      toast({
+        title: "Success",
+        description: "Transaction deleted successfully",
+      });
     } catch (error) {
       console.error('Error deleting transaction:', error);
       toast({
         title: "Error",
         description: "Failed to delete transaction",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleUpdateTransaction = async () => {
+    if (!editingEntry) return;
+
+    try {
+      const updatedEntry = {
+        type: formType,
+        amount: parseFloat(formData.amount),
+        description: formData.description,
+        category: formData.category,
+        date: formData.date,
+        is_recurring: formData.isRecurring,
+        recurring_interval: formData.isRecurring ? ('monthly' as const) : null,
+        next_due_date: formData.isRecurring ? formData.date : null,
+        is_budget_entry: false,
+        is_recurring_instance: false,
+        project_id: null,
+        client_id: null
+      };
+
+      // Use updateEntry from the hook
+      const result = await updateEntry(editingEntry.id, updatedEntry);
+      
+      if (result) {
+        setShowEditForm(false);
+        setEditingEntry(null);
+        setFormData({
+          amount: '',
+          description: '',
+          category: '',
+          date: new Date().toISOString().split('T')[0],
+          isRecurring: false
+        });
+        toast({
+          title: "Success",
+          description: "Transaction updated successfully",
+        });
+      }
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update transaction",
         variant: "destructive"
       });
     }
@@ -430,17 +590,15 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
     return found || getCurrentMonth();
   };
 
-  // Check if an entry can be deleted - FIXED for actual database structure
-  const canDeleteEntry = (entry: any) => {
-    // Don't allow deletion if:
-    // 1. Entry is a generated instance (has is_generated flag)
-    // 2. Entry is a budget entry (contains "Budget för" in description)
-    const isBudgetEntry = entry.description.toLowerCase().includes('budget för') || 
-                         entry.description.toLowerCase().includes('budget for');
-    const isGeneratedInstance = entry.is_generated;
+  // Check if an entry can be deleted/edited - ONLY manual cash flow entries
+  const canDeleteEntry = (entry: EnhancedCashFlowEntry) => {
+    // Use the enhanced is_editable property from the hook
+    // This properly distinguishes between manual entries (editable) and budget entries (read-only)
+    const canEdit = entry.is_editable === true;
     
-    // Allow deletion of actual transactions (including recurring ones like "Supabase Databas")
-    return !isBudgetEntry && !isGeneratedInstance;
+    console.log(`Entry "${entry.description}": canEdit=${canEdit}, source=${entry.source}, is_budget_entry=${entry.is_budget_entry}, id=${entry.id}`);
+    
+    return canEdit;
   };
 
   if (loading) {
@@ -463,7 +621,8 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
   const selectedMonthData = getSelectedMonthData();
 
   return (
-    <div className="space-y-6">
+    <>
+      <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Cash Flow Analysis</h1>
@@ -587,6 +746,114 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
               <div className="flex gap-2">
                 <Button type="submit">Add Transaction</Button>
                 <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Edit Transaction Form */}
+      {showEditForm && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Edit {formType === 'income' ? 'Income' : 'Expense'}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={(e) => { e.preventDefault(); handleUpdateTransaction(); }} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Type</Label>
+                  <select 
+                    value={formType} 
+                    onChange={(e) => setFormType(e.target.value as 'income' | 'expense')}
+                    className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  >
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                  </select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Amount (SEK)</Label>
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    step="0.01"
+                    value={formData.amount}
+                    onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Category</Label>
+                  <select 
+                    value={formData.category}
+                    onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
+                    required
+                  >
+                    <option value="">Select category</option>
+                    {formType === 'income' ? (
+                      <>
+                        <option value="Client Payment">Client Payment</option>
+                        <option value="Consulting">Consulting</option>
+                        <option value="Investment">Investment</option>
+                        <option value="Other Income">Other Income</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="Software">Software</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Equipment">Equipment</option>
+                        <option value="Travel">Travel</option>
+                        <option value="Office">Office</option>
+                        <option value="Other">Other</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Description</Label>
+                  <Input
+                    placeholder="Enter description"
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Date</Label>
+                  <Input
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="recurring-edit"
+                  checked={formData.isRecurring}
+                  onChange={(e) => setFormData(prev => ({ ...prev, isRecurring: e.target.checked }))}
+                  className="rounded"
+                />
+                <Label htmlFor="recurring-edit">Recurring monthly transaction</Label>
+              </div>
+
+              <div className="flex gap-2">
+                <Button type="submit">Update Transaction</Button>
+                <Button type="button" variant="outline" onClick={() => {
+                  setShowEditForm(false);
+                  setEditingEntry(null);
+                }}>
                   Cancel
                 </Button>
               </div>
@@ -721,7 +988,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
           {/* Transactions for selected month */}
           <div className="space-y-2">
             <h4 className="font-medium">Transactions ({selectedMonthData.entries.length})</h4>
-            <div className="max-h-64 overflow-y-auto space-y-2">
+            <div className="max-h-84 overflow-y-auto space-y-2">
               {selectedMonthData.entries.map((entry) => (
                 <div key={entry.id} className="flex items-center justify-between p-3 rounded border">
                   <div className="flex items-center gap-3">
@@ -740,9 +1007,18 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
                       <div className="font-medium">{entry.description}</div>
                       <div className="text-sm text-muted-foreground flex items-center gap-2">
                         <span>{entry.category}</span>
-                        <span>•</span>
-                        <span>{new Date(entry.date).toLocaleDateString('sv-SE')}</span>
-                        {entry.is_recurring && !entry.is_generated && (
+                        {/* Entry Type Indicators */}
+                        {entry.source === 'invoice' && (
+                          <>
+                            <span>•</span>
+                            <div className="flex items-center gap-1">
+                              <DollarSign className="h-3 w-3 text-blue-600" />
+                              <span className="text-blue-600 text-xs font-medium">Invoice Due</span>
+                            </div>
+                          </>
+                        )}
+                        
+                        {entry.is_recurring && entry.source === 'manual' && (
                           <>
                             <span>•</span>
                             <div className="flex items-center gap-1">
@@ -751,17 +1027,18 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
                             </div>
                           </>
                         )}
-                        {entry.is_generated && (
+                        
+                        {entry.source === 'budget' && (
                           <>
                             <span>•</span>
-                            <span className="text-purple-600 text-xs">Auto-Generated</span>
+                            <span className="text-orange-600 text-xs font-medium">Recuring budget Entry</span>
                           </>
                         )}
-                        {(entry.description.toLowerCase().includes('budget för') || 
-                          entry.description.toLowerCase().includes('budget for')) && (
+                        
+                        {entry.source === 'manual' && !entry.is_recurring && (
                           <>
                             <span>•</span>
-                            <span className="text-blue-600 text-xs">Budget Entry</span>
+                            <span className="text-green-600 text-xs font-medium">Manual Entry</span>
                           </>
                         )}
                       </div>
@@ -774,15 +1051,26 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
                       {entry.type === 'income' ? '+' : '-'}{formatSEK(entry.amount)}
                     </div>
                     {canDeleteEntry(entry) && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteTransaction(entry.id, entry.description)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
-                        title={entry.is_recurring ? "Delete recurring transaction" : "Delete transaction"}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditTransaction(entry)}
+                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950"
+                          title="Edit transaction"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteTransaction(entry)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                          title={entry.is_recurring ? "Delete recurring transaction" : "Delete transaction"}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -889,7 +1177,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
                       stroke="#16a34a" 
                       fill="#16a34a" 
                       fillOpacity={0.6}
-                      name="Income"
+                      name="IncomesaSA"
                     />
                     <Area 
                       type="monotone" 
@@ -1007,5 +1295,94 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
         </Card>
       </div>
     </div>
+
+      {/* Edit Transaction Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Transaction</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="editAmount">Amount (kr)</Label>
+              <Input
+                id="editAmount"
+                type="number"
+                value={formData.amount}
+                onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="editDescription">Description</Label>
+              <Input
+                id="editDescription"
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="editCategory">Category</Label>
+              <Input
+                id="editCategory"
+                value={formData.category}
+                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="editDate">Date</Label>
+              <Input
+                id="editDate"
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleEditSubmit}>
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Transaction Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Transaction</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p>Are you sure you want to delete "{entryToDelete?.description}"?</p>
+            {entryToDelete?.is_recurring && (
+              <div className="bg-orange-50 border border-orange-200 p-3 rounded-lg">
+                <p className="text-sm text-orange-800">
+                  <strong>Note:</strong> This is a recurring transaction. Deleting it will remove the original entry and stop all future recurring instances.
+                </p>
+              </div>
+            )}
+            {entryToDelete?.id?.includes('_recurring_') && (
+              <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> This will delete the original recurring entry and stop all future instances.
+                </p>
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteConfirm}>
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+    </>
   );
 }

@@ -66,6 +66,14 @@ export const useBudgetLogic = () => {
   const getCategoryEntries = (categoryName: string, period: 'monthly' | 'yearly') => {
     if (!entries) return [];
     
+    console.log(`🔍 getCategoryEntries called:`, {
+      categoryName,
+      period,
+      totalEntries: entries.length,
+      expenseEntries: entries.filter(e => e.type === 'expense').length,
+      budgetEntries: entries.filter(e => e.is_budget_entry === true).length
+    });
+    
     const matchesCategory = (expenseCategory: string, budgetCategory: string) => {
       const budgetCat = budgetCategory.toLowerCase();
       const expCat = expenseCategory.toLowerCase();
@@ -95,26 +103,51 @@ export const useBudgetLogic = () => {
       return false;
     };
     
-    // Filter out budget entries - we only want actual expenses
+    // Get all actual expenses for this category (including budget entries)
     const actualExpenses = entries.filter(entry => 
-      entry.type === 'expense' && 
-      entry.is_budget_entry === false
+      entry.type === 'expense'
+      // Removed is_budget_entry === false filter to include budget expenses in listings
     );
+    
+    console.log(`📊 Filtering for category "${categoryName}":`, {
+      actualExpenses: actualExpenses.length,
+      budgetExpenses: actualExpenses.filter(e => e.is_budget_entry === true).length,
+      sampleEntries: actualExpenses.slice(0, 3).map(e => ({
+        description: e.description,
+        category: e.category,
+        is_budget_entry: e.is_budget_entry,
+        amount: e.amount
+      }))
+    });
     
     if (period === 'monthly') {
       // For monthly budgets: Get ALL expenses for this category across ALL months
       // Monthly budgets are recurring allocations, not specific to a single month
-      return actualExpenses.filter(entry => {
-        return matchesCategory(entry.category, categoryName);
+      const result = actualExpenses.filter(entry => {
+        const matches = matchesCategory(entry.category, categoryName);
+        if (entry.is_budget_entry === true) {
+          console.log(`🔄 Budget entry check: "${entry.description}" (${entry.category}) vs "${categoryName}" = ${matches}`);
+        }
+        return matches;
       });
+      
+      console.log(`✅ Final result for "${categoryName}" (${period}): ${result.length} entries`);
+      return result;
     } else {
       // For yearly budgets: Filter by current year only
-      return actualExpenses.filter(entry => {
+      const result = actualExpenses.filter(entry => {
         const entryDate = new Date(entry.date);
         const entryYear = entryDate.getFullYear();
-        return entryYear === currentYear &&
+        const matches = entryYear === currentYear &&
                matchesCategory(entry.category, categoryName);
+        if (entry.is_budget_entry === true) {
+          console.log(`📅 Yearly budget entry check: "${entry.description}" (${entry.category}, ${entryYear}) vs "${categoryName}" (${currentYear}) = ${matches}`);
+        }
+        return matches;
       });
+      
+      console.log(`✅ Final result for "${categoryName}" (${period}): ${result.length} entries`);
+      return result;
     }
   };
 
@@ -176,12 +209,12 @@ export const useBudgetLogic = () => {
         const monthlyBudgets = budgets.filter(budget => budget.period === 'monthly');
         console.log('📅 Monthly budgets:', monthlyBudgets.length);
         
-        // Filter out budget entries - we only want actual expenses
+        // Get all expenses (including budget entries) for budget calculations
         const actualExpenses = entries.filter(entry => 
-          entry.type === 'expense' && 
-          entry.is_budget_entry === false
+          entry.type === 'expense'
+          // Removed is_budget_entry === false filter to include budget expenses in overview
         );
-        console.log('💰 Actual expenses (excluding budget entries):', actualExpenses.length);
+        console.log('💰 All expenses (including budget entries):', actualExpenses.length);
         
         actualExpenses.forEach(exp => {
           console.log(`  - ${exp.description}: ${exp.amount} SEK (${exp.category})`);
@@ -496,9 +529,31 @@ export const useBudgetLogic = () => {
       });
 
       if (success) {
+        // If a budget amount is specified, create a recurring yearly cash flow entry
+        if (budget > 0) {
+          const targetDateObj = new Date(targetDate);
+          const nextYear = new Date(targetDateObj);
+          nextYear.setFullYear(nextYear.getFullYear() + 1);
+
+          await addEntry({
+            type: 'expense',
+            amount: budget,
+            description: `Årlig budget för ${name.trim()}`,
+            category: name.trim(),
+            date: targetDate,
+            is_recurring: true,
+            recurring_interval: 'yearly',
+            next_due_date: nextYear.toISOString().split('T')[0],
+            is_budget_entry: true,
+            is_recurring_instance: false
+          });
+        }
+
         toast({
           title: "Årlig post tillagd",
-          description: `${name.trim()} med budget ${formatSEK(budget)} har lagts till`,
+          description: budget > 0 
+            ? `${name.trim()} med budget ${formatSEK(budget)}/år har lagts till`
+            : `${name.trim()} har lagts till utan automatisk budget`,
         });
         await refetch();
         return true;
