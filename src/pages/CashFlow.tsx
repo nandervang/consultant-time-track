@@ -1031,7 +1031,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
                         {entry.source === 'budget' && (
                           <>
                             <span>•</span>
-                            <span className="text-orange-600 text-xs font-medium">Recuring budget Entry</span>
+                            <span className="text-orange-600 text-xs font-medium">Recuring expense</span>
                           </>
                         )}
                         
@@ -1161,7 +1161,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
                     <Tooltip 
                       formatter={(value: number, name: string) => [
                         formatSEK(value), 
-                        name === 'income' ? 'Income' : 'Expenses'
+                        name
                       ]}
                       labelStyle={{ color: isDarkMode ? '#fff' : '#000' }}
                       contentStyle={{ 
@@ -1177,7 +1177,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
                       stroke="#16a34a" 
                       fill="#16a34a" 
                       fillOpacity={0.6}
-                      name="IncomesaSA"
+                      name="Income"
                     />
                     <Area 
                       type="monotone" 
