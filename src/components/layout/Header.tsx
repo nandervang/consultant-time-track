@@ -1,7 +1,8 @@
-import { Bell, User, LogOut, Moon, Sun } from 'lucide-react';
+import { Bell, Search, User, LogOut, Moon, Sun, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import SmartSearch from './SmartSearch';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 interface HeaderProps {
   isDarkMode: boolean;
@@ -13,12 +14,18 @@ interface HeaderProps {
 export default function Header({ isDarkMode, onToggleDarkMode, onSignOut, user }: HeaderProps) {
   return (
     <header className={cn(
-      "flex items-center justify-between px-6 py-4 border-b bg-background border-border flex-shrink-0",
-      "min-h-[4rem]"
+      "flex items-center justify-between px-6 py-4 border-b",
+      "bg-background border-border"
     )}>
-      {/* Smart Search */}
+      {/* Search */}
       <div className="flex items-center gap-4 flex-1 max-w-md">
-        <SmartSearch className="flex-1" />
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search..."
+            className="pl-10"
+          />
+        </div>
       </div>
 
       {/* Actions */}
@@ -36,6 +43,13 @@ export default function Header({ isDarkMode, onToggleDarkMode, onSignOut, user }
           ) : (
             <Moon className="h-4 w-4" />
           )}
+        </Button>
+
+        {/* Settings */}
+        <Button variant="ghost" size="icon" asChild>
+          <Link to="/settings">
+            <Settings className="h-4 w-4" />
+          </Link>
         </Button>
 
         {/* User menu */}

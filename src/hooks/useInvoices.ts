@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
+import { useVatCalculations } from './useVatCalculations';
 import { useClients } from './useClients';
 import { useProjects } from './useProjects';
 import { useTimeEntries } from './useTimeEntries';
@@ -18,6 +19,7 @@ export function useInvoices(userId?: string | null) {
   const { clients } = useClients();
   const { projects } = useProjects();
   const { entries: timeEntries } = useTimeEntries();
+  const { updateCurrentVatCalculations } = useVatCalculations(userId || user?.id || null);
   const [invoiceItems, setInvoiceItems] = useState<InvoiceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,8 +75,7 @@ export function useInvoices(userId?: string | null) {
       if (itemData.type === 'hourly') {
         totalAmount = (itemData.quantity || 0) * (itemData.rate || 0);
       } else {
-        // For fixed type, rate is the unit price, total = quantity * unit_price
-        totalAmount = (itemData.quantity || 1) * (itemData.rate || 0);
+        totalAmount = itemData.rate || 0; // For fixed type, rate is the fixed amount
       }
 
       const newItem = {
@@ -108,6 +109,13 @@ export function useInvoices(userId?: string | null) {
         const updatedItems = [data, ...invoiceItems];
         localStorage.setItem(`invoice_items_${effectiveUserId}`, JSON.stringify(updatedItems));
         
+        // Trigger VAT recalculation for updated income
+        if (updateCurrentVatCalculations) {
+          updateCurrentVatCalculations().catch(error => {
+            console.log('VAT recalculation failed (non-critical):', error);
+          });
+        }
+        
         return data;
       }
 
@@ -118,7 +126,7 @@ export function useInvoices(userId?: string | null) {
       // Fallback to localStorage
       const totalAmount = itemData.type === 'hourly' 
         ? (itemData.quantity || 0) * (itemData.rate || 0)
-        : (itemData.quantity || 1) * (itemData.rate || 0);
+        : (itemData.rate || 0);
         
       const fallbackItem: InvoiceItem = {
         id: `local_${Date.now()}`,
@@ -131,8 +139,8 @@ export function useInvoices(userId?: string | null) {
         fixed_amount: itemData.type === 'fixed' ? itemData.rate : null,
         total_amount: totalAmount,
         currency: 'SEK',
-        invoice_date: itemData.invoice_date || new Date().toISOString().split('T')[0],
-        due_date: itemData.due_date || null,
+        invoice_date: itemData.date || new Date().toISOString().split('T')[0],
+        due_date: null,
         status: itemData.status || 'draft',
         notes: itemData.notes || null,
         created_at: new Date().toISOString(),
@@ -145,7 +153,7 @@ export function useInvoices(userId?: string | null) {
       
       throw err;
     }
-  }, [effectiveUserId, invoiceItems]);
+  }, [effectiveUserId, invoiceItems, updateCurrentVatCalculations]);
 
   // Update invoice item
   const updateInvoiceItem = useCallback(async (updateData: UpdateInvoiceItemData): Promise<InvoiceItem | null> => {
@@ -163,19 +171,7 @@ export function useInvoices(userId?: string | null) {
         const currentItem = invoiceItems.find(item => item.id === id);
         if (currentItem) {
           const type = itemData.type || (currentItem.hours ? 'hourly' : 'fixed');
-          
-          // For hourly items, quantity is stored in hours field
-          // For fixed items, we need to extract quantity from total_amount and rate
-          let currentQuantity = 1;
-          if (currentItem.hours) {
-            // This is an hourly item
-            currentQuantity = currentItem.hours;
-          } else if (currentItem.fixed_amount && currentItem.fixed_amount > 0) {
-            // This is a fixed item, calculate current quantity from total/rate
-            currentQuantity = currentItem.total_amount / currentItem.fixed_amount;
-          }
-          
-          const quantity = itemData.quantity ?? currentQuantity;
+          const quantity = itemData.quantity ?? (currentItem.hours || 1);
           const rate = itemData.rate ?? (currentItem.hourly_rate || currentItem.fixed_amount || 0);
           
           if (type === 'hourly') {
@@ -187,7 +183,7 @@ export function useInvoices(userId?: string | null) {
             updatedData.hours = null;
             updatedData.hourly_rate = null;
             updatedData.fixed_amount = rate;
-            updatedData.total_amount = quantity * rate; // For fixed items, total = quantity * unit_price
+            updatedData.total_amount = rate;
           }
         }
       }
@@ -196,8 +192,7 @@ export function useInvoices(userId?: string | null) {
       if (itemData.description !== undefined) updatedData.description = itemData.description;
       if (itemData.client_id !== undefined) updatedData.client_id = itemData.client_id;
       if (itemData.project_id !== undefined) updatedData.project_id = itemData.project_id;
-      if (itemData.invoice_date !== undefined) updatedData.invoice_date = itemData.invoice_date;
-      if (itemData.due_date !== undefined) updatedData.due_date = itemData.due_date;
+      if (itemData.date !== undefined) updatedData.invoice_date = itemData.date;
       if (itemData.status !== undefined) updatedData.status = itemData.status;
       if (itemData.notes !== undefined) updatedData.notes = itemData.notes;
 
@@ -447,8 +442,6 @@ export function useInvoices(userId?: string | null) {
     if (!project || !client) return null;
 
     const rate = project.hourly_rate || client.hourly_rate || 0;
-    const invoiceDate = new Date().toISOString().split('T')[0];
-    const dueDate = new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // +20 days
     
     return addInvoiceItem({
       client_id: clientId,
@@ -457,8 +450,7 @@ export function useInvoices(userId?: string | null) {
       quantity: totalHours,
       rate,
       type: 'hourly',
-      invoice_date: invoiceDate,
-      due_date: dueDate,
+      date: new Date().toISOString().split('T')[0],
     });
   }, [timeEntries, projects, clients, addInvoiceItem]);
 

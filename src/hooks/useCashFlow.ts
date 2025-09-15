@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { useVatCalculations } from './useVatCalculations';
 import type { Database } from '../lib/supabase';
 
 type CashFlowEntry = Database['public']['Tables']['cash_flow_entries']['Row'];
@@ -16,6 +17,7 @@ export function useCashFlow(userId: string | null) {
   const [entries, setEntries] = useState<EnhancedCashFlowEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { updateCurrentVatCalculations } = useVatCalculations(userId);
 
   const fetchEntries = async () => {
     if (!userId) {
@@ -26,6 +28,17 @@ export function useCashFlow(userId: string | null) {
     try {
       setLoading(true);
       setError(null);
+
+      // Fetch user settings for VAT calculations
+      const { data: userSettings, error: settingsError } = await supabase
+        .from('user_profiles')
+        .select('auto_generate_yearly_vat, vat_rate_income')
+        .eq('id', userId)
+        .single();
+
+      if (settingsError && settingsError.code !== 'PGRST116') {
+        console.error('Error fetching user settings:', settingsError);
+      }
 
       // Fetch ALL cash flow entries (both manual and budget-generated)
       const { data: cashFlowData, error: cashFlowError } = await supabase
@@ -100,11 +113,31 @@ export function useCashFlow(userId: string | null) {
 
       // Create enhanced invoice entries as expected income
       const enhancedInvoiceEntries: EnhancedCashFlowEntry[] = (invoiceData || []).map(invoiceItem => {
+        // Invoice items are created WITHOUT tax - we add 25% VAT in cash flow
+        const baseAmount = invoiceItem.total_amount; // Amount without VAT
+        let totalAmountWithVat = baseAmount;
+        let vatAmount = 0;
+        let vatRate = 0;
+
+        if (userSettings?.auto_generate_yearly_vat && userSettings?.vat_rate_income > 0) {
+          vatRate = userSettings.vat_rate_income;
+          // Add VAT to the base amount (invoice amount + 25%)
+          vatAmount = baseAmount * (vatRate / 100);
+          totalAmountWithVat = baseAmount + vatAmount;
+          
+          console.log(`💰 VAT Calculation for invoice "${invoiceItem.description}":`, {
+            baseAmount: baseAmount,
+            vatRate: vatRate + '%',
+            vatAmount: Math.round(vatAmount * 100) / 100,
+            totalWithVat: Math.round(totalAmountWithVat * 100) / 100
+          });
+        }
+
         return {
           id: `invoice_${invoiceItem.id}`, // Prefix to distinguish from manual entries
           user_id: userId,
           type: 'income' as const,
-          amount: invoiceItem.total_amount,
+          amount: totalAmountWithVat, // Show total amount including VAT in cash flow
           description: `Invoice: ${invoiceItem.description}`,
           category: 'Client Payment',
           date: invoiceItem.due_date!, // Use due_date as the cash flow date
@@ -117,6 +150,10 @@ export function useCashFlow(userId: string | null) {
           client_id: invoiceItem.client_id,
           created_at: invoiceItem.created_at,
           updated_at: new Date().toISOString(),
+          // VAT tracking fields
+          vat_amount: Math.round(vatAmount * 100) / 100,
+          amount_excluding_vat: Math.round(baseAmount * 100) / 100,
+          vat_rate: vatRate,
           is_editable: false, // Invoice entries are read-only
           source: 'invoice' as const
         };
@@ -178,6 +215,13 @@ export function useCashFlow(userId: string | null) {
       setEntries(prev => [enhancedEntry, ...prev]);
       console.log('✅ New entry added:', data.description, data.amount, 
                   data.is_budget_entry ? '[BUDGET]' : '[MANUAL]');
+      
+      // Trigger VAT recalculation if this is an income or expense entry
+      if ((entryData.type === 'income' || entryData.type === 'expense') && updateCurrentVatCalculations) {
+        updateCurrentVatCalculations().catch(error => {
+          console.log('VAT recalculation failed (non-critical):', error);
+        });
+      }
     } catch (err) {
       console.error('Error adding cash flow entry:', err);
       setError(err instanceof Error ? err.message : 'Failed to add entry');
@@ -217,6 +261,14 @@ export function useCashFlow(userId: string | null) {
           : entry
       ));
       console.log('✅ Manual entry updated:', data.description, data.amount);
+      
+      // Trigger VAT recalculation if this is an income or expense entry update
+      const updatedEntry = { ...entry, ...data };
+      if ((updatedEntry.type === 'income' || updatedEntry.type === 'expense') && updateCurrentVatCalculations) {
+        updateCurrentVatCalculations().catch(error => {
+          console.log('VAT recalculation failed (non-critical):', error);
+        });
+      }
     } catch (err) {
       console.error('Error updating cash flow entry:', err);
       setError(err instanceof Error ? err.message : 'Failed to update entry');
@@ -293,6 +345,14 @@ export function useCashFlow(userId: string | null) {
 
       setEntries(prev => prev.filter(entry => entry.id !== actualEntryId));
       console.log('✅ Manual entry deleted');
+      
+      // Trigger VAT recalculation if this was an income or expense entry
+      if ((entry.type === 'income' || entry.type === 'expense') && updateCurrentVatCalculations) {
+        updateCurrentVatCalculations().catch(error => {
+          console.log('VAT recalculation failed (non-critical):', error);
+        });
+      }
+      
       return true; // Return success
     } catch (err) {
       console.error('Error deleting cash flow entry:', err);

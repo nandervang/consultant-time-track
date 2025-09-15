@@ -45,6 +45,107 @@ export interface Database {
           updated_at?: string;
         };
       };
+      salary_employees: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          email: string | null;
+          phone: string | null;
+          employee_number: string | null;
+          position: string | null;
+          base_salary: number;
+          currency: string;
+          employment_start_date: string;
+          employment_end_date: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          email?: string | null;
+          phone?: string | null;
+          employee_number?: string | null;
+          position?: string | null;
+          base_salary: number;
+          currency?: string;
+          employment_start_date?: string;
+          employment_end_date?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          email?: string | null;
+          phone?: string | null;
+          employee_number?: string | null;
+          position?: string | null;
+          base_salary?: number;
+          currency?: string;
+          employment_start_date?: string;
+          employment_end_date?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      salary_payments: {
+        Row: {
+          id: string;
+          user_id: string;
+          employee_id: string;
+          year: number;
+          month: number;
+          salary_amount: number;
+          bonus_amount: number | null;
+          deductions: number | null;
+          total_amount: number;
+          payment_date: string | null;
+          status: 'scheduled' | 'paid' | 'cancelled';
+          notes: string | null;
+          cash_flow_entry_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          employee_id: string;
+          year: number;
+          month: number;
+          salary_amount: number;
+          bonus_amount?: number | null;
+          deductions?: number | null;
+          payment_date?: string | null;
+          status?: 'scheduled' | 'paid' | 'cancelled';
+          notes?: string | null;
+          cash_flow_entry_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          employee_id?: string;
+          year?: number;
+          month?: number;
+          salary_amount?: number;
+          bonus_amount?: number | null;
+          deductions?: number | null;
+          payment_date?: string | null;
+          status?: 'scheduled' | 'paid' | 'cancelled';
+          notes?: string | null;
+          cash_flow_entry_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       user_profiles: {
         Row: {
           id: string;
@@ -58,6 +159,14 @@ export interface Database {
           absence_percentage: number | null;
           work_hours_per_day: number | null;
           work_days_per_week: number | null;
+          // Tax-related settings
+          auto_generate_employer_tax: boolean | null;
+          employer_tax_payment_date: number | null;
+          auto_generate_yearly_vat: boolean | null;
+          vat_rate_income: number | null;
+          vat_rate_expenses: number | null;
+          vat_payment_month: number | null;
+          vat_payment_day: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -73,6 +182,14 @@ export interface Database {
           absence_percentage?: number | null;
           work_hours_per_day?: number | null;
           work_days_per_week?: number | null;
+          // Tax-related settings
+          auto_generate_employer_tax?: boolean | null;
+          employer_tax_payment_date?: number | null;
+          auto_generate_yearly_vat?: boolean | null;
+          vat_rate_income?: number | null;
+          vat_rate_expenses?: number | null;
+          vat_payment_month?: number | null;
+          vat_payment_day?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -88,6 +205,14 @@ export interface Database {
           absence_percentage?: number | null;
           work_hours_per_day?: number | null;
           work_days_per_week?: number | null;
+          // Tax-related settings
+          auto_generate_employer_tax?: boolean | null;
+          employer_tax_payment_date?: number | null;
+          auto_generate_yearly_vat?: boolean | null;
+          vat_rate_income?: number | null;
+          vat_rate_expenses?: number | null;
+          vat_payment_month?: number | null;
+          vat_payment_day?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -207,6 +332,10 @@ export interface Database {
           is_recurring_instance: boolean | null
           project_id: string | null;
           client_id: string | null;
+          // VAT tracking fields
+          vat_amount: number | null;
+          amount_excluding_vat: number | null;
+          vat_rate: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -225,6 +354,10 @@ export interface Database {
           next_due_date?: string | null;
           project_id?: string | null;
           client_id?: string | null;
+          // VAT tracking fields
+          vat_amount?: number | null;
+          amount_excluding_vat?: number | null;
+          vat_rate?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -243,6 +376,10 @@ export interface Database {
           next_due_date?: string | null;
           project_id?: string | null;
           client_id?: string | null;
+          // VAT tracking fields
+          vat_amount?: number | null;
+          amount_excluding_vat?: number | null;
+          vat_rate?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -423,126 +560,6 @@ export interface Database {
           updated_at?: string;
         };
       };
-      ping_targets: {
-        Row: {
-          id: string;
-          user_id: string;
-          name: string;
-          url: string;
-          method: string;
-          headers: Record<string, unknown>;
-          body: string | null;
-          timeout: number;
-          expected_status: number[];
-          expected_text: string | null;
-          enabled: boolean;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          name: string;
-          url: string;
-          method?: string;
-          headers?: Record<string, unknown>;
-          body?: string | null;
-          timeout?: number;
-          expected_status?: number[];
-          expected_text?: string | null;
-          enabled?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          name?: string;
-          url?: string;
-          method?: string;
-          headers?: Record<string, unknown>;
-          body?: string | null;
-          timeout?: number;
-          expected_status?: number[];
-          expected_text?: string | null;
-          enabled?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
-      ping_results: {
-        Row: {
-          id: string;
-          target_id: string;
-          user_id: string;
-          timestamp: string;
-          response_time: number | null;
-          status: string;
-          status_code: number | null;
-          response_text: string | null;
-          response_size: number | null;
-          error_message: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          target_id: string;
-          user_id: string;
-          timestamp?: string;
-          response_time?: number | null;
-          status: string;
-          status_code?: number | null;
-          response_text?: string | null;
-          response_size?: number | null;
-          error_message?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          target_id?: string;
-          user_id?: string;
-          timestamp?: string;
-          response_time?: number | null;
-          status?: string;
-          status_code?: number | null;
-          response_text?: string | null;
-          response_size?: number | null;
-          error_message?: string | null;
-          created_at?: string;
-        };
-      };
-      ping_settings: {
-        Row: {
-          id: string;
-          user_id: string;
-          interval_minutes: number;
-          timeout_seconds: number;
-          retries: number;
-          enabled: boolean;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          interval_minutes?: number;
-          timeout_seconds?: number;
-          retries?: number;
-          enabled?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          interval_minutes?: number;
-          timeout_seconds?: number;
-          retries?: number;
-          enabled?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
     };
     Views: {
       cash_flow_summary: {
@@ -565,20 +582,6 @@ export interface Database {
           spent_amount: number;
           remaining_amount: number;
           usage_percentage: number;
-        };
-      };
-      ping_uptime_stats: {
-        Row: {
-          target_id: string;
-          target_name: string;
-          url: string;
-          user_id: string;
-          total_checks: number;
-          successful_checks: number;
-          uptime_percentage: number;
-          avg_response_time: number;
-          last_check: string;
-          current_status: string;
         };
       };
     };

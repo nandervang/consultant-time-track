@@ -11,7 +11,8 @@ import {
   FileText, 
   Settings,
   ChevronLeft,
-  User
+  ChevronRight,
+  Banknote
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,7 @@ interface SidebarProps {
   isDarkMode: boolean;
 }
 
-const navigation = [
+const navigationItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Time Tracking', href: '/time-tracking', icon: Clock },
   { name: 'Budget', href: '/budget', icon: DollarSign },
@@ -31,45 +32,47 @@ const navigation = [
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Clients', href: '/clients', icon: Users },
   { name: 'Invoicing', href: '/invoicing', icon: FileText },
-  { name: 'CV Manager', href: '/cv-manager', icon: User },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'Salary', href: '/salary', icon: Banknote },
 ];
 
-export default function Sidebar({ collapsed, onToggle }: Omit<SidebarProps, 'isDarkMode'>) {
+export default function Sidebar({ collapsed, onToggle, isDarkMode }: SidebarProps) {
   return (
-    <aside className={cn(
-      "bg-card border-r border-border transition-all duration-300 flex flex-col",
-      "h-full", // Changed from h-screen since header is now separate
-      collapsed ? "w-16" : "w-64"
+    <div className={cn(
+      "flex flex-col h-full border-r transition-all duration-300",
+      collapsed ? "w-16" : "w-64",
+      isDarkMode ? "bg-card border-border" : "bg-card border-border"
     )}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
-        <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">C</span>
-          </div>
-          {!collapsed && (
+      <div className="flex items-center justify-between p-4 border-b border-border">
+        {!collapsed && (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-primary-foreground" />
+            </div>
             <div>
-              <h1 className="font-semibold text-foreground">ConsultantHub</h1>
+              <h1 className="font-semibold text-sm">ConsultantHub</h1>
               <p className="text-xs text-muted-foreground">Dashboard</p>
             </div>
-          )}
-        </div>
-        
+          </div>
+        )}
         <Button
           variant="ghost"
           size="icon"
           onClick={onToggle}
           className="h-8 w-8"
         >
-          <ChevronLeft className={cn("h-4 w-4 transition-transform", collapsed && "rotate-180")} />
+          {collapsed ? (
+            <ChevronRight className="h-4 w-4" />
+          ) : (
+            <ChevronLeft className="h-4 w-4" />
+          )}
         </Button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-2 overflow-y-auto">
+      <nav className="flex-1 p-2">
         <ul className="space-y-1">
-          {navigation.map((item) => {
+          {navigationItems.map((item) => {
             const Icon = item.icon;
             return (
               <li key={item.name}>
@@ -97,7 +100,7 @@ export default function Sidebar({ collapsed, onToggle }: Omit<SidebarProps, 'isD
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-border flex-shrink-0">
+      <div className="p-4 border-t border-border">
         {!collapsed && (
           <div className="text-xs text-muted-foreground">
             <p>© 2025 ConsultantHub</p>
@@ -105,6 +108,6 @@ export default function Sidebar({ collapsed, onToggle }: Omit<SidebarProps, 'isD
           </div>
         )}
       </div>
-    </aside>
+    </div>
   );
 }

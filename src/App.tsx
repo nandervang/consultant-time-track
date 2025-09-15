@@ -13,7 +13,9 @@ import Clients from '@/pages/Clients';
 import Analytics from '@/pages/Analytics';
 import Invoicing from '@/pages/Invoicing';
 import CVManager from '@/pages/CVManager';
+import Salary from '@/pages/Salary';
 import Settings from '@/pages/Settings';
+import DebugEmployerTax from '@/pages/DebugEmployerTax';
 
 function App() {
   const { user, loading, signOut } = useAuth();
@@ -79,9 +81,11 @@ function App() {
             <Route path="/projects" element={<Projects />} />
             <Route path="/clients" element={<Clients />} />
             <Route path="/analytics" element={<Analytics />} />
+            <Route path="/salary" element={<Salary isDarkMode={isDarkMode} />} />
             <Route path="/cv-manager" element={<CVManager />} />
             <Route path="/invoicing" element={<Invoicing />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/debug-employer-tax" element={<DebugEmployerTax />} />
           </Routes>
         </MainLayout>
       </Router>
