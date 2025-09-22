@@ -116,6 +116,7 @@ Following spec-kit principles:
 
 #### 💹 Cash Flow Management
 - **Financial Forecasting** - Monthly projections based on scheduled income and expenses
+- **Business Start Date Handling** - Respects business launch (September 2025) for accurate financial reporting
 - **Income/Expense Tracking** - Comprehensive categorization and automation
 - **Interactive Visualizations** - Charts and graphs for financial insights
 - **Integration Hub** - Connects with invoicing, tax, and project systems

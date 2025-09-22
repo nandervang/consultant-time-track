@@ -39,6 +39,10 @@ import { useToast } from '@/hooks/use-toast';
 // Import the enhanced type from the hook
 type EnhancedCashFlowEntry = ReturnType<typeof useCashFlow>['entries'][0];
 
+// Business started in September 2025
+const BUSINESS_START_DATE = '2025-09-01';
+const INITIAL_BUSINESS_BALANCE = 0; // Starting capital - should be configurable in settings
+
 interface CashFlowPageProps {
   isDarkMode: boolean;
 }
@@ -186,6 +190,13 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
       const entryMonth = entry.date.toString().slice(0, 7);
       const monthData = monthlyMap.get(entryMonth);
       
+      // Filter out entries before business start date (September 2025)
+      const businessStartMonth = '2025-09';
+      if (entryMonth < businessStartMonth) {
+        console.log(`🚫 FILTERED pre-business entry: ${entryMonth} - "${entry.description}" (${entry.amount} SEK)`);
+        return; // Skip entries before business started
+      }
+      
       const sourceLabel = entry.source === 'invoice' ? '[INV]' : 
                          entry.source === 'manual' ? '[MAN]' : '[GEN]';
       const isBudget = entry.is_budget_entry === true || 
@@ -205,11 +216,36 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
     });
 
     // Calculate net flow and cumulative balance
-    let runningBalance = 50000; // Starting balance
+    // Business started September 2025, so earlier months should have 0 balance
+    const businessStartMonth = '2025-09';
+    let runningBalance = 0; // Will be set to actual starting balance for business start month
+    
     const processedMonths = months.map((month) => {
       month.netFlow = month.income - month.expenses;
-      runningBalance += month.netFlow;
-      month.cumulativeBalance = runningBalance;
+      
+      // For months before business start: balance stays 0
+      if (month.month < businessStartMonth) {
+        month.cumulativeBalance = 0;
+        // Override income/expenses to 0 for pre-business months
+        month.income = 0;
+        month.expenses = 0;
+        month.netFlow = 0;
+        month.entries = []; // Clear entries for pre-business months
+      } else {
+        // Business start month: set initial balance BEFORE adding net flow
+        if (month.month === businessStartMonth && runningBalance === 0) {
+          runningBalance = INITIAL_BUSINESS_BALANCE; // Configurable starting capital
+        }
+        
+        // Opening balance is current running balance
+        const openingBalance = runningBalance;
+        // Add this month's net flow to get closing balance
+        runningBalance += month.netFlow;
+        month.cumulativeBalance = runningBalance;
+        
+        console.log(`💰 ${month.monthName}: Opening ${openingBalance} + Net ${month.netFlow} = Closing ${runningBalance}`);
+      }
+      
       return month;
     });
     

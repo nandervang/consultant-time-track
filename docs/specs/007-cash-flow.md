@@ -9,6 +9,15 @@
 
 The Cash Flow Management feature provides comprehensive financial forecasting, income/expense tracking, and cash flow visualization for consultant business planning. It enables users to monitor financial health, predict future cash positions, and make informed business decisions.
 
+### Business Start Date Handling
+
+**Key Feature:** The system respects the business start date (September 2025) to ensure accurate financial reporting:
+
+- **Pre-Business Months**: Months before September 2025 display in the interface but show zero income, expenses, and balance
+- **Business Start Month**: September 2025 begins with the initial business balance (50,000 SEK)
+- **Data Filtering**: Historical entries dated before business start are filtered out from calculations
+- **Cumulative Balance**: Only accumulates from the business start month forward, preventing historical data from affecting current projections
+
 ## Feature Requirements
 
 ### Functional Requirements
@@ -476,17 +485,25 @@ const useCachedProjections = () => {
 #### Bulk Calculations
 
 ```typescript
-// Efficient monthly aggregation
+// Efficient monthly aggregation with business start date handling
 const calculateMonthlyProjections = (
   confirmedEntries: CashFlowEntry[],
   projectedEntries: CashFlowEntry[]
 ): CashFlowProjection[] => {
+  const businessStartMonth = '2025-09'; // Business started September 2025
   const allEntries = [...confirmedEntries, ...projectedEntries];
-  const monthlyGroups = groupBy(allEntries, entry => 
+  
+  // Filter out entries before business start date
+  const validEntries = allEntries.filter(entry => {
+    const entryMonth = format(new Date(entry.date), 'yyyy-MM');
+    return entryMonth >= businessStartMonth;
+  });
+  
+  const monthlyGroups = groupBy(validEntries, entry => 
     format(new Date(entry.date), 'yyyy-MM')
   );
   
-  let runningBalance = getCurrentBalance();
+  let runningBalance = 0; // Start with 0, will be set to initial balance for business start month
   
   return Object.entries(monthlyGroups)
     .sort(([a], [b]) => a.localeCompare(b))
@@ -500,6 +517,12 @@ const calculateMonthlyProjections = (
         .reduce((sum, e) => sum + Math.abs(e.amount), 0);
       
       const netFlow = income - expenses;
+      
+      // Set initial balance for business start month
+      if (month === businessStartMonth && runningBalance === 0) {
+        runningBalance = 50000; // Initial business balance
+      }
+      
       const openingBalance = runningBalance;
       runningBalance += netFlow;
       
