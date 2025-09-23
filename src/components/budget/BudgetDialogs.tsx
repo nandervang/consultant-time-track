@@ -31,6 +31,8 @@ interface BudgetDialogsProps {
   setShowDeleteDialog?: (show: boolean) => void;
   showAddCategoryDialog?: boolean;
   setShowAddCategoryDialog?: (show: boolean) => void;
+  showAddAnnualItemDialog?: boolean;
+  setShowAddAnnualItemDialog?: (show: boolean) => void;
   selectedCategory?: BudgetCategory | null;
   setSelectedCategory?: (category: BudgetCategory | null) => void;
   selectedExpenseCategory?: BudgetCategory | AnnualBudgetItem | null;
@@ -59,13 +61,14 @@ export function BudgetDialogs({
   setShowDeleteDialog = () => {},
   showAddCategoryDialog = false,
   setShowAddCategoryDialog = () => {},
+  showAddAnnualItemDialog = false,
+  setShowAddAnnualItemDialog = () => {},
   selectedCategory = null,
   setSelectedCategory = () => {},
   selectedExpenseCategory = null,
   setSelectedExpenseCategory = () => {}
 }: BudgetDialogsProps) {
-  // Annual item dialog states (not managed externally yet)
-  const [showAddAnnualItemDialog, setShowAddAnnualItemDialog] = useState(false);
+  // Annual item dialog states (only for states not managed externally)
   const [showEditAnnualItemDialog, setShowEditAnnualItemDialog] = useState(false);
   const [showDeleteAnnualDialog, setShowDeleteAnnualDialog] = useState(false);
   const [showAnnualDetailDialog, setShowAnnualDetailDialog] = useState(false);
@@ -371,7 +374,11 @@ export function BudgetDialogs({
     }
 
     const budget = parseFloat(newAnnualItemBudget) || 0;
-    const success = await handleAddAnnualItem(newAnnualItemName.trim(), budget, newAnnualItemTargetDate);
+    
+    // Convert month input (YYYY-MM) to a full date (YYYY-MM-01)
+    const targetDateFormatted = newAnnualItemTargetDate + '-01';
+    
+    const success = await handleAddAnnualItem(newAnnualItemName.trim(), budget, targetDateFormatted);
     
     if (success) {
       setNewAnnualItemName('');

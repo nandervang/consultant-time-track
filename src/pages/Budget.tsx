@@ -166,6 +166,8 @@ export default function BudgetPage({ isDarkMode }: BudgetPageProps) {
         setShowDeleteDialog={setShowDeleteDialog}
         showAddCategoryDialog={showAddCategoryDialog}
         setShowAddCategoryDialog={setShowAddCategoryDialog}
+        showAddAnnualItemDialog={showAddAnnualItemDialog}
+        setShowAddAnnualItemDialog={setShowAddAnnualItemDialog}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
         selectedExpenseCategory={selectedExpenseCategory}

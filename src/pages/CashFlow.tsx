@@ -17,6 +17,7 @@ import {
   Edit
 } from 'lucide-react';
 import { formatSEK } from '../lib/currency';
+import { supabase } from '../lib/supabase';
 import { 
   LineChart, 
   Line, 
@@ -61,7 +62,11 @@ interface MonthlyData {
 }
 
 export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
+  console.log('🔥 CASHFLOW COMPONENT MOUNTED/RENDERED');
+  
   const { user } = useAuth();
+  console.log('🔥 USER FROM AUTH:', user?.id);
+  
   const { entries, loading, addEntry, updateEntry, deleteEntry, error } = useCashFlow(user?.id || null);
   const { toast } = useToast();
   const [showAddForm, setShowAddForm] = useState(false);
@@ -74,6 +79,11 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [entryToDelete, setEntryToDelete] = useState<EnhancedCashFlowEntry | null>(null);
+  
+  // State for salary data
+  const [salaryPayments, setSalaryPayments] = useState<any[]>([]);
+  const [salaryEmployees, setSalaryEmployees] = useState<any[]>([]);
+  const [salaryLoading, setSalaryLoading] = useState(true);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -95,13 +105,90 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
   });
 
   useEffect(() => {
+    console.log('🔥 PROCESSING USEEFFECT TRIGGERED');
+    console.log('🔥 entries.length:', entries.length);
+    console.log('🔥 salaryPayments.length:', salaryPayments.length);
+    
     if (entries.length > 0) {
+      console.log('🔥 Calling processMonthlyData...');
       processMonthlyData();
+      console.log('🔥 Calling processCategoryData...');
       processCategoryData();
     } else {
+      console.log('🔥 No entries, calling initializeEmptyMonthlyData...');
       initializeEmptyMonthlyData();
     }
-  }, [entries]);
+  }, [entries, salaryPayments]);
+
+  useEffect(() => {
+    console.log('🔥 USER EFFECT TRIGGERED - user?.id:', user?.id);
+    console.log('🔥 USER EFFECT - user object:', user);
+    console.log('🔥 USER EFFECT - user type:', typeof user);
+    
+    const fetchSalaryDataLocal = async () => {
+      console.log('🔥 FETCH SALARY DATA CALLED');
+      if (!user?.id) {
+        console.log('❌ No user ID available for salary fetch');
+        return;
+      }
+      
+      console.log('🔥 User ID available:', user.id);
+      
+      try {
+        setSalaryLoading(true);
+        
+        // Fetch salary payments with employee info
+        const { data: payments, error: paymentsError } = await supabase
+          .from('salary_payments')
+          .select(`
+            *,
+            employee:salary_employees(
+              id,
+              name,
+              position,
+              base_salary
+            )
+          `)
+          .eq('user_id', user.id)
+          .eq('status', 'paid');
+          
+        console.log('🔥 Salary payments query result:', {
+          payments: payments?.length || 0,
+          error: paymentsError,
+          samplePayment: payments?.[0]
+        });
+          
+        if (paymentsError) throw paymentsError;
+        
+        // Fetch user settings for employer tax rate
+        const { data: userSettings, error: settingsError } = await supabase
+          .from('user_profiles')
+          .select('auto_generate_employer_tax, employer_tax_payment_date')
+          .eq('id', user.id)
+          .single();
+          
+        if (settingsError && settingsError.code !== 'PGRST116') {
+          console.error('Error fetching user settings:', settingsError);
+        }
+        
+        setSalaryPayments(payments || []);
+        console.log('💰 Fetched salary payments:', payments?.length || 0);
+        console.log('🔥 FINAL STATE: salaryPayments will be set to:', payments?.length || 0, 'entries');
+        
+      } catch (error) {
+        console.error('Error fetching salary data:', error);
+      } finally {
+        setSalaryLoading(false);
+      }
+    };
+    
+    if (user?.id) {
+      console.log('🔥 About to call fetchSalaryDataLocal...');
+      fetchSalaryDataLocal();
+    } else {
+      console.log('❌ USER EFFECT - No user ID, not calling fetchSalaryData');
+    }
+  }, [user]);
 
   const initializeEmptyMonthlyData = () => {
     const months = [];
@@ -131,6 +218,16 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
   };
 
   const processMonthlyData = () => {
+    // DEBUG: Check if budget entries are coming from the database
+    console.log('🔍 RAW ENTRIES FROM DATABASE:', entries.length);
+    const rawBudgetEntries = entries.filter(entry => 
+      entry.is_budget_entry === true || entry.source === 'budget'
+    );
+    console.log('🔍 RAW BUDGET ENTRIES FROM DATABASE:', rawBudgetEntries.length);
+    rawBudgetEntries.forEach(entry => {
+      console.log(`🔍 RAW BUDGET: "${entry.description}" (source: ${entry.source}, is_budget_entry: ${entry.is_budget_entry}, id: ${entry.id})`);
+    });
+    
     // Create 7 months: 2 past + current + 4 future
     const months = [];
     const now = new Date();
@@ -160,21 +257,82 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
       monthlyMap.set(month.month, month);
     });
 
-    // Process all entries (including generating recurring ones)
-    const allEntries = generateRecurringEntries(entries, months);
+    // Include ALL entries - budget entries, manual entries, invoices, etc.
+    const allEntriesToProcess = entries;
+
+    console.log('=== ENTRY PROCESSING ===');
+    console.log('Total entries to process:', allEntriesToProcess.length);
+    
+    // Debug: Show entry breakdown by source
+    const entryBreakdown = {
+      budget: allEntriesToProcess.filter(e => e.source === 'budget').length,
+      manual: allEntriesToProcess.filter(e => e.source === 'manual').length,
+      invoice: allEntriesToProcess.filter(e => e.source === 'invoice').length,
+      total: allEntriesToProcess.length
+    };
+    console.log('Entry breakdown by source:', entryBreakdown);
+
+    // Process all entries (including generating recurring ones and salary entries)
+    console.log('🔍 BEFORE generateRecurringEntries - allEntriesToProcess:', allEntriesToProcess.length);
+    console.log('🔍 Checking each entry before recurring generation:');
+    allEntriesToProcess.forEach((entry, index) => {
+      const isBudget = entry.is_budget_entry === true || entry.source === 'budget';
+      
+      console.log(`${index + 1}. "${entry.description}" - is_budget: ${entry.is_budget_entry}, source: ${entry.source}, id: ${entry.id}`);
+      
+      if (isBudget) {
+        console.log(`� BUDGET ENTRY: "${entry.description}" - This should appear in cash flow`);
+      }
+    });
+    
+    const recurringEntries = generateRecurringEntries(allEntriesToProcess, months);
+    
+    console.log('🔍 AFTER generateRecurringEntries - generated entries:', recurringEntries.length);
+    console.log('🔍 Checking each generated recurring entry:');
+    recurringEntries.forEach((entry) => {
+      const isBudget = entry.is_budget_entry === true || entry.source === 'budget';
+      const isKnownBudget = [
+        'Youtube premium', 'Supabase Databas', 'Copilot AI', 'Halebop mobil+klocka',
+        'Geforce now', 'Raycast AI', 'Netlify IT tjänst', 'Telia bredband', 
+        'ManageWP wordpress', 'Icloud cloud storage', 'Förmånscykel', 
+        'Kaffe, Te, Frukt', 'Hyra av rum', 'Fortnox'
+      ].some(budgetDesc => entry.description?.toLowerCase().includes(budgetDesc.toLowerCase()));
+      
+      if (isBudget || isKnownBudget) {
+        console.log(`🚨 BUDGET ENTRY GENERATED: "${entry.description}" - is_budget: ${entry.is_budget_entry}, source: ${entry.source}, id: ${entry.id}`);
+      }
+    });
+    
+    console.log('🔍 About to generate salary entries...');
+    console.log('🔍 Salary payments available:', salaryPayments.length);
+    console.log('🔍 Salary employees available:', salaryEmployees.length);
+    console.log('🔍 Sample salary payment:', salaryPayments[0]);
+    console.log('🔍 Sample salary employee:', salaryEmployees[0]);
+    console.log('🔍 Salary payments data:', salaryPayments);
+    console.log('🔍 Salary employees data:', salaryEmployees);
+    
+    const salaryEntries = generateSalaryEntries(months);
+    console.log('🔍 Salary entries returned from generateSalaryEntries:', salaryEntries.length);
+    console.log('🔍 Salary entries details:', salaryEntries);
+    
+    const allEntries = [...recurringEntries, ...salaryEntries];
+
+    // Include all entries - budget entries should appear in cash flow
+    const finalFilteredEntries = allEntries;
 
     console.log('=== MONTHLY DATA PROCESSING ===');
     console.log('Total entries after generation:', allEntries.length);
-    console.log('Original entries:', entries.length);
-    console.log('Generated entries:', allEntries.length - entries.length);
+    console.log('Final entries to process:', finalFilteredEntries.length);
+    console.log('Original entries:', allEntriesToProcess.length);
+    console.log('Generated entries:', finalFilteredEntries.length - allEntriesToProcess.length);
     
     // Enhanced logging to track data sources
     const sourceBreakdown = {
-      manual: allEntries.filter(e => e.source === 'manual').length,
-      budget: allEntries.filter(e => e.source === 'budget').length,
-      invoice: allEntries.filter(e => e.source === 'invoice').length,
-      editable: allEntries.filter(e => e.is_editable).length,
-      readonly: allEntries.filter(e => !e.is_editable).length
+      manual: finalFilteredEntries.filter(e => e.source === 'manual').length,
+      budget: finalFilteredEntries.filter(e => e.source === 'budget').length,
+      invoice: finalFilteredEntries.filter(e => e.source === 'invoice').length,
+      editable: finalFilteredEntries.filter(e => e.is_editable).length,
+      readonly: finalFilteredEntries.filter(e => !e.is_editable).length
     };
     
     console.log('Entry source breakdown:', sourceBreakdown);
@@ -186,7 +344,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
       console.log(`INFO: ${sourceBreakdown.editable} manual entries (editable)`);
     }
 
-    allEntries.forEach((entry) => {
+    finalFilteredEntries.forEach((entry) => {
       const entryMonth = entry.date.toString().slice(0, 7);
       const monthData = monthlyMap.get(entryMonth);
       
@@ -198,11 +356,10 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
       }
       
       const sourceLabel = entry.source === 'invoice' ? '[INV]' : 
+                         entry.source === 'budget' ? '[BUD]' :
                          entry.source === 'manual' ? '[MAN]' : '[GEN]';
-      const isBudget = entry.is_budget_entry === true || 
-                       entry.description?.toLowerCase().includes('budget');
       
-      console.log(`${sourceLabel} ${entryMonth}: ${entry.type} ${entry.amount} SEK - "${entry.description}" ${isBudget ? '[BUDGET - SHOULD BE FILTERED]' : ''}`);
+      console.log(`${sourceLabel} ${entryMonth}: ${entry.type} ${entry.amount} SEK - "${entry.description}"`);
       
       if (monthData) {
         monthData.entries.push(entry);
@@ -263,19 +420,148 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
     setMonthlyData(processedMonths);
   };
 
+  // Generate salary and employer tax entries for each month
+  const generateSalaryEntries = (monthsData: MonthlyData[]): EnhancedCashFlowEntry[] => {
+    console.log('🚀 SALARY GENERATION STARTED');
+    console.log('🚀 monthsData length:', monthsData.length);
+    console.log('🚀 monthsData:', monthsData.map(m => ({ month: m.month, monthName: m.monthName })));
+    console.log('🚀 salaryPayments length:', salaryPayments?.length || 0);
+    console.log('🚀 salaryEmployees length:', salaryEmployees?.length || 0);
+    console.log('🚀 salaryPayments raw data:', salaryPayments);
+    console.log('🚀 salaryEmployees raw data:', salaryEmployees);
+    
+    const salaryEntries: EnhancedCashFlowEntry[] = [];
+    
+    if (!salaryPayments || salaryPayments.length === 0) {
+      console.log('❌ No salary payments available - returning empty array');
+      console.log('❌ salaryPayments is:', salaryPayments);
+      return salaryEntries;
+    }
+    
+    if (!salaryEmployees || salaryEmployees.length === 0) {
+      console.log('❌ No salary employees available - returning empty array');
+      console.log('❌ salaryEmployees is:', salaryEmployees);
+      return salaryEntries;
+    }
+    
+    console.log('💰 GENERATING SALARY ENTRIES for months:', monthsData.map(m => m.month));
+    
+    // Group salary payments by employee and get their latest salary
+    const employeeSalaries = new Map();
+    salaryPayments.forEach(payment => {
+      if (payment.employee) {
+        const key = payment.employee.id;
+        if (!employeeSalaries.has(key) || new Date(payment.payment_date) > new Date(employeeSalaries.get(key).payment_date)) {
+          employeeSalaries.set(key, payment);
+        }
+      }
+    });
+    
+    console.log('👥 Active employees with salaries:', employeeSalaries.size);
+    
+    // Generate salary and employer tax for each month and employee
+    monthsData.forEach(month => {
+      // Only generate for business months (September 2025 and later)
+      const businessStartMonth = '2025-09';
+      if (month.month < businessStartMonth) {
+        return; // Skip pre-business months
+      }
+      
+      employeeSalaries.forEach((latestPayment, employeeId) => {
+        if (!latestPayment.employee) return;
+        
+        const employee = latestPayment.employee;
+        const monthDate = `${month.month}-15`; // Use 15th for salary payment date
+        
+        // Generate salary entry
+        const salaryEntry: EnhancedCashFlowEntry = {
+          id: `salary_${employeeId}_${month.month}`,
+          user_id: user?.id || '',
+          type: 'expense',
+          amount: employee.base_salary,
+          description: `Salary - ${employee.name}${employee.position ? ` (${employee.position})` : ''}`,
+          category: 'Salary',
+          date: monthDate,
+          is_recurring: false,
+          is_budget_entry: false,
+          is_recurring_instance: false,
+          recurring_interval: null,
+          next_due_date: null,
+          project_id: null,
+          client_id: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          vat_amount: null,
+          amount_excluding_vat: null,
+          vat_rate: null,
+          // Enhanced properties
+          is_editable: false, // Salary entries are auto-generated, not manually editable
+          source: 'manual' as const
+        };
+        
+        // Generate employer tax entry (31.42% of salary, paid next month)
+        const nextMonthDate = new Date(month.month + '-01');
+        nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+        const employerTaxMonth = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, '0')}`;
+        const employerTaxAmount = Math.round(employee.base_salary * 0.3142);
+        
+        // Only generate employer tax if the payment month is within our month range
+        const isEmployerTaxInRange = monthsData.some(m => m.month === employerTaxMonth);
+        
+        if (isEmployerTaxInRange) {
+          const employerTaxEntry: EnhancedCashFlowEntry = {
+            id: `employer_tax_${employeeId}_${month.month}`,
+            user_id: user?.id || '',
+            type: 'expense',
+            amount: employerTaxAmount,
+            description: `Employer Tax - ${employee.name}${employee.position ? ` (${employee.position})` : ''}`,
+            category: 'Employer Tax',
+            date: `${employerTaxMonth}-25`, // Employer tax typically paid on 25th
+            is_recurring: false,
+            is_budget_entry: false,
+            is_recurring_instance: false,
+            recurring_interval: null,
+            next_due_date: null,
+            project_id: null,
+            client_id: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            vat_amount: null,
+            amount_excluding_vat: null,
+            vat_rate: null,
+            // Enhanced properties
+            is_editable: false, // Employer tax entries are auto-generated
+            source: 'manual' as const
+          };
+          
+          salaryEntries.push(employerTaxEntry);
+        } else {
+          // Employer tax month is outside 7-month range
+        }
+        
+        salaryEntries.push(salaryEntry);
+        
+        console.log(`💰 Generated for ${employee.name}: Salary ${employee.base_salary} SEK (${monthDate})`);
+      });
+    });
+    
+    console.log('💰 Total salary entries generated:', salaryEntries.length);
+    return salaryEntries;
+  };
+
   // Generate recurring entries - Works with actual database structure
   const generateRecurringEntries = (baseEntries: EnhancedCashFlowEntry[], monthsData: MonthlyData[]): EnhancedCashFlowEntry[] => {
     const allEntries = [...baseEntries];
     const monthKeys = monthsData.map(m => m.month);
 
-    // ONLY process recurring entries (no budget entries in cash flow anymore)
-    const recurringEntries = baseEntries.filter(entry => 
-      entry.is_recurring === true
-    );
+    // Process ALL recurring entries - including budget entries that should recur
+    const recurringEntries = baseEntries.filter(entry => {
+      return entry.is_recurring === true;
+    });
 
     console.log('=== RECURRING ENTRY GENERATION ===');
-    console.log('Total base entries:', baseEntries.length);
-    console.log('Found actual recurring entries to process:', recurringEntries.length);
+    console.log('Total entries:', baseEntries.length);
+    console.log('Found recurring entries to process:', recurringEntries.length);
 
     // CRITICAL FIX: Deduplicate recurring entries by description + amount + category
     const uniqueRecurringEntries = new Map();
@@ -295,7 +581,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
       const originalDate = new Date(recurringEntry.date);
       const originalMonth = recurringEntry.date.slice(0, 7);
       
-      console.log(`Processing recurring entry: ${recurringEntry.description} from ${originalMonth}`);
+      console.log(`Processing recurring entry: ${recurringEntry.description} from ${originalMonth}, interval: ${recurringEntry.recurring_interval}`);
       
       // Generate recurring entry for each month in our 7-month period
       monthKeys.forEach((monthKey) => {
@@ -303,6 +589,19 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
         if (monthKey === originalMonth) {
           console.log(`Skipping original month ${monthKey} for ${recurringEntry.description}`);
           return;
+        }
+        
+        // For yearly recurring entries, only generate if it's the same month in a different year
+        if (recurringEntry.recurring_interval === 'yearly') {
+          const originalMonthNum = originalDate.getMonth(); // 0-11
+          const [, targetMonth] = monthKey.split('-').map(Number);
+          const targetMonthNum = targetMonth - 1; // Convert to 0-11
+          
+          // Only generate yearly entry if it's the same month (but different year)
+          if (originalMonthNum !== targetMonthNum) {
+            console.log(`Skipping yearly entry ${recurringEntry.description} for ${monthKey} - not the right month (original: ${originalMonthNum}, target: ${targetMonthNum})`);
+            return;
+          }
         }
         
         // Calculate the date for this month
@@ -325,19 +624,23 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
           return;
         }
         
-        // Create a recurring entry for this month
+        // Create a recurring entry for this month - preserve original properties
         const recurringEntryForMonth = {
           ...recurringEntry,
+          // Override AFTER spread to ensure these take precedence
           id: `${recurringEntry.id}_recurring_${monthKey}`, // Unique ID for recurring instance
           date: generatedDateString,
           original_entry_id: recurringEntry.id // Reference to original entry
         };
         
-        console.log(`Generated entry for ${monthKey}:`, {
+        // DEBUG: Show what type of entry was generated
+        console.log(`✅ Generated recurring entry for ${monthKey}:`, {
           id: recurringEntryForMonth.id,
           description: recurringEntryForMonth.description,
           amount: recurringEntryForMonth.amount,
           date: recurringEntryForMonth.date,
+          source: recurringEntryForMonth.source,
+          is_budget_entry: recurringEntryForMonth.is_budget_entry,
           targetMonth: monthKey
         });
         
@@ -352,44 +655,22 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
     const incomeCategories = new Map<string, number>();
     const expenseCategories = new Map<string, number>();
 
-    // ENHANCED: More comprehensive filtering for actual transactions
-    // Include recurring budget items as they represent actual monthly expenses
-    const actualEntries = entries.filter(entry => {
-      const isBudgetEntry = entry.is_budget_entry === true || 
-                           entry.description?.toLowerCase().includes('budget för') || 
-                           entry.description?.toLowerCase().includes('budget for') ||
-                           entry.description?.toLowerCase().startsWith('budget') ||
-                           entry.description?.toLowerCase().includes('årlig budget');
-      
-      // Include recurring budget entries as they represent actual monthly expenses
-      if (isBudgetEntry && entry.is_recurring) {
-        console.log(`Including recurring budget entry as actual expense: "${entry.description}"`);
-        return true;
-      }
-      
-      // Exclude non-recurring budget entries (these are just planning)
-      if (isBudgetEntry && !entry.is_recurring) {
-        console.log(`Excluding non-recurring budget entry: "${entry.description}"`);
-        return false;
-      }
-      
-      return true; // Include all other actual transactions
-    });
+    // Include ALL entries - manual, invoice, and budget entries
+    const actualEntries = entries;
 
-    // ENHANCED: Add detailed logging with source information
-    console.log('=== PROCESSING CATEGORY DATA ===');
+    // Add detailed logging with source information
+    console.log('=== PROCESSING CATEGORY DATA (for pie charts) ===');
     console.log('Total entries loaded:', entries.length);
-    console.log('Budget entries filtered out:', entries.filter(e => 
-      e.is_budget_entry === true || 
-      e.description?.toLowerCase().includes('budget')).length);
-    console.log('Actual transaction entries:', actualEntries.length);
+    console.log('All entries included in category analysis:', actualEntries.length);
     
     // Break down by source
     const manualEntries = actualEntries.filter(e => e.source === 'manual' || !e.source);
     const invoiceEntries = actualEntries.filter(e => e.source === 'invoice');
+    const budgetEntries = actualEntries.filter(e => e.source === 'budget');
     
-    console.log('Manual cash flow entries:', manualEntries.length);
-    console.log('Invoice-derived entries:', invoiceEntries.length);
+    console.log('Manual entries in categories:', manualEntries.length);
+    console.log('Invoice entries in categories:', invoiceEntries.length);
+    console.log('Budget entries in categories:', budgetEntries.length);
 
     actualEntries.forEach((entry) => {
       const sourceLabel = entry.source === 'invoice' ? '[INVOICE]' : 
@@ -1059,7 +1340,9 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
                             <span>•</span>
                             <div className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              <span>Recurring</span>
+                              <span>
+                                {entry.recurring_interval === 'yearly' ? 'Yearly recurring' : 'Monthly recurring'}
+                              </span>
                             </div>
                           </>
                         )}
@@ -1067,7 +1350,9 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
                         {entry.source === 'budget' && (
                           <>
                             <span>•</span>
-                            <span className="text-orange-600 text-xs font-medium">Recuring expense</span>
+                            <span className="text-orange-600 text-xs font-medium">
+                              {entry.recurring_interval === 'yearly' ? 'Yearly expense' : 'Recurring expense'}
+                            </span>
                           </>
                         )}
                         
@@ -1236,7 +1521,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Income Categories (Actual Transactions Only)</CardTitle>
+            <CardTitle>Income Categories</CardTitle>
           </CardHeader>
           <CardContent>
             {categoryData.income.length > 0 ? (
@@ -1284,7 +1569,7 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Expense Categories (Actual Transactions Only)</CardTitle>
+            <CardTitle>Expense Categories</CardTitle>
           </CardHeader>
           <CardContent>
             {categoryData.expense.length > 0 ? (
