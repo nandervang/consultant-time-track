@@ -49,7 +49,7 @@ export function useCashFlow(userId: string | null) {
 
       if (cashFlowError) throw cashFlowError;
 
-      // Fetch invoice items with status 'sent' to include as expected income
+      // Fetch invoice items with status 'sent' or 'paid' to include as income in cash flow
       const { data: invoiceData, error: invoiceError } = await supabase
         .from('invoice_items')
         .select(`
@@ -64,7 +64,7 @@ export function useCashFlow(userId: string | null) {
           project_id
         `)
         .eq('user_id', userId)
-        .eq('status', 'sent')
+        .in('status', ['sent', 'paid'])
         .not('due_date', 'is', null)
         .order('due_date', { ascending: false });
 
@@ -138,7 +138,7 @@ export function useCashFlow(userId: string | null) {
           user_id: userId,
           type: 'income' as const,
           amount: totalAmountWithVat, // Show total amount including VAT in cash flow
-          description: `Invoice: ${invoiceItem.description}`,
+          description: `Invoice: ${invoiceItem.description}${invoiceItem.status === 'paid' ? ' (PAID)' : ''}`,
           category: 'Client Payment',
           date: invoiceItem.due_date!, // Use due_date as the cash flow date
           is_recurring: false,

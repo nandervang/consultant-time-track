@@ -1330,7 +1330,9 @@ export default function CashFlowPage({ isDarkMode }: CashFlowPageProps) {
                             <span>•</span>
                             <div className="flex items-center gap-1">
                               <DollarSign className="h-3 w-3 text-blue-600" />
-                              <span className="text-blue-600 text-xs font-medium">Invoice Due</span>
+                              <span className="text-blue-600 text-xs font-medium">
+                                {entry.description?.includes('(PAID)') ? 'Invoice Paid' : 'Invoice Due'}
+                              </span>
                             </div>
                           </>
                         )}
