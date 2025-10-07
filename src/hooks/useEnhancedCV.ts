@@ -128,7 +128,7 @@ export function useEnhancedProjects(cvProfileId: string | null) {
     try {
       setLoading(true)
       const { data, error } = await supabase
-        .from('cv_projects_enhanced')
+        .from('cv_projects')
         .select('*')
         .eq('cv_profile_id', cvProfileId)
         .order('sort_order', { ascending: true })
@@ -239,7 +239,7 @@ export function useEnhancedExperiences(cvProfileId: string | null) {
     try {
       setLoading(true)
       const { data, error } = await supabase
-        .from('cv_experiences_enhanced')
+        .from('cv_experiences')
         .select('*')
         .eq('cv_profile_id', cvProfileId)
         .order('start_date', { ascending: false }) // Most recent first

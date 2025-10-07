@@ -155,7 +155,7 @@ export function useEnhancedEducation(cvProfileId: string | null) {
     try {
       setLoading(true)
       const { data, error } = await supabase
-        .from('cv_education_comprehensive')
+        .from('cv_education')
         .select('*')
         .eq('cv_profile_id', cvProfileId)
         .order('start_date', { ascending: false })
@@ -266,7 +266,7 @@ export function useEnhancedCertifications(cvProfileId: string | null) {
     try {
       setLoading(true)
       const { data, error } = await supabase
-        .from('cv_certifications_status')
+        .from('cv_certifications')
         .select('*')
         .eq('cv_profile_id', cvProfileId)
         .order('issue_date', { ascending: false })

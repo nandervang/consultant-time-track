@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -9,10 +8,10 @@ import {
   BarChart3, 
   Users, 
   FileText, 
-  Settings,
   ChevronLeft,
   ChevronRight,
-  Banknote
+  Banknote,
+  UserCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -31,6 +30,7 @@ const navigationItems = [
   { name: 'Projects', href: '/projects', icon: FolderOpen },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Clients', href: '/clients', icon: Users },
+  { name: 'CV Manager', href: '/cv-manager', icon: UserCheck },
   { name: 'Invoicing', href: '/invoicing', icon: FileText },
   { name: 'Salary', href: '/salary', icon: Banknote },
 ];
