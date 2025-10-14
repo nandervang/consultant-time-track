@@ -15,6 +15,7 @@ interface SummaryFormProps {
 
 export function SummaryForm({ data, onChange }: SummaryFormProps) {
   const [newStrength, setNewStrength] = useState('');
+  const [newSpecialty, setNewSpecialty] = useState('');
 
   const handleChange = (field: keyof CVSummary, value: string | string[]) => {
     onChange({
@@ -33,6 +34,20 @@ export function SummaryForm({ data, onChange }: SummaryFormProps) {
   const removeStrength = (index: number) => {
     const updated = data.keyStrengths.filter((_, i) => i !== index);
     handleChange('keyStrengths', updated);
+  };
+
+  const addSpecialty = () => {
+    if (newSpecialty.trim()) {
+      const currentSpecialties = data.specialties || [];
+      handleChange('specialties', [...currentSpecialties, newSpecialty.trim()]);
+      setNewSpecialty('');
+    }
+  };
+
+  const removeSpecialty = (index: number) => {
+    const currentSpecialties = data.specialties || [];
+    const updated = currentSpecialties.filter((_, i) => i !== index);
+    handleChange('specialties', updated);
   };
 
   return (
@@ -88,6 +103,39 @@ export function SummaryForm({ data, onChange }: SummaryFormProps) {
               onKeyPress={(e) => e.key === 'Enter' && addStrength()}
             />
             <Button onClick={addStrength} disabled={!newStrength.trim()}>
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <Label>Specialties</Label>
+            <p className="text-sm text-gray-600">Key competencies for header display (Andervang Consulting template)</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {(data.specialties || []).map((specialty, index) => (
+              <Badge key={index} variant="outline" className="flex items-center gap-1">
+                {specialty}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-4 w-4 p-0 hover:bg-transparent"
+                  onClick={() => removeSpecialty(index)}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Input
+              value={newSpecialty}
+              onChange={(e) => setNewSpecialty(e.target.value)}
+              placeholder="Add a specialty (e.g., React, TypeScript)..."
+              onKeyPress={(e) => e.key === 'Enter' && addSpecialty()}
+            />
+            <Button onClick={addSpecialty} disabled={!newSpecialty.trim()}>
               <Plus className="h-4 w-4" />
             </Button>
           </div>

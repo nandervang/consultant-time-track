@@ -54,7 +54,10 @@ export function ExperienceProjectsForm({
       name: '',
       description: '',
       technologies: [],
-      url: ''
+      url: '',
+      type: '', // Required for Andervang template
+      period: '',
+      achievements: []
     };
     onProjectsChange([...projectsData, newProject]);
   };
@@ -83,6 +86,11 @@ export function ExperienceProjectsForm({
   const handleAchievementsChange = (index: number, value: string) => {
     const achievements = value.split('\n').map(achievement => achievement.trim()).filter(achievement => achievement);
     updateExperience(index, 'achievements', achievements);
+  };
+
+  const handleProjectAchievementsChange = (index: number, value: string) => {
+    const achievements = value.split('\n').map(achievement => achievement.trim()).filter(achievement => achievement);
+    updateProject(index, 'achievements', achievements);
   };
 
   return (
@@ -278,6 +286,30 @@ export function ExperienceProjectsForm({
                       />
                     </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor={`project-type-${index}`}>Project Type *</Label>
+                        <Input
+                          id={`project-type-${index}`}
+                          placeholder="e.g., Fullstack Development, Frontend, Mobile App"
+                          value={project.type || ''}
+                          onChange={(e) => updateProject(index, 'type', e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Required for Andervang Consulting template
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`project-period-${index}`}>Period</Label>
+                        <Input
+                          id={`project-period-${index}`}
+                          placeholder="e.g., 2023-2024, Q1 2024"
+                          value={project.period || ''}
+                          onChange={(e) => updateProject(index, 'period', e.target.value)}
+                        />
+                      </div>
+                    </div>
+
                     <div className="space-y-2">
                       <Label htmlFor={`project-description-${index}`}>Description</Label>
                       <Textarea
@@ -308,6 +340,20 @@ export function ExperienceProjectsForm({
                         value={project.url || ''}
                         onChange={(e) => updateProject(index, 'url', e.target.value)}
                       />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor={`project-achievements-${index}`}>Key Achievements</Label>
+                      <Textarea
+                        id={`project-achievements-${index}`}
+                        placeholder="• Improved performance by 50%&#10;• Implemented accessibility features&#10;• Used by 10,000+ users"
+                        value={(project.achievements || []).join('\n')}
+                        onChange={(e) => handleProjectAchievementsChange(index, e.target.value)}
+                        rows={3}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Enter each achievement on a new line
+                      </p>
                     </div>
                   </CardContent>
                 </Card>

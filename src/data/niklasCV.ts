@@ -22,8 +22,30 @@ export const niklasCV = {
       "Stark bakgrund inom analys, SEO och värdeskapande",
       "Mentorskap, Scrum Master och teamledarskap"
     ],
-    careerObjective: "Niklas har också ett stort intresse för analys och SEO och brinner för att skapa värde och förbättring. Som person är Niklas noggrann och trivs med att ha ett brett perspektiv till saker och ting."
+    careerObjective: "Niklas har också ett stort intresse för analys och SEO och brinner för att skapa värde och förbättring. Som person är Niklas noggrann och trivs med att ha ett brett perspektiv till saker och ting.",
+    // New specialties field for Andervang template
+    specialties: ["React", "TypeScript", "Tillgänglighet", "DevOps", "Scrum Master", "Next.js"]
   },
+
+  // New roles section for Andervang Consulting template
+  roles: [
+    {
+      title: "Frontend Specialist",
+      skills: ["React", "TypeScript", "CSS", "HTML", "Next.js", "Gatsby.js"]
+    },
+    {
+      title: "Accessibility Expert", 
+      skills: ["WCAG", "AXE", "Screen Readers", "Keyboard Navigation", "ARIA"]
+    },
+    {
+      title: "DevOps Engineer",
+      skills: ["CI/CD", "Docker", "Azure", "GitHub Actions", "Netlify"]
+    },
+    {
+      title: "Team Lead & Mentor",
+      skills: ["Scrum Master", "Team Leadership", "Code Review", "Mentoring"]
+    }
+  ],
 
   experience: [
     {
@@ -438,21 +460,42 @@ export const niklasCV = {
   projects: [
     {
       name: "Digitalidag.se - Tillgänglig Webbplats",
+      type: "Tillgänglig Webbplats", // Required for Andervang template
+      period: "mars 2024 - maj 2024",
       description: "Ny webbplats byggd från grunden med fokus på tillgänglighet och användarupplevelse för Post och telestyrelsen PTS. Inkluderar custom event hantering och hög tillgänglighetsnivå.",
       technologies: ["React", "TypeScript", "Next.js", "Contentful", "MongoDB", "WCAG"],
-      url: "https://digitalidag.se"
+      url: "https://digitalidag.se",
+      achievements: [
+        "Byggde helt ny webbplats från grunden med fokus på tillgänglighet",
+        "Utvecklade custom gränssnitt för event hantering",
+        "Säkerställde hög tillgänglighet för både användare och redaktörer"
+      ]
     },
     {
       name: "Skandia Designsystem", 
+      type: "Designsystem & Komponentbibliotek",
+      period: "mars 2023 - dec 2023",
       description: "Centralt designsystem för Skandia med fokus på tillgänglighet. Ombyggnad av komponenter för webb, app och interna system med modern teknologi och kvalitetssäkring.",
       technologies: ["React", "TypeScript", "Storybook", "Figma", "AXE", "Webdriver IO"],
-      url: ""
+      url: "",
+      achievements: [
+        "Ledde tillgänglighetsarbetet för centralt designsystem",
+        "Ombyggnad av komponenter för webb, app och interna system",
+        "Dokumentation och granskning samt stöd för utvecklare och design"
+      ]
     },
     {
       name: "SJ.se Mikrofrontend Arkitektur",
+      type: "Mikrofrontend Arkitektur",
+      period: "juni 2020 - apr 2022",
       description: "Migrering från Angular.js till React med fokus på mikrofrontend arkitektur och komponentbibliotek. Inkluderar A/B testning och optimering med Adobe verktyg.",
       technologies: ["React", "Redux", "TypeScript", "Micro Frontend", "Adobe Analytics", "Cypress"],
-      url: "https://sj.se"
+      url: "https://sj.se",
+      achievements: [
+        "Migrerade från Angular.js till React med mikrofrontend-arkitektur",
+        "Projektledare/Scrum Master för SJs leveransgrupp",
+        "Implementerade A/B-tester och analys med Adobe-verktyg"
+      ]
     }
   ],
 
@@ -561,8 +604,48 @@ export const niklasCV = {
     }
   ],
 
+  // New competencies section with skill levels (alternative to skills)
+  competencies: [
+    {
+      category: "Frontend Utveckling",
+      skills: [
+        { name: "React", level: "Expert", yearsOfExperience: 8 },
+        { name: "TypeScript", level: "Expert", yearsOfExperience: 6 },
+        { name: "Next.js", level: "Advanced", yearsOfExperience: 4 },
+        { name: "CSS", level: "Expert", yearsOfExperience: 15 }
+      ]
+    },
+    {
+      category: "Tillgänglighet",
+      skills: [
+        { name: "WCAG", level: "Expert", yearsOfExperience: 7 },
+        { name: "AXE Testing", level: "Advanced", yearsOfExperience: 5 },
+        { name: "Screen Reader Testing", level: "Advanced", yearsOfExperience: 6 }
+      ]
+    },
+    {
+      category: "Backend & DevOps",
+      skills: [
+        { name: "Node.js", level: "Advanced", yearsOfExperience: 6 },
+        { name: "C#", level: "Advanced", yearsOfExperience: 8 },
+        { name: "CI/CD", level: "Advanced", yearsOfExperience: 5 }
+      ]
+    }
+  ],
+
+  // New closing section
+  closing: {
+    text: "Tack för att du tog dig tid att läsa mitt CV. Jag ser fram emot möjligheten att diskutera hur jag kan bidra till ert team och hjälpa er att nå era mål med modern webbutveckling och tillgänglighet.",
+    contact: {
+      email: "niklas@andervang.com",
+      phone: "+46 70 244 13 23", 
+      location: "Stockholm, Sverige",
+      company: "Andervang Consulting"
+    }
+  },
+
   templateSettings: {
-    template: "modern",
+    template: "andervang-consulting", // Changed to match API template name
     theme: "blue",
     fontSize: "medium", 
     showPhoto: true,
@@ -570,5 +653,9 @@ export const niklasCV = {
     language: "sv",
     margins: "normal",
     colorScheme: "blue"
-  }
+  },
+
+  // Add top-level template and format fields for API compatibility
+  template: "andervang-consulting",
+  format: "pdf"
 };

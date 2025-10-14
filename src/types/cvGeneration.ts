@@ -31,6 +31,8 @@ export interface CVSummary {
   introduction: string;
   keyStrengths: string[];
   careerObjective?: string;
+  // New fields for Andervang Consulting template
+  specialties?: string[]; // Key competencies for header display
 }
 
 export interface CVExperienceItem {
@@ -60,6 +62,10 @@ export interface CVProjectItem {
   description: string;
   technologies: string[];
   url?: string;
+  // New fields for Andervang Consulting template
+  type?: string; // Project type/category - required for Andervang template
+  period?: string;
+  achievements?: string[];
 }
 
 export interface CVCertificationItem {
@@ -81,6 +87,33 @@ export interface CVCourseItem {
   duration?: string;
   credentialId?: string;
   url?: string;
+}
+
+// New interfaces for Andervang Consulting template
+export interface CVRole {
+  title: string;
+  skills: string[];
+}
+
+export interface CVCompetencySkill {
+  name: string;
+  level: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
+  yearsOfExperience?: number;
+}
+
+export interface CVCompetencyCategory {
+  category: string;
+  skills: CVCompetencySkill[];
+}
+
+export interface CVClosing {
+  text: string;
+  contact: {
+    email: string;
+    phone: string;
+    location: string;
+    company: string;
+  };
 }
 
 export interface CVTemplateSettings {
@@ -107,6 +140,10 @@ export interface CVGenerationData {
   templateSettings: CVTemplateSettings;
   template?: string;
   format?: string;
+  // New optional fields for Andervang Consulting template
+  roles?: CVRole[];
+  competencies?: CVCompetencyCategory[];
+  closing?: CVClosing;
 }
 
 export interface CVCustomization {

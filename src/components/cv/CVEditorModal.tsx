@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Save, Copy, Trash2, Plus, FileText, X } from 'lucide-react';
+import { Save, Copy, Trash2, Plus, FileText, X, Download } from 'lucide-react';
 import { PersonalInfoForm } from './forms/PersonalInfoForm';
 import { SummaryForm } from './forms/SummaryForm';
 import { ExperienceProjectsForm } from './forms/ExperienceProjectsForm';
@@ -18,6 +18,10 @@ import { SkillsForm } from './forms/SkillsForm';
 import { LanguagesForm } from './forms/LanguagesForm';
 import { TemplateSettingsForm } from './forms/TemplateSettingsForm';
 import { CVGenerationPanel } from './CVGenerationPanel';
+import { CVGenerationDialog } from './CVGenerationDialog';
+import { RolesForm } from './forms/RolesForm';
+import { CompetenciesForm } from './forms/CompetenciesForm';
+import { ClosingForm } from './forms/ClosingForm';
 import { useCVVersions } from '@/hooks/useCVVersions';
 import { niklasCV } from '@/data/niklasCV';
 import type { CVGenerationData } from '@/types/cvGeneration';
@@ -43,7 +47,8 @@ const defaultCVData: CVGenerationData = {
   summary: {
     introduction: '',
     keyStrengths: [],
-    careerObjective: ''
+    careerObjective: '',
+    specialties: []
   },
   experience: [],
   projects: [],
@@ -52,8 +57,20 @@ const defaultCVData: CVGenerationData = {
   courses: [],
   languages: [],
   skills: [],
+  // New optional fields for Andervang Consulting template
+  roles: [],
+  competencies: [],
+  closing: {
+    text: 'Tack för att du tog dig tid att läsa mitt CV. Jag ser fram emot möjligheten att diskutera hur jag kan bidra till ert team.',
+    contact: {
+      email: '',
+      phone: '',
+      location: '',
+      company: 'Andervang Consulting'
+    }
+  },
   templateSettings: {
-    template: 'modern',
+    template: 'andervang-consulting',
     theme: 'blue',
     fontSize: 'medium',
     showPhoto: true,
@@ -70,6 +87,7 @@ export function CVEditorModal({ isOpen, onClose, userId }: CVEditorModalProps) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const [showGenerationDialog, setShowGenerationDialog] = useState(false);
   const [pendingVersionId, setPendingVersionId] = useState<string | null>(null);
   
   console.log('CVEditorModal rendered with userId:', userId, 'isOpen:', isOpen);
@@ -185,7 +203,16 @@ export function CVEditorModal({ isOpen, onClose, userId }: CVEditorModalProps) {
   };
 
   const handleLoadSampleData = () => {
-    setCvData(niklasCV as CVGenerationData);
+    // Load sample data and ensure it has the correct format for API compatibility
+    const sampleData = {
+      ...niklasCV as CVGenerationData,
+      // Ensure template is set to a valid API template
+      template: 'andervang-consulting',
+      // Ensure format is set for API payload
+      format: 'pdf'
+    };
+    
+    setCvData(sampleData);
     setHasUnsavedChanges(true);
   };
 
@@ -243,6 +270,16 @@ export function CVEditorModal({ isOpen, onClose, userId }: CVEditorModalProps) {
                   <FileText className="h-4 w-4" />
                   Load Sample Data
                 </Button>
+
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setShowGenerationDialog(true)}
+                  className="gap-1 bg-blue-600 hover:bg-blue-700"
+                >
+                  <Download className="h-4 w-4" />
+                  Generate CV
+                </Button>
                 
                 {currentVersion && (
                   <>
@@ -298,13 +335,16 @@ export function CVEditorModal({ isOpen, onClose, userId }: CVEditorModalProps) {
           {/* CV Editor Forms */}
           <div className="flex-1 overflow-hidden">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-              <TabsList className="grid w-full grid-cols-7 bg-gray-50 mx-6 mt-4">
+              <TabsList className="grid w-full grid-cols-10 bg-gray-50 mx-6 mt-4">
                 <TabsTrigger value="personal">Personal</TabsTrigger>
                 <TabsTrigger value="summary">Summary</TabsTrigger>
                 <TabsTrigger value="experience">Experience</TabsTrigger>
-                <TabsTrigger value="education">Education</TabsTrigger>
+                <TabsTrigger value="roles">Roles</TabsTrigger>
                 <TabsTrigger value="skills">Skills</TabsTrigger>
+                <TabsTrigger value="competencies">Competencies</TabsTrigger>
+                <TabsTrigger value="education">Education</TabsTrigger>
                 <TabsTrigger value="languages">Languages</TabsTrigger>
+                <TabsTrigger value="closing">Closing</TabsTrigger>
                 <TabsTrigger value="template">Template</TabsTrigger>
               </TabsList>
 
@@ -332,6 +372,41 @@ export function CVEditorModal({ isOpen, onClose, userId }: CVEditorModalProps) {
                   />
                 </TabsContent>
 
+                <TabsContent value="roles" className="h-full p-6">
+                  <RolesForm
+                    data={cvData.roles || []}
+                    onChange={(data) => handleDataChange('roles', data)}
+                  />
+                </TabsContent>
+
+                <TabsContent value="skills" className="h-full p-6">
+                  <SkillsForm
+                    data={cvData.skills}
+                    onChange={(data) => handleDataChange('skills', data)}
+                  />
+                </TabsContent>
+
+                <TabsContent value="competencies" className="h-full p-6">
+                  <CompetenciesForm
+                    data={cvData.competencies || []}
+                    onChange={(data) => handleDataChange('competencies', data)}
+                  />
+                </TabsContent>
+
+                <TabsContent value="skills" className="h-full p-6">
+                  <SkillsForm
+                    data={cvData.skills}
+                    onChange={(data) => handleDataChange('skills', data)}
+                  />
+                </TabsContent>
+
+                <TabsContent value="competencies" className="h-full p-6">
+                  <CompetenciesForm
+                    data={cvData.competencies || []}
+                    onChange={(data) => handleDataChange('competencies', data)}
+                  />
+                </TabsContent>
+
                 <TabsContent value="education" className="h-full p-6">
                   <EducationCertificationsForm
                     educationData={cvData.education}
@@ -343,17 +418,17 @@ export function CVEditorModal({ isOpen, onClose, userId }: CVEditorModalProps) {
                   />
                 </TabsContent>
 
-                <TabsContent value="skills" className="h-full p-6">
-                  <SkillsForm
-                    data={cvData.skills}
-                    onChange={(data) => handleDataChange('skills', data)}
-                  />
-                </TabsContent>
-
                 <TabsContent value="languages" className="h-full p-6">
                   <LanguagesForm
                     data={cvData.languages}
                     onChange={(data) => handleDataChange('languages', data)}
+                  />
+                </TabsContent>
+
+                <TabsContent value="closing" className="h-full p-6">
+                  <ClosingForm
+                    data={cvData.closing || { text: '', contact: { email: '', phone: '', location: '', company: '' } }}
+                    onChange={(data) => handleDataChange('closing', data)}
                   />
                 </TabsContent>
 
@@ -446,6 +521,13 @@ export function CVEditorModal({ isOpen, onClose, userId }: CVEditorModalProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* CV Generation Dialog */}
+      <CVGenerationDialog
+        isOpen={showGenerationDialog}
+        onClose={() => setShowGenerationDialog(false)}
+        cvData={cvData}
+      />
     </Dialog>
   );
 }
