@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { CVGenerationData, CVGenerationJob } from '@/types/cvGeneration';
-import { cvGenerationAPI } from '@/services/cvGenerationAPI';
+import { CVGenerationData, CVGenerationJob, CVGenerationResult } from '@/types/cvGeneration';
+import { cvGenerationAPI, type ConsultantCVPayload } from '@/services/cv-generation-api';
+import { transformToAPIPayload, convertToConsultantPayload } from '@/utils/cv-data-transformer';
 
 export function useCVGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -76,11 +77,10 @@ export function useCVGenerator() {
       }
 
       // Prepare CV data for API
-      const apiData = {
-        ...cvData,
-        template: templateId,
-        format: format
-      };
+      const apiData = transformToAPIPayload(cvData, {
+        template: 'andervang-consulting',
+        company: 'Frank Digital AB'
+      });
 
       // Update progress
       setGenerationProgress(25);
@@ -89,7 +89,9 @@ export function useCVGenerator() {
       }
 
       // Call CV generation API
-      const result = await cvGenerationAPI.generateCV(apiData);
+      const singlePayload = { ...apiData, format: format as 'pdf' | 'docx' | 'html' };
+      const consultantPayload = convertToConsultantPayload(singlePayload);
+      const result = await cvGenerationAPI.generateCV(consultantPayload);
 
       // Update progress
       setGenerationProgress(75);
@@ -149,10 +151,10 @@ export function useCVGenerator() {
       }
 
       // Prepare CV data for API
-      const apiData = {
-        ...cvData,
-        template: templateId
-      };
+      const apiData = transformToAPIPayload(cvData, {
+        template: 'andervang-consulting',
+        company: 'Frank Digital AB'
+      });
 
       // Update progress
       setGenerationProgress(25);
@@ -161,7 +163,8 @@ export function useCVGenerator() {
       }
 
       // Call CV generation API for all formats
-      const result = await cvGenerationAPI.generateAllFormats(apiData);
+      const consultantPayload = convertToConsultantPayload(apiData);
+      const result = await cvGenerationAPI.generateAllFormats(consultantPayload);
 
       // Update progress
       setGenerationProgress(75);
@@ -172,10 +175,30 @@ export function useCVGenerator() {
       // Complete the job
       setGenerationProgress(100);
       if (job) {
+        // Transform batch result to expected format
+        const cvResult: CVGenerationResult = {
+          data: {
+            results: {},
+            summary: {
+              successful: result.success ? (result.data?.formats?.length || 0) : 0,
+              total: result.data?.formats?.length || 0
+            }
+          }
+        };
+        
+        if (result.data?.formats) {
+          result.data.formats.forEach(formatResult => {
+            cvResult.data!.results![formatResult.format] = {
+              success: true,
+              fileUrl: formatResult.url
+            };
+          });
+        }
+        
         await updateGenerationJob(job.id, { 
           status: 'completed', 
           progress: 100,
-          results: result.data?.results || {},
+          results: { [formats.join('-')]: cvResult },
           completed_at: new Date().toISOString()
         });
       }

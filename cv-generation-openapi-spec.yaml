@@ -1,0 +1,805 @@
+openapi: 3.0.0
+info:
+  title: CV Generation API
+  version: 1.0.0
+  description: Comprehensive API for generating professional CVs with all supported data fields
+  contact:
+    name: Andervang Consulting
+    email: contact@andervang.se
+
+servers:
+  - url: http://localhost:8888/.netlify/functions
+    description: Local development server
+  - url: https://andervang-cv.netlify.app/.netlify/functions
+    description: Production server
+
+paths:
+  /api:
+    post:
+      summary: Generate CV in single format
+      description: Generate a CV document in a specified format with comprehensive data support
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CVGenerationRequest'
+            examples:
+              complete_cv:
+                summary: Complete CV with all sections
+                value:
+                  personalInfo:
+                    name: "John Doe"
+                    title: "Senior Software Engineer"
+                    email: "john.doe@example.com"
+                    phone: "+46 70 123 4567"
+                    location: "Stockholm, Sweden"
+                    linkedIn: "https://linkedin.com/in/johndoe"
+                    github: "https://github.com/johndoe"
+                    website: "https://johndoe.dev"
+                    profileImage: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA..."
+                  company: "Andervang Consulting"
+                  summary:
+                    introduction: "Experienced software engineer with expertise in full-stack development..."
+                    highlights:
+                      - "10+ years of software development experience"
+                      - "Led teams of 5-10 developers"
+                      - "Expert in React, Node.js, and cloud technologies"
+                    specialties:
+                      - "Frontend Architecture"
+                      - "Team Leadership" 
+                      - "DevOps & Cloud"
+                  employment:
+                    - period: "jan 2020 - pågående"
+                      position: "Senior Software Engineer"
+                      company: "Tech Corp AB"
+                      description: "Leading frontend development team and architecting scalable solutions..."
+                      technologies: ["React", "TypeScript", "Node.js", "AWS"]
+                      achievements:
+                        - "Reduced application load time by 40%"
+                        - "Implemented CI/CD pipeline increasing deployment frequency by 300%"
+                  projects:
+                    - period: "mar 2023 - sep 2023"
+                      type: "Tech Lead"
+                      title: "E-commerce Platform Redesign"
+                      description: "Complete overhaul of legacy e-commerce platform..."
+                      technologies: ["React", "Next.js", "Stripe", "PostgreSQL"]
+                      achievements:
+                        - "Increased conversion rate by 25%"
+                        - "Improved mobile performance by 60%"
+                  education:
+                    - period: "2015 - 2018"
+                      degree: "Master of Science"
+                      institution: "KTH Royal Institute of Technology"
+                      specialization: "Computer Science"
+                  certifications:
+                    - year: "2022"
+                      title: "AWS Solutions Architect Professional"
+                      issuer: "Amazon Web Services"
+                      description: "Advanced cloud architecture certification"
+                  courses:
+                    - name: "Advanced React Patterns"
+                      provider: "Frontend Masters"
+                      completionDate: "2023-08-15"
+                      duration: "40 hours"
+                      credentialId: "FM-2023-ARP-001"
+                      url: "https://frontendmasters.com/certificate/abc123"
+                  competencies:
+                    - category: "Programming Languages"
+                      skills:
+                        - name: "JavaScript"
+                          level: "expert"
+                        - name: "TypeScript"
+                          level: "advanced"
+                        - name: "Python"
+                          level: "intermediate"
+                  languages:
+                    - language: "Swedish"
+                      proficiency: "Native"
+                    - language: "English"
+                      proficiency: "Fluent"
+                  roles:
+                    - title: "Tech Lead"
+                      skills: ["Team Leadership", "Architecture Design", "Code Review"]
+                    - title: "Frontend Specialist"
+                      skills: ["React", "Vue.js", "Performance Optimization"]
+                  competencyCategories:
+                    - category: "Frontend Development"
+                      skills:
+                        - name: "React"
+                          level: "Expert"
+                          yearsOfExperience: 6
+                        - name: "Vue.js"
+                          level: "Advanced"
+                          yearsOfExperience: 3
+                    - category: "Backend Development"
+                      skills:
+                        - name: "Node.js"
+                          level: "Advanced"
+                          yearsOfExperience: 5
+                        - name: "Python"
+                          level: "Intermediate"
+                          yearsOfExperience: 2
+                  closing:
+                    text: "Thank you for taking the time to review my CV. I look forward to discussing how I can contribute to your team."
+                    contact:
+                      email: "john.doe@example.com"
+                      phone: "+46 70 123 4567"
+                      location: "Stockholm, Sweden"
+                      company: "Andervang Consulting"
+                  templateSettings:
+                    template: "andervang-consulting"
+                    theme: "blue"
+                    showPhoto: true
+                    showReferences: false
+                    language: "en"
+                    fontSize: "medium"
+                    margins: "normal"
+                    colorScheme: "blue"
+                  template: "andervang-consulting"
+                  format: "pdf"
+                  styling:
+                    primaryColor: "#003D82"
+                    accentColor: "#FF6B35"
+                    fontSize: "medium"
+                    spacing: "normal"
+      responses:
+        '200':
+          description: CV generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleFormatResponse'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/batch/formats:
+    post:
+      summary: Generate CV in multiple formats
+      description: Generate a CV document in multiple formats simultaneously
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CVGenerationRequestWithoutFormat'
+      responses:
+        '200':
+          description: CVs generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultiFormatResponse'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/templates:
+    get:
+      summary: Get available CV templates
+      responses:
+        '200':
+          description: List of available templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Template'
+
+  /api/health:
+    get:
+      summary: Health check endpoint
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+
+components:
+  schemas:
+    CVGenerationRequest:
+      type: object
+      required:
+        - personalInfo
+        - company
+        - summary
+        - template
+        - format
+      properties:
+        personalInfo:
+          $ref: '#/components/schemas/PersonalInfo'
+        company:
+          type: string
+          description: Company name or consulting firm
+          example: "Andervang Consulting"
+        summary:
+          $ref: '#/components/schemas/Summary'
+        employment:
+          type: array
+          items:
+            $ref: '#/components/schemas/Employment'
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+        education:
+          type: array
+          items:
+            $ref: '#/components/schemas/Education'
+        certifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Certification'
+        courses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Course'
+        competencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Competency'
+        languages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Language'
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+        competencyCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompetencyCategory'
+        closing:
+          $ref: '#/components/schemas/Closing'
+        templateSettings:
+          $ref: '#/components/schemas/TemplateSettings'
+        template:
+          type: string
+          enum: ["andervang-consulting", "modern", "classic"]
+          description: CV template to use
+        format:
+          type: string
+          enum: ["pdf", "docx", "html"]
+          description: Output format
+        styling:
+          $ref: '#/components/schemas/Styling'
+
+    CVGenerationRequestWithoutFormat:
+      allOf:
+        - $ref: '#/components/schemas/CVGenerationRequest'
+      properties:
+        format:
+          type: string
+          description: "This field is ignored for batch generation"
+
+    PersonalInfo:
+      type: object
+      required:
+        - name
+        - title
+        - email
+      properties:
+        name:
+          type: string
+          description: Full name
+          example: "John Doe"
+        title:
+          type: string
+          description: Professional title
+          example: "Senior Software Engineer"
+        email:
+          type: string
+          format: email
+          description: Email address
+          example: "john.doe@example.com"
+        phone:
+          type: string
+          description: Phone number
+          example: "+46 70 123 4567"
+        location:
+          type: string
+          description: Location/address
+          example: "Stockholm, Sweden"
+        linkedIn:
+          type: string
+          description: LinkedIn profile URL
+          example: "https://linkedin.com/in/johndoe"
+        github:
+          type: string
+          description: GitHub profile URL
+          example: "https://github.com/johndoe"
+        website:
+          type: string
+          description: Personal website URL
+          example: "https://johndoe.dev"
+        profileImage:
+          type: string
+          description: Base64 encoded profile image
+          example: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA..."
+
+    Summary:
+      type: object
+      required:
+        - introduction
+        - highlights
+      properties:
+        introduction:
+          type: string
+          description: Professional summary/introduction
+          example: "Experienced software engineer with expertise in full-stack development..."
+        highlights:
+          type: array
+          items:
+            type: string
+          description: Key professional highlights
+          example: ["10+ years of experience", "Led teams of 5-10 developers"]
+        specialties:
+          type: array
+          items:
+            type: string
+          description: Key specialties for header display
+          example: ["Frontend Architecture", "Team Leadership"]
+
+    Employment:
+      type: object
+      required:
+        - period
+        - position
+        - company
+        - description
+      properties:
+        period:
+          type: string
+          description: Employment period
+          example: "jan 2020 - pågående"
+        position:
+          type: string
+          description: Job title
+          example: "Senior Software Engineer"
+        company:
+          type: string
+          description: Company name
+          example: "Tech Corp AB"
+        description:
+          type: string
+          description: Role description
+          example: "Leading frontend development team..."
+        technologies:
+          type: array
+          items:
+            type: string
+          description: Technologies used
+          example: ["React", "TypeScript", "Node.js"]
+        achievements:
+          type: array
+          items:
+            type: string
+          description: Key achievements
+          example: ["Reduced load time by 40%", "Implemented CI/CD pipeline"]
+
+    Project:
+      type: object
+      required:
+        - period
+        - type
+        - title
+        - description
+        - technologies
+      properties:
+        period:
+          type: string
+          description: Project period
+          example: "mar 2023 - sep 2023"
+        type:
+          type: string
+          description: Role/type in project
+          example: "Tech Lead"
+        title:
+          type: string
+          description: Project title
+          example: "E-commerce Platform Redesign"
+        description:
+          type: string
+          description: Project description
+          example: "Complete overhaul of legacy e-commerce platform..."
+        technologies:
+          type: array
+          items:
+            type: string
+          description: Technologies used
+          example: ["React", "Next.js", "Stripe"]
+        achievements:
+          type: array
+          items:
+            type: string
+          description: Project achievements
+          example: ["Increased conversion rate by 25%"]
+
+    Education:
+      type: object
+      required:
+        - period
+        - degree
+        - institution
+      properties:
+        period:
+          type: string
+          description: Education period
+          example: "2015 - 2018"
+        degree:
+          type: string
+          description: Degree obtained
+          example: "Master of Science"
+        institution:
+          type: string
+          description: Educational institution
+          example: "KTH Royal Institute of Technology"
+        specialization:
+          type: string
+          description: Field of study/specialization
+          example: "Computer Science"
+
+    Certification:
+      type: object
+      required:
+        - year
+        - title
+        - issuer
+      properties:
+        year:
+          type: string
+          description: Year obtained
+          example: "2022"
+        title:
+          type: string
+          description: Certification title
+          example: "AWS Solutions Architect Professional"
+        issuer:
+          type: string
+          description: Issuing organization
+          example: "Amazon Web Services"
+        description:
+          type: string
+          description: Additional description
+          example: "Advanced cloud architecture certification"
+
+    Course:
+      type: object
+      required:
+        - name
+        - provider
+        - completionDate
+      properties:
+        name:
+          type: string
+          description: Course name
+          example: "Advanced React Patterns"
+        provider:
+          type: string
+          description: Course provider
+          example: "Frontend Masters"
+        completionDate:
+          type: string
+          format: date
+          description: Completion date
+          example: "2023-08-15"
+        duration:
+          type: string
+          description: Course duration
+          example: "40 hours"
+        credentialId:
+          type: string
+          description: Credential ID
+          example: "FM-2023-ARP-001"
+        url:
+          type: string
+          description: Certificate URL
+          example: "https://frontendmasters.com/certificate/abc123"
+
+    Competency:
+      type: object
+      required:
+        - category
+        - skills
+      properties:
+        category:
+          type: string
+          description: Skill category
+          example: "Programming Languages"
+        skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/Skill'
+
+    Skill:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Skill name
+          example: "JavaScript"
+        level:
+          type: string
+          enum: ["beginner", "intermediate", "advanced", "expert"]
+          description: Proficiency level
+          example: "expert"
+
+    Language:
+      type: object
+      required:
+        - language
+        - proficiency
+      properties:
+        language:
+          type: string
+          description: Language name
+          example: "Swedish"
+        proficiency:
+          type: string
+          description: Proficiency level
+          example: "Native"
+
+    Role:
+      type: object
+      required:
+        - title
+        - skills
+      properties:
+        title:
+          type: string
+          description: Role title
+          example: "Tech Lead"
+        skills:
+          type: array
+          items:
+            type: string
+          description: Skills for this role
+          example: ["Team Leadership", "Architecture Design"]
+
+    CompetencyCategory:
+      type: object
+      required:
+        - category
+        - skills
+      properties:
+        category:
+          type: string
+          description: Competency category name
+          example: "Frontend Development"
+        skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompetencySkill'
+
+    CompetencySkill:
+      type: object
+      required:
+        - name
+        - level
+      properties:
+        name:
+          type: string
+          description: Skill name
+          example: "React"
+        level:
+          type: string
+          enum: ["Beginner", "Intermediate", "Advanced", "Expert"]
+          description: Proficiency level
+          example: "Expert"
+        yearsOfExperience:
+          type: integer
+          description: Years of experience
+          example: 6
+
+    Closing:
+      type: object
+      required:
+        - text
+        - contact
+      properties:
+        text:
+          type: string
+          description: Closing statement
+          example: "Thank you for taking the time to review my CV..."
+        contact:
+          $ref: '#/components/schemas/ClosingContact'
+
+    ClosingContact:
+      type: object
+      required:
+        - email
+        - phone
+        - location
+        - company
+      properties:
+        email:
+          type: string
+          format: email
+          description: Contact email
+          example: "john.doe@example.com"
+        phone:
+          type: string
+          description: Contact phone
+          example: "+46 70 123 4567"
+        location:
+          type: string
+          description: Contact location
+          example: "Stockholm, Sweden"
+        company:
+          type: string
+          description: Company name
+          example: "Andervang Consulting"
+
+    TemplateSettings:
+      type: object
+      properties:
+        template:
+          type: string
+          description: Template identifier
+          example: "andervang-consulting"
+        theme:
+          type: string
+          description: Color theme
+          example: "blue"
+        showPhoto:
+          type: boolean
+          description: Whether to show profile photo
+          example: true
+        showReferences:
+          type: boolean
+          description: Whether to show references
+          example: false
+        language:
+          type: string
+          description: Language setting
+          example: "en"
+        fontSize:
+          type: string
+          description: Font size setting
+          example: "medium"
+        margins:
+          type: string
+          description: Margin setting
+          example: "normal"
+        colorScheme:
+          type: string
+          description: Color scheme
+          example: "blue"
+
+    Styling:
+      type: object
+      properties:
+        primaryColor:
+          type: string
+          description: Primary color (hex)
+          example: "#003D82"
+        accentColor:
+          type: string
+          description: Accent color (hex)
+          example: "#FF6B35"
+        fontFamily:
+          type: string
+          description: Font family
+          example: "Arial, sans-serif"
+        fontSize:
+          type: string
+          enum: ["small", "medium", "large"]
+          description: Font size
+          example: "medium"
+        spacing:
+          type: string
+          enum: ["compact", "normal", "relaxed"]
+          description: Spacing setting
+          example: "normal"
+
+    SingleFormatResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            url:
+              type: string
+              description: Download URL for generated CV
+              example: "https://example.com/cv-download-url"
+            filename:
+              type: string
+              description: Generated filename
+              example: "john_doe_cv.pdf"
+        error:
+          type: string
+          description: Error message if generation failed
+          example: null
+
+    MultiFormatResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            formats:
+              type: array
+              items:
+                type: object
+                properties:
+                  format:
+                    type: string
+                    enum: ["pdf", "docx", "html"]
+                    example: "pdf"
+                  url:
+                    type: string
+                    description: Download URL
+                    example: "https://example.com/cv-download-url.pdf"
+                  filename:
+                    type: string
+                    description: Generated filename
+                    example: "john_doe_cv.pdf"
+        error:
+          type: string
+          description: Error message if generation failed
+          example: null
+
+    Template:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "andervang-consulting"
+        name:
+          type: string
+          example: "Andervang Consulting Template"
+        description:
+          type: string
+          example: "Professional consulting template with modern design"
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          description: Error message
+          example: "Invalid request data"
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+security:
+  - ApiKeyAuth: []

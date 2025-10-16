@@ -1,7 +1,7 @@
 // CV Generation API Client
 import { CV_API_CONFIG } from '../config/api';
 
-interface ConsultantCVPayload {
+export interface ConsultantCVPayload {
   personalInfo: {
     name: string;
     title: string;
@@ -97,9 +97,13 @@ class CVGenerationAPI {
 
   async generateCV(cvData: ConsultantCVPayload): Promise<CVGenerationResult> {
     try {
-      console.log('Generating CV with Netlify Functions at:', this.baseUrl);
+      const endpoint = `${this.baseUrl}/api`;
+      const isLocal = CV_API_CONFIG.useLocalAPI;
       
-      const response = await fetch(`${this.baseUrl}/api`, {
+      console.log(`🚀 Generating CV with ${isLocal ? 'LOCAL' : 'REMOTE'} Netlify Functions`);
+      console.log(`📡 Endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

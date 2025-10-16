@@ -1,110 +1,23 @@
 import { CVGenerationData, CVCustomization } from '@/types/cvGeneration';
 
-// API Payload interface based on OpenAPI specification
-interface APIPayload {
-  personalInfo: {
-    name: string;
-    email?: string;
-    phone?: string;
-    location?: string;
-    summary?: string;
-    website?: string;
-    linkedin?: string;
-    github?: string;
-    profilePhoto?: string;
-    title?: string;
-  };
-  summary?: {
-    introduction?: string;
-    specialties?: string[];
-  };
-  roles?: Array<{
-    title: string;
-    skills: string[];
-  }>;
-  experience?: Array<{
-    company: string;
-    title: string;
-    period: string;
-    description?: string;
-    achievements?: string[];
-    technologies?: string[];
-  }>;
-  skills?: Array<{
-    category: string;
-    items: string[];
-  }>;
-  competencies?: Array<{
-    category: string;
-    skills: Array<{
-      name: string;
-      level: string;
-      yearsOfExperience?: number;
-    }>;
-  }>;
-  education?: Array<{
-    institution: string;
-    degree: string;
-    field?: string;
-    period: string;
-    gpa?: string;
-  }>;
-  projects?: Array<{
-    name: string;
-    title?: string;
-    type?: string;
-    description: string;
-    technologies: string[];
-    url?: string;
-    period?: string;
-    achievements?: string[];
-  }>;
-  certifications?: Array<{
-    name: string;
-    issuer: string;
-    date: string;
-    credentialId?: string;
-  }>;
-  courses?: Array<{
-    name: string;
-    provider: string;
-    completionDate: string;
-    credentialId?: string;
-    url?: string;
-  }>;
-  languages?: Array<{
-    language: string;
-    proficiency: string;
-  }>;
-  closing?: {
-    text: string;
-    contact: {
-      email: string;
-      phone: string;
-      location: string;
-      company: string;
-    };
-  };
-  template: string;
-  format: string;
-}
+// Import the ConsultantCVPayload type from cv-generation-api
+import type { ConsultantCVPayload } from './cv-generation-api';
 
-// CV Generation API Client
-const CV_API_CONFIG = {
-  baseUrl: import.meta.env.VITE_CV_API_URL || 'https://andervang-cv.netlify.app/.netlify/functions',
-  apiKey: import.meta.env.VITE_CV_API_KEY || 'dev-api-key-12345',
-  timeout: 45000 // 45 seconds for generation requests (increased for serverless)
-};
+// Use ConsultantCVPayload as the API format
+type APIPayload = ConsultantCVPayload;
+
+// Import the centralized configuration
+import { CV_API_CONFIG } from '../config/api';
 
 export class CVGenerationAPI {
   private baseUrl: string;
   private apiKey: string;
   private timeout: number;
 
-  constructor(config = CV_API_CONFIG) {
-    this.baseUrl = config.baseUrl;
-    this.apiKey = config.apiKey;
-    this.timeout = config.timeout;
+  constructor() {
+    this.baseUrl = CV_API_CONFIG.baseUrl;
+    this.apiKey = CV_API_CONFIG.apiKey;
+    this.timeout = CV_API_CONFIG.timeout;
   }
 
   private async makeRequest(endpoint: string, options: RequestInit = {}) {
@@ -193,96 +106,65 @@ export class CVGenerationAPI {
     return this.makeRequest('/api/templates');
   }
 
-  // Transform internal CV data to API payload format
+  // Transform internal CV data to ConsultantCVPayload format (matching cv-gen API)
   private transformToAPIPayload(cvData: CVGenerationData): APIPayload {
-    // Transform according to OpenAPI specification
+    // Transform to match the cv-gen API format
     const payload = {
       personalInfo: {
-        name: cvData.personalInfo.name,
-        email: cvData.personalInfo.email,
-        phone: cvData.personalInfo.phone,
-        location: cvData.personalInfo.location,
-        summary: cvData.summary?.introduction,
-        website: cvData.personalInfo.website,
-        linkedin: cvData.personalInfo.linkedIn,
-        github: cvData.personalInfo.github,
-        profilePhoto: cvData.personalInfo.profilePhoto,
-        title: cvData.personalInfo.title
+        name: cvData.personalInfo.name || '',
+        title: cvData.personalInfo.title || '',
+        email: cvData.personalInfo.email || '',
+        phone: cvData.personalInfo.phone || '',
+        location: cvData.personalInfo.location || '',
+        profileImage: cvData.personalInfo.profilePhoto
       },
-      // Enhanced summary with specialties
-      summary: cvData.summary ? {
-        introduction: cvData.summary.introduction,
-        specialties: cvData.summary.specialties
-      } : undefined,
-      // Professional roles section
-      roles: cvData.roles?.map(role => ({
-        title: role.title,
-        skills: role.skills
-      })),
-      experience: cvData.experience.map(exp => ({
-        company: exp.company,
-        title: exp.position, // Map position to title
-        period: exp.period,
-        description: exp.description,
-        achievements: exp.achievements,
-        technologies: exp.technologies
-      })),
-      skills: cvData.skills.map(skill => ({
-        category: skill.category,
-        items: skill.items
-      })),
-      // Enhanced competencies with skill levels
-      competencies: cvData.competencies?.map(comp => ({
-        category: comp.category,
-        skills: comp.skills.map(skill => ({
-          name: skill.name,
-          level: skill.level,
-          yearsOfExperience: skill.yearsOfExperience
-        }))
-      })),
-      education: cvData.education?.map(edu => ({
-        institution: edu.institution,
-        degree: edu.degree,
-        field: edu.field,
-        period: edu.period,
-        gpa: edu.gpa
+      company: 'Frank Digital AB', // Default company
+      summary: {
+        introduction: cvData.summary?.introduction || '',
+        highlights: cvData.summary?.keyStrengths || [],
+        specialties: cvData.summary?.specialties || []
+      },
+      employment: cvData.experience?.map(exp => ({
+        period: exp.period || '',
+        position: exp.position || '',
+        company: exp.company || '',
+        description: exp.description || '',
+        technologies: exp.technologies || [],
+        achievements: exp.achievements || []
       })) || [],
-      // Enhanced projects with type field
       projects: cvData.projects?.map(project => ({
-        name: project.name,
-        title: project.name, // API accepts both name and title
-        type: project.type, // Required for Andervang template
-        description: project.description,
-        technologies: project.technologies,
-        url: project.url,
-        period: project.period,
-        achievements: project.achievements
+        period: project.period || 'Projektperiod',
+        type: project.type || 'Utvecklare',
+        title: project.name || '',
+        description: project.description || '',
+        technologies: project.technologies || []
+      })) || [],
+      education: cvData.education?.map(edu => ({
+        period: edu.period || '',
+        degree: edu.degree || '',
+        institution: edu.institution || '',
+        specialization: edu.field
       })) || [],
       certifications: cvData.certifications?.map(cert => ({
-        name: cert.name,
-        issuer: cert.issuer,
-        date: cert.date,
-        credentialId: cert.credentialId
+        year: cert.date || '',
+        title: cert.name || '',
+        issuer: cert.issuer || '',
+        description: cert.credentialId ? `Credential ID: ${cert.credentialId}` : undefined
       })) || [],
-      // Courses section
-      courses: cvData.courses?.map(course => ({
-        name: course.name,
-        provider: course.provider,
-        completionDate: course.completionDate,
-        credentialId: course.credentialId,
-        url: course.url
+      competencies: cvData.skills?.map(skill => ({
+        category: skill.category,
+        items: skill.items
       })) || [],
       languages: cvData.languages?.map(lang => ({
-        language: lang.language,
-        proficiency: lang.proficiency
+        language: lang.language || '',
+        proficiency: lang.proficiency || ''
       })) || [],
-      // Closing section
-      closing: cvData.closing ? {
-        text: cvData.closing.text,
-        contact: cvData.closing.contact
-      } : undefined,
       template: cvData.template || cvData.templateSettings?.template || 'andervang-consulting',
-      format: cvData.format || 'pdf' // Required field
+      format: cvData.format || 'pdf',
+      styling: {
+        primaryColor: cvData.templateSettings?.colorScheme === 'blue' ? '#003D82' : '#003D82',
+        accentColor: '#FF6B35'
+      }
     };
 
     // Remove undefined/null values
@@ -292,7 +174,14 @@ export class CVGenerationAPI {
   // Generate CV
   async generateCV(cvData: CVGenerationData) {
     const apiPayload = this.transformToAPIPayload(cvData);
-    return this.makeRequest('/api/generate/complete', {
+    
+    const endpoint = `${this.baseUrl}/api`;
+    const isLocal = CV_API_CONFIG.useLocalAPI;
+    
+    console.log(`🚀 Generating CV with ${isLocal ? 'LOCAL' : 'REMOTE'} Netlify Functions`);
+    console.log(`📡 Endpoint: ${endpoint}`);
+    
+    return this.makeRequest('/api', {
       method: 'POST',
       body: JSON.stringify(apiPayload)
     });
@@ -300,9 +189,20 @@ export class CVGenerationAPI {
 
   // Generate all formats
   async generateAllFormats(cvData: CVGenerationData) {
+    const apiPayload = this.transformToAPIPayload(cvData);
+    // Remove format field for batch generation
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { format, ...batchPayload } = apiPayload;
+    
+    const endpoint = `${this.baseUrl}/api/batch/formats`;
+    const isLocal = CV_API_CONFIG.useLocalAPI;
+    
+    console.log(`🚀 Generating all formats with ${isLocal ? 'LOCAL' : 'REMOTE'} Netlify Functions`);
+    console.log(`📡 Endpoint: ${endpoint}`);
+    
     return this.makeRequest('/api/batch/formats', {
       method: 'POST',
-      body: JSON.stringify(cvData)
+      body: JSON.stringify(batchPayload)
     });
   }
 

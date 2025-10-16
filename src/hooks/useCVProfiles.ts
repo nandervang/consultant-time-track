@@ -96,6 +96,41 @@ export function useCVProfiles() {
     });
   };
 
+  const setActiveProfile = async (id: string) => {
+    if (!user) throw new Error('User not authenticated');
+
+    try {
+      // First, set all profiles to inactive
+      const { error: deactivateError } = await supabase
+        .from('cv_profiles')
+        .update({ is_active: false })
+        .eq('user_id', user.id);
+
+      if (deactivateError) throw deactivateError;
+
+      // Then set the selected profile as active
+      const { data, error } = await supabase
+        .from('cv_profiles')
+        .update({ is_active: true })
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update local state
+      setProfiles(prev => prev.map(p => ({
+        ...p,
+        is_active: p.id === id
+      })));
+
+      return data;
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to set active profile');
+    }
+  };
+
   useEffect(() => {
     fetchProfiles();
   }, [fetchProfiles]);
@@ -108,6 +143,7 @@ export function useCVProfiles() {
     updateProfile,
     deleteProfile,
     duplicateProfile,
+    setActiveProfile,
     refetch: fetchProfiles
   };
 }

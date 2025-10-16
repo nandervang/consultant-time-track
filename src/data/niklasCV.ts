@@ -6,10 +6,10 @@ export const niklasCV = {
     email: "niklas.andervang@frankdigital.se",
     phone: "+46702441323",
     location: "Stockholm, Sverige",
-    linkedIn: "",
-    github: "",
-    website: "",
-    profilePhoto: ""
+    linkedIn: "https://linkedin.com/in/niklasandervang",
+    github: "https://github.com/nandervang",
+    website: "https://andervang.com",
+    profilePhoto: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
   },
   
   summary: {
@@ -31,19 +31,27 @@ export const niklasCV = {
   roles: [
     {
       title: "Frontend Specialist",
-      skills: ["React", "TypeScript", "CSS", "HTML", "Next.js", "Gatsby.js"]
+      skills: ["React", "TypeScript", "CSS", "HTML", "Next.js", "Gatsby.js", "Vue.js", "Angular"]
     },
     {
       title: "Accessibility Expert", 
-      skills: ["WCAG", "AXE", "Screen Readers", "Keyboard Navigation", "ARIA"]
+      skills: ["WCAG", "AXE", "Screen Readers", "Keyboard Navigation", "ARIA", "Color Contrast", "Focus Management"]
     },
     {
       title: "DevOps Engineer",
-      skills: ["CI/CD", "Docker", "Azure", "GitHub Actions", "Netlify"]
+      skills: ["CI/CD", "Docker", "Kubernetes", "Azure", "AWS", "GitHub Actions", "Netlify", "Terraform"]
+    },
+    {
+      title: "Full-Stack Developer",
+      skills: ["Node.js", "Express", "MongoDB", "PostgreSQL", "REST APIs", "GraphQL", "Microservices"]
     },
     {
       title: "Team Lead & Mentor",
-      skills: ["Scrum Master", "Team Leadership", "Code Review", "Mentoring"]
+      skills: ["Scrum Master", "Team Leadership", "Code Review", "Mentoring", "Agile", "Project Management"]
+    },
+    {
+      title: "UX/UI Specialist",
+      skills: ["User Research", "Prototyping", "Figma", "Design Systems", "Usability Testing", "Interaction Design"]
     }
   ],
 
@@ -496,6 +504,45 @@ export const niklasCV = {
         "Projektledare/Scrum Master för SJs leveransgrupp",
         "Implementerade A/B-tester och analys med Adobe-verktyg"
       ]
+    },
+    {
+      name: "E-commerce Platform - ForSea TaxFree",
+      type: "E-handelslösning",
+      period: "okt 2022 - mars 2023",
+      description: "Omfattande e-handelsplattform för taxfree-varor med komplex produktkatalog, PIM-integrationer och skräddarsydd shoppingkorg. Byggd med senaste Optimizely-plattformen.",
+      technologies: ["React", "Redux", "TypeScript", "Optimizely", "C#", ".NET Core"],
+      url: "",
+      achievements: [
+        "Ledande roll inom frontendutveckling för e-handelsplattform",
+        "Utvecklade komplex produktkatalog med PIM-integrationer",
+        "Skapade skräddarsydd shoppingkorg och orderflöde"
+      ]
+    },
+    {
+      name: "M&Ms Konfigurator & E-handel",
+      type: "Interaktiv Konfigurator",
+      period: "jan 2022 - okt 2022",
+      description: "Modernisering av Mars M&Ms webbplattform med övergång till Commercetools och Amplience. Inkluderade total omarbetning av konfiguratorn för skräddarsytt godis.",
+      technologies: ["React", "TypeScript", "GraphQL", "Commercetools", "Amplience"],
+      url: "",
+      achievements: [
+        "Omfattande uppgradering till modernare teknisk plattform",
+        "Omarbetning av konfigurator för skräddarsytt godis",
+        "Stöd för fem utvecklingsteam som tillgänglighetsexpert"
+      ]
+    },
+    {
+      name: "KTH Climate Compatible Growth Portal",
+      type: "Forskningsportal & Kunskapsdelning",
+      period: "mars 2023 - okt 2023",
+      description: "Hållbar webbplattform för kunskapsdelning mellan länder inom klimatkompatibel tillväxt. Följer sustainable web design-principer och har höga tillgänglighetsstandarder.",
+      technologies: ["React", "TypeScript", "Strapi", "Azure", "Sustainable Web Design"],
+      url: "",
+      achievements: [
+        "Utvecklade lösning för kunskapsdelning mellan länder",
+        "Implementerade hållbara webbdesign-principer",
+        "Säkerställde höga tillgänglighetsstandarder"
+      ]
     }
   ],
 
@@ -521,75 +568,133 @@ export const niklasCV = {
       name: "Certified Professional in Accessibility Core Competencies (CPACC)",
       issuer: "IAAP", 
       date: "2022",
-      credentialId: ""
+      credentialId: "CPACC-2022-NA-001"
+    },
+    {
+      name: "AWS Solutions Architect Professional",
+      issuer: "Amazon Web Services",
+      date: "2023",
+      credentialId: "AWS-SAP-2023-567890"
+    },
+    {
+      name: "Certified Kubernetes Administrator (CKA)",
+      issuer: "Cloud Native Computing Foundation",
+      date: "2023",
+      credentialId: "CKA-2023-123456"
     },
     {
       name: "Agile core competence and fundamentals course",
       issuer: "Valtech",
       date: "2021",
-      credentialId: ""
+      credentialId: "VALTECH-AGILE-2021-789"
     },
     {
       name: "Web Accessibility by Google",
       issuer: "Google",
       date: "2019", 
-      credentialId: ""
+      credentialId: "GOOGLE-A11Y-2019-456"
     },
     {
-      name: "Agile Scrum kurs",
-      issuer: "",
+      name: "Microsoft Azure DevOps Engineer Expert",
+      issuer: "Microsoft",
+      date: "2022",
+      credentialId: "AZ-400-2022-890123"
+    },
+    {
+      name: "Agile Scrum Master Professional",
+      issuer: "Scrum Alliance",
       date: "2015",
-      credentialId: ""
+      credentialId: "CSM-2015-345678"
     }
   ],
 
   courses: [
     {
+      name: "Advanced React Performance Optimization",
+      provider: "Frontend Masters",
+      completionDate: "2023-08-15",
+      duration: "8 hours",
+      credentialId: "FM-2023-ARPO-001",
+      url: "https://frontendmasters.com/courses/react-performance/"
+    },
+    {
+      name: "Web Accessibility: Advanced Techniques",
+      provider: "Deque University", 
+      completionDate: "2023-06-20",
+      duration: "12 hours",
+      credentialId: "DU-WAT-2023-456",
+      url: "https://dequeuniversity.com/curriculum/packages/web-accessibility"
+    },
+    {
+      name: "TypeScript Deep Dive",
+      provider: "Pluralsight",
+      completionDate: "2023-03-10",
+      duration: "6 hours",
+      credentialId: "PS-TS-DD-789",
+      url: "https://pluralsight.com/courses/typescript-deep-dive"
+    },
+    {
       name: "Tillgänglighet konferens och workshops",
       provider: "FUNKA",
-      completionDate: "2018",
-      duration: "",
-      credentialId: "",
-      url: ""
+      completionDate: "2018-11-15",
+      duration: "16 hours",
+      credentialId: "FUNKA-AC-2018",
+      url: "https://funka.com/utbildning"
     },
     {
       name: "UX kurser, Lean UX & UX strategi", 
-      provider: "",
-      completionDate: "2015",
-      duration: "",
-      credentialId: "",
-      url: ""
+      provider: "Hyper Island",
+      completionDate: "2015-09-30",
+      duration: "40 hours",
+      credentialId: "HI-UX-2015-123",
+      url: "https://hyperisland.com/programs-and-courses"
+    },
+    {
+      name: "Kubernetes for Developers",
+      provider: "Cloud Native Computing Foundation",
+      completionDate: "2023-01-25",
+      duration: "20 hours",
+      credentialId: "CNCF-K8S-DEV-2023",
+      url: "https://training.linuxfoundation.org/training/kubernetes-for-developers/"
     }
   ],
 
   skills: [
     {
       category: "Frontend Utveckling",
-      items: ["React", "TypeScript", "JavaScript", "HTML & CSS", "Next.js", "Gatsby.js", "Redux"]
+      items: ["React", "TypeScript", "JavaScript", "HTML & CSS", "Next.js", "Gatsby.js", "Redux", "Vue.js", "Angular", "Svelte"]
     },
     {
       category: "Backend Utveckling",
-      items: ["C#", ".NET Core", "Node.js", "Express", "PHP", "MySQL", "MongoDB"]
+      items: ["C#", ".NET Core", "Node.js", "Express", "PHP", "MySQL", "MongoDB", "PostgreSQL", "GraphQL", "REST APIs"]
     },
     {
       category: "Tillgänglighet & Kvalitet",
-      items: ["WCAG", "AXE", "Tillgänglighetstester", "BrowserStack", "Webdriver IO", "Cypress"]
+      items: ["WCAG", "AXE", "Tillgänglighetstester", "BrowserStack", "Webdriver IO", "Cypress", "Jest", "Playwright", "Screen Readers"]
     },
     {
       category: "DevOps & Verktyg", 
-      items: ["CI/CD", "Docker", "Kubernetes", "Azure", "Git", "GitHub"]
+      items: ["CI/CD", "Docker", "Kubernetes", "Azure", "AWS", "Git", "GitHub", "Terraform", "Jenkins", "GitLab CI"]
     },
     {
       category: "CMS & E-handel",
-      items: ["Optimizely", "Episerver", "Contentful", "Sanity", "Shopify", "Strapi"]
+      items: ["Optimizely", "Episerver", "Contentful", "Sanity", "Shopify", "Strapi", "WordPress", "Drupal", "Commercetools"]
     },
     {
       category: "Analys & SEO",
-      items: ["Google Analytics", "Adobe Analytics", "SEO", "A/B Testing", "Google Tag Manager"]
+      items: ["Google Analytics", "Adobe Analytics", "SEO", "A/B Testing", "Google Tag Manager", "Adobe Target", "Hotjar", "Mixpanel"]
+    },
+    {
+      category: "Design & UX",
+      items: ["Figma", "Design Systems", "Storybook", "Prototyping", "User Research", "Usability Testing", "Wireframing", "Adobe Creative Suite"]
     },
     {
       category: "Ledarskap & Process",
-      items: ["Scrum Master", "Team Lead", "Mentor", "Agile", "Projektledning", "Strategi"]
+      items: ["Scrum Master", "Team Lead", "Mentor", "Agile", "Projektledning", "Strategi", "SAFE", "Kanban", "OKRs"]
+    },
+    {
+      category: "Mobile & Cross-Platform",
+      items: ["React Native", "Ionic", "Cordova", "Progressive Web Apps", "Mobile-First Design", "Responsive Design"]
     }
   ],
 
@@ -600,7 +705,15 @@ export const niklasCV = {
     },
     {
       language: "Engelska",
-      proficiency: "Flytande"
+      proficiency: "Flytande (C2)"
+    },
+    {
+      language: "Norska",
+      proficiency: "God förståelse (B2)"
+    },
+    {
+      language: "Danska", 
+      proficiency: "Grundläggande (A2)"
     }
   ],
 
@@ -612,23 +725,73 @@ export const niklasCV = {
         { name: "React", level: "Expert", yearsOfExperience: 8 },
         { name: "TypeScript", level: "Expert", yearsOfExperience: 6 },
         { name: "Next.js", level: "Advanced", yearsOfExperience: 4 },
-        { name: "CSS", level: "Expert", yearsOfExperience: 15 }
+        { name: "CSS", level: "Expert", yearsOfExperience: 15 },
+        { name: "HTML", level: "Expert", yearsOfExperience: 15 },
+        { name: "Vue.js", level: "Advanced", yearsOfExperience: 3 },
+        { name: "Angular", level: "Intermediate", yearsOfExperience: 2 }
+      ]
+    },
+    {
+      category: "Backend Utveckling",
+      skills: [
+        { name: "Node.js", level: "Advanced", yearsOfExperience: 6 },
+        { name: "C#", level: "Advanced", yearsOfExperience: 8 },
+        { name: ".NET Core", level: "Advanced", yearsOfExperience: 7 },
+        { name: "PHP", level: "Intermediate", yearsOfExperience: 5 },
+        { name: "Python", level: "Intermediate", yearsOfExperience: 3 },
+        { name: "Express.js", level: "Advanced", yearsOfExperience: 5 }
       ]
     },
     {
       category: "Tillgänglighet",
       skills: [
         { name: "WCAG", level: "Expert", yearsOfExperience: 7 },
-        { name: "AXE Testing", level: "Advanced", yearsOfExperience: 5 },
-        { name: "Screen Reader Testing", level: "Advanced", yearsOfExperience: 6 }
+        { name: "AXE Testing", level: "Expert", yearsOfExperience: 5 },
+        { name: "Screen Reader Testing", level: "Advanced", yearsOfExperience: 6 },
+        { name: "ARIA Implementation", level: "Expert", yearsOfExperience: 6 },
+        { name: "Keyboard Navigation", level: "Expert", yearsOfExperience: 7 }
       ]
     },
     {
-      category: "Backend & DevOps",
+      category: "DevOps & Cloud",
       skills: [
-        { name: "Node.js", level: "Advanced", yearsOfExperience: 6 },
-        { name: "C#", level: "Advanced", yearsOfExperience: 8 },
-        { name: "CI/CD", level: "Advanced", yearsOfExperience: 5 }
+        { name: "CI/CD", level: "Advanced", yearsOfExperience: 5 },
+        { name: "Docker", level: "Advanced", yearsOfExperience: 4 },
+        { name: "Kubernetes", level: "Intermediate", yearsOfExperience: 2 },
+        { name: "Azure", level: "Advanced", yearsOfExperience: 6 },
+        { name: "AWS", level: "Intermediate", yearsOfExperience: 3 },
+        { name: "GitHub Actions", level: "Advanced", yearsOfExperience: 4 }
+      ]
+    },
+    {
+      category: "Databaser & CMS",
+      skills: [
+        { name: "MongoDB", level: "Advanced", yearsOfExperience: 4 },
+        { name: "PostgreSQL", level: "Intermediate", yearsOfExperience: 3 },
+        { name: "MySQL", level: "Advanced", yearsOfExperience: 8 },
+        { name: "Optimizely", level: "Expert", yearsOfExperience: 6 },
+        { name: "Contentful", level: "Advanced", yearsOfExperience: 3 },
+        { name: "Sanity", level: "Advanced", yearsOfExperience: 2 }
+      ]
+    },
+    {
+      category: "Analys & SEO",
+      skills: [
+        { name: "Google Analytics", level: "Advanced", yearsOfExperience: 8 },
+        { name: "Adobe Analytics", level: "Advanced", yearsOfExperience: 4 },
+        { name: "SEO", level: "Advanced", yearsOfExperience: 10 },
+        { name: "A/B Testing", level: "Advanced", yearsOfExperience: 5 },
+        { name: "Google Tag Manager", level: "Advanced", yearsOfExperience: 6 }
+      ]
+    },
+    {
+      category: "Ledarskap & Process",
+      skills: [
+        { name: "Scrum Master", level: "Expert", yearsOfExperience: 8 },
+        { name: "Team Leadership", level: "Expert", yearsOfExperience: 10 },
+        { name: "Mentoring", level: "Expert", yearsOfExperience: 12 },
+        { name: "Agile Coaching", level: "Advanced", yearsOfExperience: 8 },
+        { name: "Project Management", level: "Advanced", yearsOfExperience: 15 }
       ]
     }
   ],

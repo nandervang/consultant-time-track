@@ -1,7 +1,76 @@
 // Data Transformer: Convert internal CV format to API payload format
 import type { CVGenerationData } from '@/types/cvGeneration';
 import type { CVAPIPayload, CVAPICompetency } from '@/types/cv-api-types';
+import type { ConsultantCVPayload } from '@/services/cv-generation-api';
 import { niklasCV } from '../data/niklasCV';
+
+/**
+ * Transform CVAPIPayload to ConsultantCVPayload format
+ * This function handles the type conversion between our internal API format
+ * and the cv-gen repository's expected format
+ */
+export function convertToConsultantPayload(apiPayload: CVAPIPayload): ConsultantCVPayload {
+  // Map our CVAPIPayload structure to ConsultantCVPayload structure
+  const consultantPayload: ConsultantCVPayload = {
+    personalInfo: {
+      name: apiPayload.personalInfo.name,
+      title: apiPayload.personalInfo.title,
+      email: apiPayload.personalInfo.email,
+      phone: apiPayload.personalInfo.phone || '',
+      location: apiPayload.personalInfo.location || '',
+      profileImage: apiPayload.personalInfo.profileImage
+    },
+    company: apiPayload.company,
+    summary: {
+      introduction: apiPayload.summary.introduction,
+      highlights: apiPayload.summary.highlights,
+      specialties: apiPayload.summary.specialties || []
+    },
+    employment: (apiPayload.employment || []).map(emp => ({
+      period: emp.period,
+      position: emp.position,
+      company: emp.company,
+      description: emp.description,
+      technologies: emp.technologies || [],
+      achievements: emp.achievements || []
+    })),
+    projects: (apiPayload.projects || []).map(proj => ({
+      period: proj.period,
+      type: proj.type,
+      title: proj.title,
+      description: proj.description,
+      technologies: proj.technologies || []
+    })),
+    education: (apiPayload.education || []).map(edu => ({
+      period: edu.period,
+      degree: edu.degree,
+      institution: edu.institution,
+      specialization: edu.specialization
+    })),
+    certifications: (apiPayload.certifications || []).map(cert => ({
+      year: cert.year,
+      title: cert.title,
+      issuer: cert.issuer,
+      description: cert.description
+    })),
+    competencies: (apiPayload.competencies || []).map(comp => ({
+      category: comp.category,
+      items: comp.skills?.map(skill => skill.name) || []
+    })),
+    languages: (apiPayload.languages || []).map(lang => ({
+      language: lang.language,
+      proficiency: lang.proficiency
+    })),
+    template: apiPayload.template || 'andervang-consulting',
+    format: apiPayload.format || 'pdf',
+    styling: {
+      primaryColor: apiPayload.styling?.primaryColor || '#003D82',
+      accentColor: apiPayload.styling?.accentColor || '#FF6B35'
+    }
+  };
+
+  return consultantPayload;
+}
 
 /**
  * Transform internal CV data structure to CV Generation API payload format
@@ -21,14 +90,17 @@ export function transformToAPIPayload(
   } = options;
 
   return {
-    // Personal information (direct mapping)
+    // Personal information (enhanced with all available fields)
     personalInfo: {
       name: cvData.personalInfo?.name || '',
       title: cvData.personalInfo?.title || '',
       email: cvData.personalInfo?.email || '',
-      phone: cvData.personalInfo?.phone,
-      location: cvData.personalInfo?.location,
-      profileImage: cvData.personalInfo?.profilePhoto
+      phone: cvData.personalInfo?.phone || '',
+      location: cvData.personalInfo?.location || '',
+      profileImage: cvData.personalInfo?.profilePhoto,
+      linkedIn: cvData.personalInfo?.linkedIn,
+      github: cvData.personalInfo?.github,
+      website: cvData.personalInfo?.website
     },
 
     // Company name
@@ -38,7 +110,7 @@ export function transformToAPIPayload(
     summary: {
       introduction: cvData.summary?.introduction || '',
       highlights: cvData.summary?.keyStrengths || [],
-      specialties: [] // Can be extracted from summary if needed
+      specialties: cvData.summary?.specialties || []
     },
 
     // Employment history (experience → employment)
@@ -53,12 +125,12 @@ export function transformToAPIPayload(
 
     // Projects transformation
     projects: cvData.projects?.map(proj => ({
-      period: 'Projektperiod', // Default, could be enhanced
-      type: 'Utvecklare',
+      period: proj.period || 'Projektperiod',
+      type: proj.type || 'Utvecklare',
       title: proj.name || '',
       description: proj.description || '',
       technologies: proj.technologies || [],
-      achievements: [] // Could be added to project data structure
+      achievements: proj.achievements || []
     })),
 
     // Education transformation
@@ -77,6 +149,16 @@ export function transformToAPIPayload(
       description: cert.credentialId ? `Credential ID: ${cert.credentialId}` : undefined
     })),
 
+    // Courses transformation (NEW)
+    courses: cvData.courses?.map(course => ({
+      name: course.name || '',
+      provider: course.provider || '',
+      completionDate: course.completionDate || '',
+      duration: course.duration,
+      credentialId: course.credentialId,
+      url: course.url
+    })),
+
     // Skills → Competencies transformation (grouping by proficiency)
     competencies: transformSkillsToCompetencies(cvData.skills || []),
 
@@ -85,6 +167,42 @@ export function transformToAPIPayload(
       language: lang.language || '',
       proficiency: lang.proficiency || ''
     })),
+
+    // NEW SECTIONS: Roles, Competency Categories, and Closing
+    roles: cvData.roles?.map(role => ({
+      title: role.title || '',
+      skills: role.skills || []
+    })),
+
+    competencyCategories: cvData.competencies?.map(comp => ({
+      category: comp.category || '',
+      skills: comp.skills?.map(skill => ({
+        name: skill.name || '',
+        level: skill.level || 'Intermediate',
+        yearsOfExperience: skill.yearsOfExperience
+      })) || []
+    })),
+
+    closing: cvData.closing ? {
+      text: cvData.closing.text || '',
+      contact: {
+        email: cvData.closing.contact?.email || cvData.personalInfo?.email || '',
+        phone: cvData.closing.contact?.phone || cvData.personalInfo?.phone || '',
+        location: cvData.closing.contact?.location || cvData.personalInfo?.location || '',
+        company: cvData.closing.contact?.company || company
+      }
+    } : undefined,
+
+    templateSettings: cvData.templateSettings ? {
+      template: cvData.templateSettings.template || template,
+      theme: cvData.templateSettings.theme || 'blue',
+      showPhoto: cvData.templateSettings.showPhoto ?? true,
+      showReferences: cvData.templateSettings.showReferences ?? false,
+      language: cvData.templateSettings.language || 'en',
+      fontSize: cvData.templateSettings.fontSize || 'medium',
+      margins: cvData.templateSettings.margins || 'normal',
+      colorScheme: cvData.templateSettings.colorScheme || 'blue'
+    } : undefined,
 
     // Template and format
     template,
