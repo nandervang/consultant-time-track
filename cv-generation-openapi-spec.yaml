@@ -336,6 +336,18 @@ components:
           type: string
           description: Personal website URL
           example: "https://johndoe.dev"
+        twitter:
+          type: string
+          description: Twitter profile URL
+          example: "https://twitter.com/johndoe"
+        instagram:
+          type: string
+          description: Instagram profile URL
+          example: "https://instagram.com/johndoe"
+        facebook:
+          type: string
+          description: Facebook profile URL
+          example: "https://facebook.com/john.doe"
         profileImage:
           type: string
           description: Base64 encoded profile image
@@ -400,6 +412,14 @@ components:
             type: string
           description: Key achievements
           example: ["Reduced load time by 40%", "Implemented CI/CD pipeline"]
+        url:
+          type: string
+          description: Company website URL
+          example: "https://techcorp.com"
+        location:
+          type: string
+          description: Work location
+          example: "Stockholm, Sweden"
 
     Project:
       type: object
@@ -437,7 +457,11 @@ components:
           items:
             type: string
           description: Project achievements
-          example: ["Increased conversion rate by 25%"]
+          example: ["Increased conversion rate by 25%", "Improved mobile performance by 60%"]
+        url:
+          type: string
+          description: Project URL or repository link
+          example: "https://github.com/company/project"
 
     Education:
       type: object
@@ -462,6 +486,20 @@ components:
           type: string
           description: Field of study/specialization
           example: "Computer Science"
+        gpa:
+          type: string
+          description: Grade Point Average
+          example: "3.8/4.0"
+        location:
+          type: string
+          description: Institution location
+          example: "Stockholm, Sweden"
+        honors:
+          type: array
+          items:
+            type: string
+          description: Academic honors or achievements
+          example: ["Magna Cum Laude", "Dean's List"]
 
     Certification:
       type: object
@@ -486,6 +524,18 @@ components:
           type: string
           description: Additional description
           example: "Advanced cloud architecture certification"
+        credentialId:
+          type: string
+          description: Credential or certificate ID
+          example: "AWS-SAP-2022-123456"
+        url:
+          type: string
+          description: Verification URL or certificate link
+          example: "https://aws.amazon.com/verification/123456"
+        expirationDate:
+          type: string
+          description: Certification expiration date
+          example: "2025-12-31"
 
     Course:
       type: object
@@ -519,6 +569,15 @@ components:
           type: string
           description: Certificate URL
           example: "https://frontendmasters.com/certificate/abc123"
+        status:
+          type: string
+          enum: ["completed", "in-progress", "enrolled"]
+          description: Course status
+          example: "completed"
+        grade:
+          type: string
+          description: Grade or score received
+          example: "A+"
 
     Competency:
       type: object

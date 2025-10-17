@@ -11,12 +11,16 @@ export interface CVAPIPersonalInfo {
   linkedIn?: string;
   github?: string;
   website?: string;
+  twitter?: string;
+  instagram?: string;
+  facebook?: string;
 }
 
 export interface CVAPISummary {
   introduction: string;
   highlights: string[];
   specialties?: string[];
+  careerObjective?: string;
 }
 
 export interface CVAPIEmployment {
@@ -26,6 +30,9 @@ export interface CVAPIEmployment {
   description: string;
   technologies?: string[];
   achievements?: string[];
+  keyAchievements?: string[]; // Additional achievements field
+  url?: string; // Company URL
+  location?: string; // Work location
 }
 
 export interface CVAPIProject {
@@ -35,6 +42,8 @@ export interface CVAPIProject {
   description: string;
   technologies: string[];
   achievements?: string[];
+  url?: string; // Project URL/Link
+  keyAchievements?: string[]; // Additional achievements
 }
 
 export interface CVAPIEducation {
@@ -42,6 +51,9 @@ export interface CVAPIEducation {
   degree: string;
   institution: string;
   specialization?: string;
+  gpa?: string;
+  location?: string;
+  honors?: string[];
 }
 
 export interface CVAPICertification {
@@ -49,11 +61,22 @@ export interface CVAPICertification {
   title: string;
   issuer: string;
   description?: string;
+  credentialId?: string;
+  url?: string; // Certification URL/verification link
+  expirationDate?: string;
 }
 
 export interface CVAPISkill {
   name: string;
   level?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+}
+
+export interface CVAPISkillCategory {
+  category: string;
+  items: Array<{
+    name: string;
+    level?: number; // 1-5 rating scale
+  }>;
 }
 
 export interface CVAPICompetency {
@@ -100,6 +123,8 @@ export interface CVAPICourse {
   duration?: string;
   credentialId?: string;
   url?: string;
+  status?: 'completed' | 'in-progress' | 'audit';
+  grade?: string;
 }
 
 export interface CVAPITemplateSettings {
@@ -136,7 +161,8 @@ export interface CVAPIPayload {
   education?: CVAPIEducation[];
   certifications?: CVAPICertification[];
   courses?: CVAPICourse[];
-  competencies?: CVAPICompetency[];
+  skills?: CVAPISkillCategory[]; // Direct mapping from Skills tab
+  competencies?: CVAPICompetency[]; // Transformed/grouped skills for compatibility
   languages?: CVAPILanguage[];
   
   // New sections for comprehensive CV support

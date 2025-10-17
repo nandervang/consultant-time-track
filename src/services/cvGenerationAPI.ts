@@ -116,7 +116,13 @@ export class CVGenerationAPI {
         email: cvData.personalInfo.email || '',
         phone: cvData.personalInfo.phone || '',
         location: cvData.personalInfo.location || '',
-        profileImage: cvData.personalInfo.profilePhoto
+        profileImage: cvData.personalInfo.profilePhoto,
+        linkedIn: cvData.personalInfo.linkedIn,
+        github: cvData.personalInfo.github,
+        website: cvData.personalInfo.website,
+        twitter: cvData.personalInfo.twitter,
+        instagram: cvData.personalInfo.instagram,
+        facebook: cvData.personalInfo.facebook
       },
       company: 'Frank Digital AB', // Default company
       summary: {
@@ -124,6 +130,7 @@ export class CVGenerationAPI {
         highlights: cvData.summary?.keyStrengths || [],
         specialties: cvData.summary?.specialties || []
       },
+      careerObjective: cvData.summary?.careerObjective || '',
       employment: cvData.experience?.map(exp => ({
         period: exp.period || '',
         position: exp.position || '',
@@ -132,24 +139,43 @@ export class CVGenerationAPI {
         technologies: exp.technologies || [],
         achievements: exp.achievements || []
       })) || [],
+      roles: cvData.roles?.map(role => ({
+        name: role.title || '',
+        description: '',
+        responsibilities: role.skills || []
+      })) || [],
       projects: cvData.projects?.map(project => ({
         period: project.period || 'Projektperiod',
         type: project.type || 'Utvecklare',
         title: project.name || '',
         description: project.description || '',
-        technologies: project.technologies || []
+        technologies: project.technologies || [],
+        achievements: project.achievements || [],
+        url: project.url
       })) || [],
       education: cvData.education?.map(edu => ({
         period: edu.period || '',
         degree: edu.degree || '',
         institution: edu.institution || '',
-        specialization: edu.field
+        specialization: edu.field,
+        honors: edu.honors,
+        location: edu.location
       })) || [],
       certifications: cvData.certifications?.map(cert => ({
         year: cert.date || '',
         title: cert.name || '',
         issuer: cert.issuer || '',
-        description: cert.credentialId ? `Credential ID: ${cert.credentialId}` : undefined
+        description: cert.credentialId ? `Credential ID: ${cert.credentialId}` : undefined,
+        url: cert.url,
+        expiration: cert.expirationDate
+      })) || [],
+      courses: cvData.courses?.map(course => ({
+        name: course.name || '',
+        institution: course.provider || '',
+        year: course.completionDate || '',
+        description: course.duration,
+        status: course.status,
+        grade: course.grade
       })) || [],
       competencies: cvData.skills?.map(skill => ({
         category: skill.category,
@@ -159,12 +185,28 @@ export class CVGenerationAPI {
         language: lang.language || '',
         proficiency: lang.proficiency || ''
       })) || [],
+      closing: cvData.closing ? {
+        statement: cvData.closing.text || '',
+        signature: '',
+        date: '',
+        location: cvData.closing.contact?.location || ''
+      } : undefined,
       template: cvData.template || cvData.templateSettings?.template || 'andervang-consulting',
       format: cvData.format || 'pdf',
       styling: {
         primaryColor: cvData.templateSettings?.colorScheme === 'blue' ? '#003D82' : '#003D82',
         accentColor: '#FF6B35'
-      }
+      },
+      templateSettings: cvData.templateSettings ? {
+        template: cvData.templateSettings.template,
+        colorScheme: cvData.templateSettings.colorScheme,
+        fontSize: cvData.templateSettings.fontSize,
+        spacing: cvData.templateSettings.margins,
+        showPhoto: true,
+        showSocial: true,
+        headerStyle: 'default',
+        sectionOrder: []
+      } : undefined
     };
 
     // Remove undefined/null values

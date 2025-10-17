@@ -9,6 +9,12 @@ export interface ConsultantCVPayload {
     phone: string;
     location: string;
     profileImage?: string;
+    linkedIn?: string;
+    github?: string;
+    website?: string;
+    twitter?: string;
+    instagram?: string;
+    facebook?: string;
   };
   company: string;
   summary: {
@@ -16,6 +22,7 @@ export interface ConsultantCVPayload {
     highlights: string[];
     specialties: string[];
   };
+  careerObjective?: string;
   employment: Array<{
     period: string;
     position: string;
@@ -24,24 +31,50 @@ export interface ConsultantCVPayload {
     technologies: string[];
     achievements: string[];
   }>;
+  roles?: Array<{
+    name: string;
+    description?: string;
+    responsibilities: string[];
+  }>;
   projects: Array<{
     period: string;
     type: string;
     title: string;
     description: string;
     technologies: string[];
+    achievements?: string[];
+    url?: string;
   }>;
   education: Array<{
     period: string;
     degree: string;
     institution: string;
     specialization?: string;
+    honors?: string;
+    location?: string;
   }>;
   certifications: Array<{
     year: string;
     title: string;
     issuer: string;
     description?: string;
+    url?: string;
+    expiration?: string;
+  }>;
+  courses?: Array<{
+    name: string;
+    institution: string;
+    year: string;
+    description?: string;
+    status?: string;
+    grade?: string;
+  }>;
+  skills?: Array<{
+    category: string;
+    items: Array<{
+      name: string;
+      level?: number; // 1-5 rating scale
+    }>;
   }>;
   competencies: Array<{
     category: string;
@@ -51,11 +84,27 @@ export interface ConsultantCVPayload {
     language: string;
     proficiency: string;
   }>;
+  closing?: {
+    statement: string;
+    signature?: string;
+    date?: string;
+    location?: string;
+  };
   template: string;
   format: string;
   styling: {
     primaryColor: string;
     accentColor: string;
+  };
+  templateSettings?: {
+    template?: string;
+    colorScheme?: string;
+    fontSize?: string;
+    spacing?: string;
+    showPhoto?: boolean;
+    showSocial?: boolean;
+    headerStyle?: string;
+    sectionOrder?: string[];
   };
 }
 

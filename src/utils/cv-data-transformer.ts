@@ -2,7 +2,6 @@
 import type { CVGenerationData } from '@/types/cvGeneration';
 import type { CVAPIPayload, CVAPICompetency } from '@/types/cv-api-types';
 import type { ConsultantCVPayload } from '@/services/cv-generation-api';
-import { niklasCV } from '../data/niklasCV';
 
 /**
  * Transform CVAPIPayload to ConsultantCVPayload format
@@ -18,7 +17,13 @@ export function convertToConsultantPayload(apiPayload: CVAPIPayload): Consultant
       email: apiPayload.personalInfo.email,
       phone: apiPayload.personalInfo.phone || '',
       location: apiPayload.personalInfo.location || '',
-      profileImage: apiPayload.personalInfo.profileImage
+      profileImage: apiPayload.personalInfo.profileImage,
+      linkedIn: apiPayload.personalInfo.linkedIn,
+      github: apiPayload.personalInfo.github,
+      website: apiPayload.personalInfo.website,
+      twitter: apiPayload.personalInfo.twitter,
+      instagram: apiPayload.personalInfo.instagram,
+      facebook: apiPayload.personalInfo.facebook
     },
     company: apiPayload.company,
     summary: {
@@ -26,6 +31,7 @@ export function convertToConsultantPayload(apiPayload: CVAPIPayload): Consultant
       highlights: apiPayload.summary.highlights,
       specialties: apiPayload.summary.specialties || []
     },
+    careerObjective: apiPayload.summary.careerObjective || '',
     employment: (apiPayload.employment || []).map(emp => ({
       period: emp.period,
       position: emp.position,
@@ -34,24 +40,50 @@ export function convertToConsultantPayload(apiPayload: CVAPIPayload): Consultant
       technologies: emp.technologies || [],
       achievements: emp.achievements || []
     })),
+    roles: (apiPayload.roles || []).map(role => ({
+      name: role.title || '',
+      description: '',
+      responsibilities: role.skills || []
+    })),
     projects: (apiPayload.projects || []).map(proj => ({
       period: proj.period,
       type: proj.type,
       title: proj.title,
       description: proj.description,
-      technologies: proj.technologies || []
+      technologies: proj.technologies || [],
+      achievements: proj.achievements || [],
+      url: proj.url
     })),
     education: (apiPayload.education || []).map(edu => ({
       period: edu.period,
       degree: edu.degree,
       institution: edu.institution,
-      specialization: edu.specialization
+      specialization: edu.specialization,
+      honors: Array.isArray(edu.honors) ? edu.honors.join(', ') : edu.honors,
+      location: edu.location
     })),
     certifications: (apiPayload.certifications || []).map(cert => ({
       year: cert.year,
       title: cert.title,
       issuer: cert.issuer,
-      description: cert.description
+      description: cert.description,
+      url: cert.url,
+      expiration: cert.expirationDate
+    })),
+    courses: (apiPayload.courses || []).map(course => ({
+      name: course.name,
+      institution: course.provider,
+      year: course.completionDate,
+      description: course.duration,
+      status: course.status,
+      grade: course.grade
+    })),
+    skills: (apiPayload.skills || []).map(skillGroup => ({
+      category: skillGroup.category,
+      items: skillGroup.items?.map(item => ({
+        name: item.name,
+        level: item.level
+      })) || []
     })),
     competencies: (apiPayload.competencies || []).map(comp => ({
       category: comp.category,
@@ -61,12 +93,28 @@ export function convertToConsultantPayload(apiPayload: CVAPIPayload): Consultant
       language: lang.language,
       proficiency: lang.proficiency
     })),
+    closing: apiPayload.closing ? {
+      statement: apiPayload.closing.text || '',
+      signature: '',
+      date: '',
+      location: apiPayload.closing.contact?.location || ''
+    } : undefined,
     template: apiPayload.template || 'andervang-consulting',
     format: apiPayload.format || 'pdf',
     styling: {
       primaryColor: apiPayload.styling?.primaryColor || '#003D82',
       accentColor: apiPayload.styling?.accentColor || '#FF6B35'
-    }
+    },
+    templateSettings: apiPayload.templateSettings ? {
+      template: apiPayload.templateSettings.template,
+      colorScheme: apiPayload.templateSettings.colorScheme || apiPayload.templateSettings.theme,
+      fontSize: apiPayload.templateSettings.fontSize,
+      spacing: apiPayload.templateSettings.margins,
+      showPhoto: apiPayload.templateSettings.showPhoto,
+      showSocial: true,
+      headerStyle: 'default',
+      sectionOrder: []
+    } : undefined
   };
 
   return consultantPayload;
@@ -100,7 +148,10 @@ export function transformToAPIPayload(
       profileImage: cvData.personalInfo?.profilePhoto,
       linkedIn: cvData.personalInfo?.linkedIn,
       github: cvData.personalInfo?.github,
-      website: cvData.personalInfo?.website
+      website: cvData.personalInfo?.website,
+      twitter: cvData.personalInfo?.twitter,
+      instagram: cvData.personalInfo?.instagram,
+      facebook: cvData.personalInfo?.facebook
     },
 
     // Company name
@@ -110,56 +161,83 @@ export function transformToAPIPayload(
     summary: {
       introduction: cvData.summary?.introduction || '',
       highlights: cvData.summary?.keyStrengths || [],
-      specialties: cvData.summary?.specialties || []
+      specialties: cvData.summary?.specialties || [],
+      careerObjective: cvData.summary?.careerObjective
     },
 
-    // Employment history (experience → employment)
+    // Employment history (experience → employment) with all fields
     employment: cvData.experience?.map(exp => ({
       period: exp.period || '',
       position: exp.position || '',
       company: exp.company || '',
       description: exp.description || '',
       technologies: exp.technologies || [],
-      achievements: exp.achievements || []
+      achievements: exp.achievements || [],
+      url: exp.url,
+      location: exp.location
     })),
 
-    // Projects transformation
+    // Projects transformation with all fields
     projects: cvData.projects?.map(proj => ({
       period: proj.period || 'Projektperiod',
       type: proj.type || 'Utvecklare',
       title: proj.name || '',
       description: proj.description || '',
       technologies: proj.technologies || [],
-      achievements: proj.achievements || []
+      achievements: proj.achievements || [],
+      url: proj.url
     })),
 
-    // Education transformation
+    // Education transformation with all fields
     education: cvData.education?.map(edu => ({
       period: edu.period || '',
       degree: edu.degree || '',
       institution: edu.institution || '',
-      specialization: edu.field
+      specialization: edu.field,
+      gpa: edu.gpa,
+      location: edu.location,
+      honors: edu.honors
     })),
 
-    // Certifications transformation
+    // Certifications transformation with all fields
     certifications: cvData.certifications?.map(cert => ({
       year: cert.date || '',
       title: cert.name || '',
       issuer: cert.issuer || '',
-      description: cert.credentialId ? `Credential ID: ${cert.credentialId}` : undefined
+      description: cert.credentialId ? `Credential ID: ${cert.credentialId}` : undefined,
+      credentialId: cert.credentialId,
+      url: cert.url,
+      expirationDate: cert.expirationDate
     })),
 
-    // Courses transformation (NEW)
+    // Courses transformation with all fields (NEW)
     courses: cvData.courses?.map(course => ({
       name: course.name || '',
       provider: course.provider || '',
       completionDate: course.completionDate || '',
       duration: course.duration,
       credentialId: course.credentialId,
-      url: course.url
+      url: course.url,
+      status: course.status,
+      grade: course.grade
     })),
 
-    // Skills → Competencies transformation (grouping by proficiency)
+    // Skills (direct mapping from Skills tab)
+    skills: cvData.skills?.map(skillGroup => ({
+      category: skillGroup.category || '',
+      items: skillGroup.items?.map(item => {
+        if (typeof item === 'string') {
+          return { name: item, level: 3 }; // Default level for string items
+        } else {
+          return {
+            name: item.name || '',
+            level: item.level || 3
+          };
+        }
+      }) || []
+    })) || [],
+
+    // Skills → Competencies transformation (grouping by proficiency) - kept for compatibility
     competencies: transformSkillsToCompetencies(cvData.skills || []),
 
     // Languages (direct mapping)
@@ -174,6 +252,7 @@ export function transformToAPIPayload(
       skills: role.skills || []
     })),
 
+    // Competencies (direct mapping from Competencies tab)
     competencyCategories: cvData.competencies?.map(comp => ({
       category: comp.category || '',
       skills: comp.skills?.map(skill => ({
@@ -181,7 +260,7 @@ export function transformToAPIPayload(
         level: skill.level || 'Intermediate',
         yearsOfExperience: skill.yearsOfExperience
       })) || []
-    })),
+    })) || [],
 
     closing: cvData.closing ? {
       text: cvData.closing.text || '',
@@ -297,73 +376,71 @@ export function transformConsultantToAndervangCV(consultant: any): any {
  * Transform skills array (grouped by category) to competencies (grouped by proficiency level)
  */
 function transformSkillsToCompetencies(
-  skills: Array<{ category: string; items: string[] }>
+  skills: Array<{ category: string; items: (string | { name: string; level?: number })[] }>
 ): CVAPICompetency[] {
   if (!skills || skills.length === 0) return [];
 
-  // Define proficiency mapping based on skill categories
-  const categoryToProficiency: Record<string, string> = {
-    'Expert inom området': 'expert',
-    'Mycket hög kompetens': 'advanced',
-    'Hög kompetens': 'advanced',
-    'Grundläggande kompetens': 'intermediate'
+  // Define level mapping from 1-5 rating to proficiency levels
+  const levelToProficiency: Record<number, 'beginner' | 'intermediate' | 'advanced' | 'expert'> = {
+    1: 'beginner',    // Grundläggande
+    2: 'intermediate', // Grundläggande+
+    3: 'intermediate', // Mellannivå
+    4: 'advanced',    // Avancerad
+    5: 'expert'       // Expert
   };
 
-  // Map categories to proficiency levels
+  // Group all skills by proficiency level 
   const competencies: CVAPICompetency[] = [];
 
-  // Group all skills by estimated proficiency
   skills.forEach(skillGroup => {
-    const category = inferCompetencyCategory(skillGroup.category);
-    const level = categoryToProficiency[category] || 'advanced';
+    skillGroup.items.forEach(item => {
+      let skillName: string;
+      let proficiencyLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert';
 
-    // Create competency entry
-    const existingCompetency = competencies.find(c => c.category === category);
-    
-    const skillItems = skillGroup.items.map(skillName => ({
-      name: skillName,
-      level: level as 'beginner' | 'intermediate' | 'advanced' | 'expert'
-    }));
+      if (typeof item === 'string') {
+        skillName = item;
+        proficiencyLevel = 'intermediate'; // Default for legacy string items
+      } else {
+        skillName = item.name;
+        proficiencyLevel = levelToProficiency[item.level || 3] || 'intermediate';
+      }
 
-    if (existingCompetency) {
-      existingCompetency.skills.push(...skillItems);
-    } else {
-      competencies.push({
-        category,
-        skills: skillItems
-      });
-    }
+      // Find or create competency category based on proficiency level
+      const category = getCompetencyCategoryName(proficiencyLevel);
+      
+      const existingCompetency = competencies.find(c => c.category === category);
+      
+      const skillItem = {
+        name: skillName,
+        level: proficiencyLevel
+      };
+
+      if (existingCompetency) {
+        existingCompetency.skills.push(skillItem);
+      } else {
+        competencies.push({
+          category,
+          skills: [skillItem]
+        });
+      }
+    });
   });
 
   return competencies;
 }
 
 /**
- * Infer competency category from skill category name
+ * Get competency category name based on proficiency level
  */
-function inferCompetencyCategory(categoryName: string): string {
-  const lowerCategory = categoryName.toLowerCase();
-
-  // Map technical categories to proficiency levels
-  if (lowerCategory.includes('frontend') || 
-      lowerCategory.includes('backend') ||
-      lowerCategory.includes('tillgänglighet')) {
-    return 'Expert inom området';
-  }
+function getCompetencyCategoryName(level: 'beginner' | 'intermediate' | 'advanced' | 'expert'): string {
+  const categoryNames: Record<string, string> = {
+    'expert': 'Expert inom området',
+    'advanced': 'Mycket hög kompetens', 
+    'intermediate': 'Hög kompetens',
+    'beginner': 'Grundläggande kompetens'
+  };
   
-  if (lowerCategory.includes('devops') || 
-      lowerCategory.includes('cms') ||
-      lowerCategory.includes('analys')) {
-    return 'Mycket hög kompetens';
-  }
-  
-  if (lowerCategory.includes('ledarskap') || 
-      lowerCategory.includes('process')) {
-    return 'Hög kompetens';
-  }
-
-  // Default to high competency
-  return 'Hög kompetens';
+  return categoryNames[level] || 'Hög kompetens';
 }
 
 /**

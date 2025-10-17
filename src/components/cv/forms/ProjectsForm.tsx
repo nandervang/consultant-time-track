@@ -21,7 +21,10 @@ export function ProjectsForm({ data, onChange }: ProjectsFormProps) {
     name: '',
     description: '',
     technologies: [],
-    url: ''
+    url: '',
+    type: '',
+    period: '',
+    achievements: []
   };
 
   const [currentProject, setCurrentProject] = useState<CVProjectItem>(emptyProject);
@@ -62,6 +65,23 @@ export function ProjectsForm({ data, onChange }: ProjectsFormProps) {
     };
   };
 
+  const addAchievement = (project: CVProjectItem, achievement: string) => {
+    if (achievement.trim()) {
+      return {
+        ...project,
+        achievements: [...(project.achievements || []), achievement.trim()]
+      };
+    }
+    return project;
+  };
+
+  const removeAchievement = (project: CVProjectItem, index: number) => {
+    return {
+      ...project,
+      achievements: (project.achievements || []).filter((_, i) => i !== index)
+    };
+  };
+
   const ProjectEditor = ({ 
     project, 
     onChange, 
@@ -74,6 +94,7 @@ export function ProjectsForm({ data, onChange }: ProjectsFormProps) {
     onCancel: () => void;
   }) => {
     const [newTech, setNewTech] = useState('');
+    const [newAchievement, setNewAchievement] = useState('');
 
     return (
       <Card>
@@ -91,6 +112,27 @@ export function ProjectsForm({ data, onChange }: ProjectsFormProps) {
               onChange={(e) => onChange({ ...project, name: e.target.value })}
               placeholder="Project name"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="project-type">Project Type</Label>
+              <Input
+                id="project-type"
+                value={project.type || ''}
+                onChange={(e) => onChange({ ...project, type: e.target.value })}
+                placeholder="e.g., Frontend Development, API Integration"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="project-period">Project Period</Label>
+              <Input
+                id="project-period"
+                value={project.period || ''}
+                onChange={(e) => onChange({ ...project, period: e.target.value })}
+                placeholder="e.g., Q1 2024, 6 months"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -149,6 +191,46 @@ export function ProjectsForm({ data, onChange }: ProjectsFormProps) {
                   setNewTech('');
                 }}
                 disabled={!newTech.trim()}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <Label>Project Achievements</Label>
+            <div className="space-y-2">
+              {(project.achievements || []).map((achievement, index) => (
+                <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                  <span className="flex-1">{achievement}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onChange(removeAchievement(project, index))}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                value={newAchievement}
+                onChange={(e) => setNewAchievement(e.target.value)}
+                placeholder="Add achievement..."
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    onChange(addAchievement(project, newAchievement));
+                    setNewAchievement('');
+                  }
+                }}
+              />
+              <Button
+                onClick={() => {
+                  onChange(addAchievement(project, newAchievement));
+                  setNewAchievement('');
+                }}
+                disabled={!newAchievement.trim()}
               >
                 <Plus className="h-4 w-4" />
               </Button>

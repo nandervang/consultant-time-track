@@ -134,6 +134,36 @@ export function PersonalInfoForm({ data, onChange }: PersonalInfoFormProps) {
               />
             </div>
           </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="twitter">Twitter</Label>
+              <Input
+                id="twitter"
+                value={data.twitter || ''}
+                onChange={(e) => handleChange('twitter', e.target.value)}
+                placeholder="https://twitter.com/yourusername"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="instagram">Instagram</Label>
+              <Input
+                id="instagram"
+                value={data.instagram || ''}
+                onChange={(e) => handleChange('instagram', e.target.value)}
+                placeholder="https://instagram.com/yourusername"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="facebook">Facebook</Label>
+              <Input
+                id="facebook"
+                value={data.facebook || ''}
+                onChange={(e) => handleChange('facebook', e.target.value)}
+                placeholder="https://facebook.com/yourprofile"
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

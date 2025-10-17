@@ -17,7 +17,9 @@ export function EducationForm({ data, onChange }: EducationFormProps) {
       degree: '',
       field: '',
       period: '',
-      gpa: ''
+      gpa: '',
+      location: '',
+      honors: []
     };
     onChange([...data, newEducation]);
   };
@@ -27,11 +29,26 @@ export function EducationForm({ data, onChange }: EducationFormProps) {
     onChange(updated);
   };
 
-  const updateEducation = (index: number, field: keyof CVEducationItem, value: string) => {
+  const updateEducation = (index: number, field: keyof CVEducationItem, value: string | string[]) => {
     const updated = data.map((item, i) => 
       i === index ? { ...item, [field]: value } : item
     );
     onChange(updated);
+  };
+
+  const addHonor = (index: number, honor: string) => {
+    if (honor.trim()) {
+      const education = data[index];
+      const currentHonors = education.honors || [];
+      updateEducation(index, 'honors', [...currentHonors, honor.trim()]);
+    }
+  };
+
+  const removeHonor = (educationIndex: number, honorIndex: number) => {
+    const education = data[educationIndex];
+    const currentHonors = education.honors || [];
+    const updatedHonors = currentHonors.filter((_, i) => i !== honorIndex);
+    updateEducation(educationIndex, 'honors', updatedHonors);
   };
 
   return (
@@ -126,6 +143,57 @@ export function EducationForm({ data, onChange }: EducationFormProps) {
                   onChange={(e) => updateEducation(index, 'gpa', e.target.value)}
                   placeholder="e.g., 3.8/4.0, VG, A"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor={`location-${index}`}>Location</Label>
+                <Input
+                  id={`location-${index}`}
+                  value={education.location || ''}
+                  onChange={(e) => updateEducation(index, 'location', e.target.value)}
+                  placeholder="e.g., Stockholm, Sweden"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label>Honors & Awards (Optional)</Label>
+                <div className="space-y-2">
+                  {(education.honors || []).map((honor, honorIndex) => (
+                    <div key={honorIndex} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                      <span className="flex-1">{honor}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeHonor(index, honorIndex)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Add honor or award..."
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        const honor = (e.target as HTMLInputElement).value;
+                        addHonor(index, honor);
+                        (e.target as HTMLInputElement).value = '';
+                      }
+                    }}
+                  />
+                  <Button
+                    onClick={(e) => {
+                      const input = (e.currentTarget.parentElement?.querySelector('input') as HTMLInputElement);
+                      if (input) {
+                        addHonor(index, input.value);
+                        input.value = '';
+                      }
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

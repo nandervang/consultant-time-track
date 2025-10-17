@@ -16,7 +16,9 @@ export function CertificationsForm({ data, onChange }: CertificationsFormProps) 
       name: '',
       issuer: '',
       date: '',
-      credentialId: ''
+      credentialId: '',
+      url: '',
+      expirationDate: ''
     };
     onChange([...data, newCertification]);
   };
@@ -115,6 +117,28 @@ export function CertificationsForm({ data, onChange }: CertificationsFormProps) 
                   onChange={(e) => updateCertification(index, 'credentialId', e.target.value)}
                   placeholder="e.g., AWS-ASA-1234567, 12345-ABC-789"
                 />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor={`cert-url-${index}`}>Certificate URL (Optional)</Label>
+                  <Input
+                    id={`cert-url-${index}`}
+                    type="url"
+                    value={certification.url || ''}
+                    onChange={(e) => updateCertification(index, 'url', e.target.value)}
+                    placeholder="https://..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`cert-expiration-${index}`}>Expiration Date (Optional)</Label>
+                  <Input
+                    id={`cert-expiration-${index}`}
+                    value={certification.expirationDate || ''}
+                    onChange={(e) => updateCertification(index, 'expirationDate', e.target.value)}
+                    placeholder="e.g., March 2025, Never expires"
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

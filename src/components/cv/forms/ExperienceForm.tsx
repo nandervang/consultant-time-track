@@ -23,7 +23,9 @@ export function ExperienceForm({ data, onChange }: ExperienceFormProps) {
     period: '',
     description: '',
     technologies: [],
-    achievements: []
+    achievements: [],
+    url: '',
+    location: ''
   };
 
   const [currentExperience, setCurrentExperience] = useState<CVExperienceItem>(emptyExperience);
@@ -132,6 +134,27 @@ export function ExperienceForm({ data, onChange }: ExperienceFormProps) {
               onChange={(e) => onChange({ ...experience, period: e.target.value })}
               placeholder="e.g., Jan 2020 - Dec 2023"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="company-url">Company URL (optional)</Label>
+              <Input
+                id="company-url"
+                value={experience.url || ''}
+                onChange={(e) => onChange({ ...experience, url: e.target.value })}
+                placeholder="https://company.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="location">Work Location</Label>
+              <Input
+                id="location"
+                value={experience.location || ''}
+                onChange={(e) => onChange({ ...experience, location: e.target.value })}
+                placeholder="e.g., Stockholm, Sweden"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

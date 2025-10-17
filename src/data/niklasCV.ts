@@ -9,6 +9,9 @@ export const niklasCV = {
     linkedIn: "https://linkedin.com/in/niklasandervang",
     github: "https://github.com/nandervang",
     website: "https://andervang.com",
+    twitter: "https://twitter.com/niklasandervang",
+    instagram: "https://instagram.com/niklasandervang",
+    facebook: "https://facebook.com/niklas.andervang",
     profilePhoto: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
   },
   
@@ -66,7 +69,9 @@ export const niklasCV = {
         "Migrering och uppgradering av komponenter till nyare teknisk plattform",
         "Utveckling av nya funktioner och förbättringar",
         "Säkerställande av hög tillgänglighetsnivå för alla komponenter"
-      ]
+      ],
+      url: "https://cisco.com/se",
+      location: "Stockholm, Sverige (Remote)"
     },
     {
       company: "Digitalidag / PTS",
@@ -552,14 +557,18 @@ export const niklasCV = {
       degree: "Kandidatexamen", 
       field: "Interaktionsdesign (MDA)",
       period: "2008-2011",
-      gpa: ""
+      gpa: "3.5/4.0",
+      location: "Karlskrona, Sverige",
+      honors: ["Dean's List", "Magna Cum Laude"]
     },
     {
       institution: "Blekinge Tekniska Högskola",
       degree: "Civilingenjör",
       field: "Mekanik och teknik",
       period: "2007-2008", 
-      gpa: ""
+      gpa: "3.2/4.0",
+      location: "Karlskrona, Sverige",
+      honors: []
     }
   ],
 
@@ -568,19 +577,25 @@ export const niklasCV = {
       name: "Certified Professional in Accessibility Core Competencies (CPACC)",
       issuer: "IAAP", 
       date: "2022",
-      credentialId: "CPACC-2022-NA-001"
+      credentialId: "CPACC-2022-NA-001",
+      url: "https://iaap.org/verification/123456",
+      expirationDate: "2025-12-31"
     },
     {
       name: "AWS Solutions Architect Professional",
       issuer: "Amazon Web Services",
       date: "2023",
-      credentialId: "AWS-SAP-2023-567890"
+      credentialId: "AWS-SAP-2023-567890",
+      url: "https://aws.amazon.com/verification/567890",
+      expirationDate: "2026-03-15"
     },
     {
       name: "Certified Kubernetes Administrator (CKA)",
       issuer: "Cloud Native Computing Foundation",
       date: "2023",
-      credentialId: "CKA-2023-123456"
+      credentialId: "CKA-2023-123456",
+      url: "https://cncf.io/verification/123456",
+      expirationDate: "2026-06-30"
     },
     {
       name: "Agile core competence and fundamentals course",
@@ -615,7 +630,9 @@ export const niklasCV = {
       completionDate: "2023-08-15",
       duration: "8 hours",
       credentialId: "FM-2023-ARPO-001",
-      url: "https://frontendmasters.com/courses/react-performance/"
+      url: "https://frontendmasters.com/courses/react-performance/",
+      status: "completed" as const,
+      grade: "A+"
     },
     {
       name: "Web Accessibility: Advanced Techniques",
@@ -623,7 +640,9 @@ export const niklasCV = {
       completionDate: "2023-06-20",
       duration: "12 hours",
       credentialId: "DU-WAT-2023-456",
-      url: "https://dequeuniversity.com/curriculum/packages/web-accessibility"
+      url: "https://dequeuniversity.com/curriculum/packages/web-accessibility",
+      status: "completed" as const,
+      grade: "A"
     },
     {
       name: "TypeScript Deep Dive",
@@ -662,39 +681,127 @@ export const niklasCV = {
   skills: [
     {
       category: "Frontend Utveckling",
-      items: ["React", "TypeScript", "JavaScript", "HTML & CSS", "Next.js", "Gatsby.js", "Redux", "Vue.js", "Angular", "Svelte"]
+      items: [
+        { name: "React", level: 5 },
+        { name: "TypeScript", level: 5 },
+        { name: "JavaScript", level: 5 },
+        { name: "HTML & CSS", level: 5 },
+        { name: "Next.js", level: 4 },
+        { name: "Gatsby.js", level: 4 },
+        { name: "Redux", level: 4 },
+        { name: "Vue.js", level: 4 },
+        { name: "Angular", level: 3 },
+        { name: "Svelte", level: 3 }
+      ]
     },
     {
       category: "Backend Utveckling",
-      items: ["C#", ".NET Core", "Node.js", "Express", "PHP", "MySQL", "MongoDB", "PostgreSQL", "GraphQL", "REST APIs"]
+      items: [
+        { name: "C#", level: 4 },
+        { name: ".NET Core", level: 4 },
+        { name: "Node.js", level: 4 },
+        { name: "Express", level: 4 },
+        { name: "PHP", level: 3 },
+        { name: "MySQL", level: 3 },
+        { name: "MongoDB", level: 3 },
+        { name: "PostgreSQL", level: 3 },
+        { name: "GraphQL", level: 3 },
+        { name: "REST APIs", level: 4 }
+      ]
     },
     {
       category: "Tillgänglighet & Kvalitet",
-      items: ["WCAG", "AXE", "Tillgänglighetstester", "BrowserStack", "Webdriver IO", "Cypress", "Jest", "Playwright", "Screen Readers"]
+      items: [
+        { name: "WCAG", level: 5 },
+        { name: "AXE", level: 5 },
+        { name: "Tillgänglighetstester", level: 5 },
+        { name: "BrowserStack", level: 4 },
+        { name: "Webdriver IO", level: 3 },
+        { name: "Cypress", level: 4 },
+        { name: "Jest", level: 4 },
+        { name: "Playwright", level: 3 },
+        { name: "Screen Readers", level: 5 }
+      ]
     },
     {
       category: "DevOps & Verktyg", 
-      items: ["CI/CD", "Docker", "Kubernetes", "Azure", "AWS", "Git", "GitHub", "Terraform", "Jenkins", "GitLab CI"]
+      items: [
+        { name: "CI/CD", level: 4 },
+        { name: "Docker", level: 4 },
+        { name: "Kubernetes", level: 3 },
+        { name: "Azure", level: 4 },
+        { name: "AWS", level: 3 },
+        { name: "Git", level: 5 },
+        { name: "GitHub", level: 5 },
+        { name: "Terraform", level: 3 },
+        { name: "Jenkins", level: 3 },
+        { name: "GitLab CI", level: 3 }
+      ]
     },
     {
       category: "CMS & E-handel",
-      items: ["Optimizely", "Episerver", "Contentful", "Sanity", "Shopify", "Strapi", "WordPress", "Drupal", "Commercetools"]
+      items: [
+        { name: "Optimizely", level: 5 },
+        { name: "Episerver", level: 5 },
+        { name: "Contentful", level: 4 },
+        { name: "Sanity", level: 4 },
+        { name: "Shopify", level: 3 },
+        { name: "Strapi", level: 3 },
+        { name: "WordPress", level: 3 },
+        { name: "Drupal", level: 2 },
+        { name: "Commercetools", level: 3 }
+      ]
     },
     {
       category: "Analys & SEO",
-      items: ["Google Analytics", "Adobe Analytics", "SEO", "A/B Testing", "Google Tag Manager", "Adobe Target", "Hotjar", "Mixpanel"]
+      items: [
+        { name: "Google Analytics", level: 4 },
+        { name: "Adobe Analytics", level: 4 },
+        { name: "SEO", level: 4 },
+        { name: "A/B Testing", level: 4 },
+        { name: "Google Tag Manager", level: 4 },
+        { name: "Adobe Target", level: 3 },
+        { name: "Hotjar", level: 3 },
+        { name: "Mixpanel", level: 3 }
+      ]
     },
     {
       category: "Design & UX",
-      items: ["Figma", "Design Systems", "Storybook", "Prototyping", "User Research", "Usability Testing", "Wireframing", "Adobe Creative Suite"]
+      items: [
+        { name: "Figma", level: 4 },
+        { name: "Design Systems", level: 4 },
+        { name: "Storybook", level: 4 },
+        { name: "Prototyping", level: 3 },
+        { name: "User Research", level: 3 },
+        { name: "Usability Testing", level: 4 },
+        { name: "Wireframing", level: 3 },
+        { name: "Adobe Creative Suite", level: 3 }
+      ]
     },
     {
       category: "Ledarskap & Process",
-      items: ["Scrum Master", "Team Lead", "Mentor", "Agile", "Projektledning", "Strategi", "SAFE", "Kanban", "OKRs"]
+      items: [
+        { name: "Scrum Master", level: 4 },
+        { name: "Team Lead", level: 4 },
+        { name: "Mentor", level: 4 },
+        { name: "Agile", level: 4 },
+        { name: "Projektledning", level: 4 },
+        { name: "Strategi", level: 3 },
+        { name: "SAFE", level: 3 },
+        { name: "Kanban", level: 4 },
+        { name: "OKRs", level: 3 }
+      ]
     },
     {
       category: "Mobile & Cross-Platform",
-      items: ["React Native", "Ionic", "Cordova", "Progressive Web Apps", "Mobile-First Design", "Responsive Design"]
+      items: [
+        { name: "React Native", level: 3 },
+        { name: "Ionic", level: 2 },
+        { name: "Cordova", level: 2 },
+        { name: "Progressive Web Apps", level: 4 },
+        { name: "Mobile-First Design", level: 4 },
+        { name: "Responsive Design", level: 5 }
+      ]
     }
   ],
 

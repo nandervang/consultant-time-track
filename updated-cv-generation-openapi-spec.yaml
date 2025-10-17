@@ -1,0 +1,739 @@
+openapi: 3.0.3
+info:
+  title: CV Generation API
+  description: Complete API specification for CV generation service with comprehensive payload support
+  version: 2.0.0
+  contact:
+    name: CV Generation API Support
+    email: support@cv-gen.com
+
+servers:
+  - url: https://api.cv-gen.com/v2
+    description: Production server
+  - url: https://staging.cv-gen.com/v2
+    description: Staging server
+
+paths:
+  /generate:
+    post:
+      summary: Generate CV document
+      description: Generate a CV in PDF, DOCX, or HTML format using provided consultant data
+      operationId: generateCV
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CVGenerationRequest'
+            examples:
+              andervang-consulting-template:
+                summary: Andervang Consulting Template
+                description: Full consultant CV with all sections and enhanced skills
+                value:
+                  personalInfo:
+                    name: "Niklas Andervang"
+                    title: "Senior Frontend/Fullstack Developer & Accessibility Expert"
+                    email: "niklas.andervang@frankdigital.se"
+                    phone: "+46702441323"
+                    location: "Stockholm, Sweden"
+                    linkedIn: "https://linkedin.com/in/niklasandervang"
+                    github: "https://github.com/nandervang"
+                    website: "https://andervang.com"
+                    twitter: "https://twitter.com/niklasandervang"
+                    instagram: "https://instagram.com/niklasandervang"
+                    facebook: "https://facebook.com/niklas.andervang"
+                    profileImage: "data:image/jpeg;base64,..."
+                  company: "Frank Digital AB"
+                  summary:
+                    introduction: "Senior frontend/fullstack developer with 15+ years of experience..."
+                    highlights:
+                      - "Expert in React, TypeScript, and modern web technologies"
+                      - "IAAP CPACC certified accessibility specialist"
+                      - "Team leadership and mentoring experience"
+                    specialties:
+                      - "React"
+                      - "TypeScript"
+                      - "Accessibility"
+                      - "DevOps"
+                  employment:
+                    - period: "2020-Present"
+                      position: "Senior Frontend Developer"
+                      company: "Frank Digital AB"
+                      description: "Leading frontend development initiatives..."
+                      technologies: ["React", "TypeScript", "Next.js"]
+                      achievements: ["Implemented accessibility-first approach", "Led team of 5 developers"]
+                      url: "https://frankdigital.se"
+                      location: "Stockholm, Sweden"
+                  projects:
+                    - name: "E-commerce Platform Rebuild"
+                      description: "Complete rebuild of legacy e-commerce platform"
+                      technologies: ["React", "Node.js", "PostgreSQL"]
+                      url: "https://project-example.com"
+                      type: "Web Application"
+                      period: "2023-2024"
+                      achievements: ["50% performance improvement", "100% WCAG AA compliance"]
+                  roles:
+                    - title: "Frontend Specialist"
+                      skills: ["React", "TypeScript", "CSS", "HTML"]
+                    - title: "Accessibility Expert"
+                      skills: ["WCAG", "AXE", "Screen Readers", "ARIA"]
+                  competencies:
+                    - category: "Expert inom området"
+                      skills:
+                        - name: "React"
+                          level: "expert"
+                        - name: "TypeScript"
+                          level: "expert"
+                        - name: "WCAG"
+                          level: "expert"
+                    - category: "Mycket hög kompetens"
+                      skills:
+                        - name: "Next.js"
+                          level: "advanced"
+                        - name: "Node.js"
+                          level: "advanced"
+                  education:
+                    - institution: "Blekinge Tekniska Högskola"
+                      degree: "Kandidatexamen"
+                      field: "Interaktionsdesign (MDA)"
+                      period: "2008-2011"
+                      gpa: "3.5/4.0"
+                      location: "Karlskrona, Sweden"
+                      honors: ["Dean's List", "Magna Cum Laude"]
+                  certifications:
+                    - name: "Certified Professional in Accessibility Core Competencies (CPACC)"
+                      issuer: "IAAP"
+                      date: "2022"
+                      credentialId: "CPACC-2022-NA-001"
+                      url: "https://iaap.org/verification/123456"
+                      expirationDate: "2025-12-31"
+                  courses:
+                    - name: "Advanced React Performance Optimization"
+                      provider: "Frontend Masters"
+                      completionDate: "2023-08-15"
+                      duration: "8 hours"
+                      credentialId: "FM-2023-ARPO-001"
+                      url: "https://frontendmasters.com/courses/react-performance/"
+                      status: "completed"
+                      grade: "A+"
+                  languages:
+                    - language: "Swedish"
+                      proficiency: "Native (C2)"
+                    - language: "English"
+                      proficiency: "Fluent (C2)"
+                  closing:
+                    text: "I look forward to contributing to your team's success..."
+                    contact:
+                      email: "niklas.andervang@frankdigital.se"
+                      phone: "+46702441323"
+                      location: "Stockholm, Sweden"
+                      company: "Frank Digital AB"
+                  template:
+                    template: "andervang-consulting"
+                    theme: "professional"
+                    colorScheme: "blue"
+                    fontSize: 11
+                    margins: "normal"
+                    language: "sv"
+                    showPhoto: true
+                    showReferences: true
+      responses:
+        '200':
+          description: CV generated successfully
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document:
+              schema:
+                type: string
+                format: binary
+            text/html:
+              schema:
+                type: string
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /preview:
+    post:
+      summary: Generate CV preview
+      description: Generate a preview of the CV without creating the final document
+      operationId: previewCV
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CVGenerationRequest'
+      responses:
+        '200':
+          description: Preview generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CVPreviewResponse'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CVGenerationRequest:
+      type: object
+      required:
+        - personalInfo
+        - company
+      properties:
+        personalInfo:
+          $ref: '#/components/schemas/PersonalInfo'
+        company:
+          type: string
+          description: Company name for the CV
+          example: "Frank Digital AB"
+        summary:
+          $ref: '#/components/schemas/Summary'
+        employment:
+          type: array
+          items:
+            $ref: '#/components/schemas/Employment'
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+        competencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Competency'
+        education:
+          type: array
+          items:
+            $ref: '#/components/schemas/Education'
+        certifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Certification'
+        courses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Course'
+        languages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Language'
+        closing:
+          $ref: '#/components/schemas/Closing'
+        template:
+          $ref: '#/components/schemas/TemplateSettings'
+
+    PersonalInfo:
+      type: object
+      required:
+        - name
+        - email
+      properties:
+        name:
+          type: string
+          description: Full name
+          example: "Niklas Andervang"
+        title:
+          type: string
+          description: Professional title
+          example: "Senior Frontend Developer & Accessibility Expert"
+        email:
+          type: string
+          format: email
+          description: Email address
+          example: "niklas.andervang@frankdigital.se"
+        phone:
+          type: string
+          description: Phone number
+          example: "+46702441323"
+        location:
+          type: string
+          description: Location/Address
+          example: "Stockholm, Sweden"
+        linkedIn:
+          type: string
+          format: uri
+          description: LinkedIn profile URL
+          example: "https://linkedin.com/in/niklasandervang"
+        github:
+          type: string
+          format: uri
+          description: GitHub profile URL
+          example: "https://github.com/nandervang"
+        website:
+          type: string
+          format: uri
+          description: Personal website URL
+          example: "https://andervang.com"
+        twitter:
+          type: string
+          format: uri
+          description: Twitter profile URL
+          example: "https://twitter.com/niklasandervang"
+        instagram:
+          type: string
+          format: uri
+          description: Instagram profile URL
+          example: "https://instagram.com/niklasandervang"
+        facebook:
+          type: string
+          format: uri
+          description: Facebook profile URL
+          example: "https://facebook.com/niklas.andervang"
+        profileImage:
+          type: string
+          description: Base64 encoded profile image or image URL
+          example: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA..."
+
+    Summary:
+      type: object
+      properties:
+        introduction:
+          type: string
+          description: Professional introduction/summary
+          example: "Senior frontend/fullstack developer with 15+ years of experience..."
+        highlights:
+          type: array
+          items:
+            type: string
+          description: Key professional highlights
+          example: ["Expert in React and TypeScript", "IAAP CPACC certified"]
+        specialties:
+          type: array
+          items:
+            type: string
+          description: Core specialties and expertise areas
+          example: ["React", "TypeScript", "Accessibility", "DevOps"]
+        careerObjective:
+          type: string
+          description: Career objective or professional aspirations
+          example: "Looking to leverage expertise in accessibility and modern web development..."
+
+    Employment:
+      type: object
+      required:
+        - period
+        - position
+        - company
+      properties:
+        period:
+          type: string
+          description: Employment period
+          example: "2020-Present"
+        position:
+          type: string
+          description: Job position/title
+          example: "Senior Frontend Developer"
+        company:
+          type: string
+          description: Company name
+          example: "Frank Digital AB"
+        description:
+          type: string
+          description: Job description and responsibilities
+          example: "Leading frontend development initiatives..."
+        technologies:
+          type: array
+          items:
+            type: string
+          description: Technologies used
+          example: ["React", "TypeScript", "Next.js"]
+        achievements:
+          type: array
+          items:
+            type: string
+          description: Key achievements in this role
+          example: ["Implemented accessibility-first approach", "Led team of 5 developers"]
+        url:
+          type: string
+          format: uri
+          description: Company website
+          example: "https://frankdigital.se"
+        location:
+          type: string
+          description: Work location
+          example: "Stockholm, Sweden"
+
+    Project:
+      type: object
+      required:
+        - name
+        - description
+        - technologies
+      properties:
+        name:
+          type: string
+          description: Project name
+          example: "E-commerce Platform Rebuild"
+        description:
+          type: string
+          description: Project description
+          example: "Complete rebuild of legacy e-commerce platform"
+        technologies:
+          type: array
+          items:
+            type: string
+          description: Technologies used in the project
+          example: ["React", "Node.js", "PostgreSQL"]
+        url:
+          type: string
+          format: uri
+          description: Project URL
+          example: "https://project-example.com"
+        type:
+          type: string
+          description: Project type/category
+          example: "Web Application"
+        period:
+          type: string
+          description: Project timeline
+          example: "2023-2024"
+        achievements:
+          type: array
+          items:
+            type: string
+          description: Project achievements
+          example: ["50% performance improvement", "100% WCAG AA compliance"]
+
+    Role:
+      type: object
+      required:
+        - title
+        - skills
+      properties:
+        title:
+          type: string
+          description: Role title
+          example: "Frontend Specialist"
+        skills:
+          type: array
+          items:
+            type: string
+          description: Skills associated with this role
+          example: ["React", "TypeScript", "CSS", "HTML"]
+
+    Competency:
+      type: object
+      required:
+        - category
+        - skills
+      properties:
+        category:
+          type: string
+          description: Competency category name
+          example: "Expert inom området"
+        skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompetencySkill'
+
+    CompetencySkill:
+      type: object
+      required:
+        - name
+        - level
+      properties:
+        name:
+          type: string
+          description: Skill name
+          example: "React"
+        level:
+          type: string
+          enum: ["beginner", "intermediate", "advanced", "expert"]
+          description: Skill proficiency level
+          example: "expert"
+
+    Education:
+      type: object
+      required:
+        - institution
+        - degree
+        - field
+        - period
+      properties:
+        institution:
+          type: string
+          description: Educational institution name
+          example: "Blekinge Tekniska Högskola"
+        degree:
+          type: string
+          description: Degree type
+          example: "Kandidatexamen"
+        field:
+          type: string
+          description: Field of study
+          example: "Interaktionsdesign (MDA)"
+        period:
+          type: string
+          description: Study period
+          example: "2008-2011"
+        gpa:
+          type: string
+          description: GPA or grade
+          example: "3.5/4.0"
+        location:
+          type: string
+          description: Institution location
+          example: "Karlskrona, Sweden"
+        honors:
+          type: array
+          items:
+            type: string
+          description: Academic honors and achievements
+          example: ["Dean's List", "Magna Cum Laude"]
+
+    Certification:
+      type: object
+      required:
+        - name
+        - issuer
+        - date
+      properties:
+        name:
+          type: string
+          description: Certification name
+          example: "Certified Professional in Accessibility Core Competencies (CPACC)"
+        issuer:
+          type: string
+          description: Issuing organization
+          example: "IAAP"
+        date:
+          type: string
+          description: Issue date
+          example: "2022"
+        credentialId:
+          type: string
+          description: Credential ID
+          example: "CPACC-2022-NA-001"
+        url:
+          type: string
+          format: uri
+          description: Credential verification URL
+          example: "https://iaap.org/verification/123456"
+        expirationDate:
+          type: string
+          description: Expiration date
+          example: "2025-12-31"
+
+    Course:
+      type: object
+      required:
+        - name
+        - provider
+        - completionDate
+      properties:
+        name:
+          type: string
+          description: Course name
+          example: "Advanced React Performance Optimization"
+        provider:
+          type: string
+          description: Course provider
+          example: "Frontend Masters"
+        completionDate:
+          type: string
+          description: Completion date
+          example: "2023-08-15"
+        duration:
+          type: string
+          description: Course duration
+          example: "8 hours"
+        credentialId:
+          type: string
+          description: Certificate/credential ID
+          example: "FM-2023-ARPO-001"
+        url:
+          type: string
+          format: uri
+          description: Course URL
+          example: "https://frontendmasters.com/courses/react-performance/"
+        status:
+          type: string
+          enum: ["completed", "in-progress", "audit"]
+          description: Course completion status
+          example: "completed"
+        grade:
+          type: string
+          description: Course grade or score
+          example: "A+"
+
+    Language:
+      type: object
+      required:
+        - language
+        - proficiency
+      properties:
+        language:
+          type: string
+          description: Language name
+          example: "Swedish"
+        proficiency:
+          type: string
+          description: Proficiency level (CEFR or descriptive)
+          example: "Native (C2)"
+
+    Closing:
+      type: object
+      properties:
+        text:
+          type: string
+          description: Closing text/statement
+          example: "I look forward to contributing to your team's success..."
+        contact:
+          $ref: '#/components/schemas/ContactInfo'
+
+    ContactInfo:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: Contact email
+          example: "niklas.andervang@frankdigital.se"
+        phone:
+          type: string
+          description: Contact phone
+          example: "+46702441323"
+        location:
+          type: string
+          description: Contact location
+          example: "Stockholm, Sweden"
+        company:
+          type: string
+          description: Company name
+          example: "Frank Digital AB"
+
+    TemplateSettings:
+      type: object
+      properties:
+        template:
+          type: string
+          enum: ["andervang-consulting", "modern", "classic"]
+          description: CV template to use
+          example: "andervang-consulting"
+        theme:
+          type: string
+          enum: ["professional", "creative", "minimal"]
+          description: Theme variant
+          example: "professional"
+        colorScheme:
+          type: string
+          enum: ["blue", "green", "red", "purple", "orange", "gray"]
+          description: Color scheme
+          example: "blue"
+        fontSize:
+          type: integer
+          minimum: 8
+          maximum: 16
+          description: Base font size
+          example: 11
+        margins:
+          type: string
+          enum: ["narrow", "normal", "wide"]
+          description: Page margins
+          example: "normal"
+        language:
+          type: string
+          enum: ["sv", "en", "no", "da"]
+          description: Document language
+          example: "sv"
+        showPhoto:
+          type: boolean
+          description: Include profile photo
+          example: true
+        showReferences:
+          type: boolean
+          description: Include references section
+          example: true
+
+    CVPreviewResponse:
+      type: object
+      properties:
+        preview:
+          type: string
+          description: HTML preview of the CV
+        metadata:
+          type: object
+          properties:
+            pageCount:
+              type: integer
+              description: Estimated page count
+            wordCount:
+              type: integer
+              description: Estimated word count
+            sections:
+              type: array
+              items:
+                type: string
+              description: Included sections
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: "INVALID_REQUEST"
+        message:
+          type: string
+          description: Error message
+          example: "Invalid request format"
+        details:
+          type: object
+          description: Additional error details
+
+    ValidationErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+        - validationErrors
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          description: Error message
+          example: "Request validation failed"
+        validationErrors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: Field that failed validation
+              message:
+                type: string
+                description: Validation error message

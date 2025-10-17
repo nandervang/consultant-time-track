@@ -48,7 +48,7 @@ export function EducationCertificationsForm({
     onEducationChange(updated);
   };
 
-  const updateEducation = (index: number, field: keyof CVEducationItem, value: string) => {
+  const updateEducation = (index: number, field: keyof CVEducationItem, value: string | string[]) => {
     const updated = safeEducationData.map((item, i) => 
       i === index ? { ...item, [field]: value } : item
     );
@@ -223,6 +223,27 @@ export function EducationCertificationsForm({
                         />
                       </div>
                     </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor={`location-${index}`}>Location</Label>
+                        <Input
+                          id={`location-${index}`}
+                          placeholder="e.g., Stockholm, Sweden"
+                          value={education.location || ''}
+                          onChange={(e) => updateEducation(index, 'location', e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`honors-${index}`}>Academic Honors</Label>
+                        <Input
+                          id={`honors-${index}`}
+                          placeholder="e.g., Magna Cum Laude, Dean's List (comma-separated)"
+                          value={(education.honors || []).join(', ')}
+                          onChange={(e) => updateEducation(index, 'honors', e.target.value.split(', ').filter(h => h.trim()))}
+                        />
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -316,6 +337,23 @@ export function EducationCertificationsForm({
                         />
                       </div>
                       <div className="space-y-2">
+                        <Label htmlFor={`course-status-${index}`}>Status</Label>
+                        <select
+                          id={`course-status-${index}`}
+                          title="Course Status"
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          value={course.status || 'completed'}
+                          onChange={(e) => updateCourse(index, 'status', e.target.value)}
+                        >
+                          <option value="completed">Completed</option>
+                          <option value="in-progress">In Progress</option>
+                          <option value="audit">Audit</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
                         <Label htmlFor={`course-credential-${index}`}>Credential ID</Label>
                         <Input
                           id={`course-credential-${index}`}
@@ -324,17 +362,25 @@ export function EducationCertificationsForm({
                           onChange={(e) => updateCourse(index, 'credentialId', e.target.value)}
                         />
                       </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor={`course-url-${index}`}>Certificate URL</Label>
-                      <Input
-                        id={`course-url-${index}`}
-                        type="url"
-                        placeholder="https://..."
-                        value={course.url || ''}
-                        onChange={(e) => updateCourse(index, 'url', e.target.value)}
-                      />
+                      <div className="space-y-2">
+                        <Label htmlFor={`course-grade-${index}`}>Grade/Score</Label>
+                        <Input
+                          id={`course-grade-${index}`}
+                          placeholder="e.g., A+, 95%, Pass"
+                          value={course.grade || ''}
+                          onChange={(e) => updateCourse(index, 'grade', e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`course-url-${index}`}>Certificate URL</Label>
+                        <Input
+                          id={`course-url-${index}`}
+                          type="url"
+                          placeholder="https://..."
+                          value={course.url || ''}
+                          onChange={(e) => updateCourse(index, 'url', e.target.value)}
+                        />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -420,12 +466,34 @@ export function EducationCertificationsForm({
                         />
                       </div>
                       <div className="space-y-2">
+                        <Label htmlFor={`cert-expiration-${index}`}>Expiration Date</Label>
+                        <Input
+                          id={`cert-expiration-${index}`}
+                          type="month"
+                          placeholder="Leave empty if no expiration"
+                          value={certification.expirationDate || ''}
+                          onChange={(e) => updateCertification(index, 'expirationDate', e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
                         <Label htmlFor={`cert-credential-${index}`}>Credential ID</Label>
                         <Input
                           id={`cert-credential-${index}`}
                           placeholder="Certification ID (optional)"
                           value={certification.credentialId || ''}
                           onChange={(e) => updateCertification(index, 'credentialId', e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`cert-url-${index}`}>Credential URL</Label>
+                        <Input
+                          id={`cert-url-${index}`}
+                          placeholder="https://..."
+                          value={certification.url || ''}
+                          onChange={(e) => updateCertification(index, 'url', e.target.value)}
                         />
                       </div>
                     </div>

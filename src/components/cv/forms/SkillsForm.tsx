@@ -26,19 +26,32 @@ interface SkillsFormProps {
 const convertToEnhancedFormat = (data: CVSkillCategory[]): EnhancedSkillCategory[] => {
   return data.map(cat => ({
     category: cat.category,
-    skills: cat.items.map(item => ({
-      name: typeof item === 'string' ? item : item,
-      level: 3, // Default to intermediate level
-      category: cat.category
-    }))
+    skills: cat.items.map(item => {
+      if (typeof item === 'string') {
+        return {
+          name: item,
+          level: 3, // Default to intermediate level for string items
+          category: cat.category
+        };
+      } else {
+        return {
+          name: item.name,
+          level: item.level || 3, // Use existing level or default to intermediate
+          category: cat.category
+        };
+      }
+    })
   }));
 };
 
-// Convert back to original format for API compatibility
-const convertToOriginalFormat = (data: EnhancedSkillCategory[]): CVSkillCategory[] => {
+// Convert back to enhanced format for API compatibility with skill levels
+const convertToEnhancedAPIFormat = (data: EnhancedSkillCategory[]): CVSkillCategory[] => {
   return data.map(cat => ({
     category: cat.category,
-    items: cat.skills.map(skill => skill.name)
+    items: cat.skills.map(skill => ({
+      name: skill.name,
+      level: skill.level
+    }))
   }));
 };
 
@@ -52,7 +65,7 @@ export function SkillsForm({ data, onChange }: SkillsFormProps) {
 
   const updateData = (newEnhancedData: EnhancedSkillCategory[]) => {
     setEnhancedData(newEnhancedData);
-    onChange(convertToOriginalFormat(newEnhancedData));
+    onChange(convertToEnhancedAPIFormat(newEnhancedData));
   };
 
   const addCategory = () => {

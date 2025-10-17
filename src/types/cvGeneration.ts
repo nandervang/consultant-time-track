@@ -25,6 +25,9 @@ export interface CVPersonalInfo {
   github?: string;
   website?: string;
   profilePhoto?: string;
+  twitter?: string;
+  instagram?: string;
+  facebook?: string;
 }
 
 export interface CVSummary {
@@ -42,6 +45,8 @@ export interface CVExperienceItem {
   description: string;
   technologies: string[];
   achievements: string[];
+  url?: string; // Company website
+  location?: string; // Work location
 }
 
 export interface CVEducationItem {
@@ -50,11 +55,18 @@ export interface CVEducationItem {
   field: string;
   period: string;
   gpa?: string;
+  location?: string;
+  honors?: string[];
+}
+
+export interface CVSkillItem {
+  name: string;
+  level?: number; // 1-5 rating scale (1=Grundläggande, 2=Grundläggande+, 3=Mellannivå, 4=Avancerad, 5=Expert)
 }
 
 export interface CVSkillCategory {
   category: string;
-  items: string[];
+  items: (string | CVSkillItem)[]; // Support both old format (strings) and new format (objects with levels)
 }
 
 export interface CVProjectItem {
@@ -73,6 +85,8 @@ export interface CVCertificationItem {
   issuer: string;
   date: string;
   credentialId?: string;
+  url?: string;
+  expirationDate?: string;
 }
 
 export interface CVLanguageItem {
@@ -87,6 +101,8 @@ export interface CVCourseItem {
   duration?: string;
   credentialId?: string;
   url?: string;
+  status?: 'completed' | 'in-progress' | 'audit';
+  grade?: string;
 }
 
 // New interfaces for Andervang Consulting template

@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, X, BookOpen } from 'lucide-react';
 import { CVCourseItem } from '@/types/cvGeneration';
 
@@ -18,7 +19,9 @@ export function CoursesForm({ data, onChange }: CoursesFormProps) {
       completionDate: '',
       duration: '',
       credentialId: '',
-      url: ''
+      url: '',
+      status: 'completed',
+      grade: ''
     };
     onChange([...data, newCourse]);
   };
@@ -130,6 +133,34 @@ export function CoursesForm({ data, onChange }: CoursesFormProps) {
                       placeholder="Certificate ID (optional)"
                       value={course.credentialId || ''}
                       onChange={(e) => updateCourse(index, 'credentialId', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor={`course-status-${index}`}>Status</Label>
+                    <Select
+                      value={course.status || 'completed'}
+                      onValueChange={(value) => updateCourse(index, 'status', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="in-progress">In Progress</SelectItem>
+                        <SelectItem value="audit">Audit</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`course-grade-${index}`}>Grade (optional)</Label>
+                    <Input
+                      id={`course-grade-${index}`}
+                      placeholder="e.g., A, Pass, 95%"
+                      value={course.grade || ''}
+                      onChange={(e) => updateCourse(index, 'grade', e.target.value)}
                     />
                   </div>
                 </div>
