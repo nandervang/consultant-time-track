@@ -191,18 +191,44 @@ class CVGenerationAPI {
       return text;
     };
 
-    // Truncate long descriptions
+    // Limit employment entries to prevent timeout (keep most recent)
+    if (optimized.employment && optimized.employment.length > 15) {
+      console.warn(`⚠️ Limiting employment entries from ${optimized.employment.length} to 15 to prevent timeout`);
+      optimized.employment = optimized.employment.slice(0, 15);
+    }
+
+    // Truncate long descriptions more aggressively
     if (optimized.employment) {
       optimized.employment = optimized.employment.map(emp => ({
         ...emp,
-        description: truncateText(emp.description, 1000)
+        description: truncateText(emp.description, 400),
+        achievements: emp.achievements?.slice(0, 3) || [], // Limit achievements
+        technologies: emp.technologies?.slice(0, 10) || [] // Limit technologies
       }));
     }
 
     if (optimized.projects) {
       optimized.projects = optimized.projects.map(proj => ({
         ...proj,
-        description: truncateText(proj.description, 800)
+        description: truncateText(proj.description, 300),
+        achievements: proj.achievements?.slice(0, 3) || [],
+        technologies: proj.technologies?.slice(0, 8) || []
+      }));
+    }
+
+    // Limit and truncate skills
+    if (optimized.skills) {
+      optimized.skills = optimized.skills.slice(0, 6).map(skillCat => ({
+        ...skillCat,
+        items: skillCat.items?.slice(0, 8) || []
+      }));
+    }
+
+    // Limit competencies
+    if (optimized.competencies) {
+      optimized.competencies = optimized.competencies.slice(0, 3).map(comp => ({
+        ...comp,
+        items: comp.items?.slice(0, 15) || []
       }));
     }
 
@@ -210,9 +236,20 @@ class CVGenerationAPI {
     if (optimized.summary) {
       optimized.summary = {
         ...optimized.summary,
-        introduction: truncateText(optimized.summary.introduction, 500)
+        introduction: truncateText(optimized.summary.introduction, 300),
+        highlights: optimized.summary.highlights?.slice(0, 4) || [],
+        specialties: optimized.summary.specialties?.slice(0, 6) || []
       };
     }
+
+    // Log optimization results
+    console.log('📊 Payload optimization summary:', {
+      employment: `${cvData.employment?.length || 0} → ${optimized.employment?.length || 0}`,
+      skills: `${cvData.skills?.length || 0} → ${optimized.skills?.length || 0}`,
+      competencies: `${cvData.competencies?.length || 0} → ${optimized.competencies?.length || 0}`,
+      originalSize: JSON.stringify(cvData).length,
+      optimizedSize: JSON.stringify(optimized).length
+    });
 
     return optimized;
   }
@@ -254,7 +291,7 @@ class CVGenerationAPI {
       const originalSize = JSON.stringify(cvData).length;
       let optimizedData = cvData;
       
-      if (originalSize > 50000) {
+      if (originalSize > 30000) {
         console.warn('⚠️ Large payload detected:', originalSize, 'bytes - optimizing to prevent PDF generation timeouts');
         optimizedData = this.optimizePayload(cvData);
         const optimizedSize = JSON.stringify(optimizedData).length;
