@@ -176,6 +176,47 @@ class CVGenerationAPI {
     }
   }
 
+  /**
+   * Optimize payload to reduce PDF generation time
+   */
+  private optimizePayload(cvData: ConsultantCVPayload): ConsultantCVPayload {
+    const optimized = { ...cvData };
+    
+    // Truncate very long text fields that might cause timeouts
+    const truncateText = (text: string, maxLength: number) => {
+      if (text && text.length > maxLength) {
+        console.warn(`⚠️ Truncating text from ${text.length} to ${maxLength} characters to prevent timeout`);
+        return text.substring(0, maxLength) + '...';
+      }
+      return text;
+    };
+
+    // Truncate long descriptions
+    if (optimized.employment) {
+      optimized.employment = optimized.employment.map(emp => ({
+        ...emp,
+        description: truncateText(emp.description, 1000)
+      }));
+    }
+
+    if (optimized.projects) {
+      optimized.projects = optimized.projects.map(proj => ({
+        ...proj,
+        description: truncateText(proj.description, 800)
+      }));
+    }
+
+    // Truncate summary sections
+    if (optimized.summary) {
+      optimized.summary = {
+        ...optimized.summary,
+        introduction: truncateText(optimized.summary.introduction, 500)
+      };
+    }
+
+    return optimized;
+  }
+
   async generateCV(cvData: ConsultantCVPayload): Promise<CVGenerationResult> {
     const endpoint = `${this.baseUrl}/api`;
     const isLocal = CV_API_CONFIG.useLocalAPI;
@@ -194,19 +235,33 @@ class CVGenerationAPI {
     const payloadSize = JSON.stringify(cvData).length;
     console.log(`📦 Payload size: ${payloadSize} bytes`);
     
-    // Log essential payload info for debugging
-    console.log('📋 Payload summary:', {
-      name: cvData.personalInfo?.name,
-      template: cvData.template,
-      format: cvData.format,
-      sectionsCount: {
-        employment: cvData.employment?.length || 0,
-        projects: cvData.projects?.length || 0,
-        education: cvData.education?.length || 0
+      // Log essential payload info for debugging
+      console.log('📋 Payload summary:', {
+        name: cvData.personalInfo?.name,
+        template: cvData.template,
+        format: cvData.format,
+        sectionsCount: {
+          employment: cvData.employment?.length || 0,
+          projects: cvData.projects?.length || 0,
+          education: cvData.education?.length || 0,
+          competencies: cvData.competencies?.length || 0,
+          skills: cvData.skills?.length || 0,
+          languages: cvData.languages?.length || 0
+        }
+      });
+
+      // Check for potentially problematic content and optimize if needed
+      const originalSize = JSON.stringify(cvData).length;
+      let optimizedData = cvData;
+      
+      if (originalSize > 50000) {
+        console.warn('⚠️ Large payload detected:', originalSize, 'bytes - optimizing to prevent PDF generation timeouts');
+        optimizedData = this.optimizePayload(cvData);
+        const optimizedSize = JSON.stringify(optimizedData).length;
+        console.log('✂️ Payload optimized:', originalSize, '→', optimizedSize, 'bytes');
       }
-    });
-    
-    // Retry logic for cold starts and 502 errors
+      
+      // Retry logic for cold starts and 502 errors
     const maxRetries = 3;
     let lastError: Error | null = null;
     
@@ -229,7 +284,7 @@ class CVGenerationAPI {
             'Origin': window.location.origin, // Add origin header
             'User-Agent': 'CV-Generator/1.0'
           },
-          body: JSON.stringify(cvData),
+          body: JSON.stringify(optimizedData),
           signal: AbortSignal.timeout(120000) // Increase timeout to 2 minutes for cold starts
         });
 
@@ -267,6 +322,27 @@ class CVGenerationAPI {
             throw new Error(`Payload Too Large (413): The CV data is too large to process. Try reducing the amount of content.`);
           } else if (response.status === 429) {
             throw new Error(`Rate Limited (429): Too many requests. Please wait a moment before trying again.`);
+          } else if (response.status === 500) {
+            // Handle 500 errors with more specific messaging
+            let errorMessage = `Internal Server Error (500): ${response.statusText}`;
+            if (errorText) {
+              try {
+                const errorData = JSON.parse(errorText);
+                if (errorData.error?.code === 'PDF_GENERATION_FAILED') {
+                  errorMessage = `PDF generation timed out on the server. This can happen with large CVs or during high server load. `;
+                  if (errorData.error.fallbackAvailable) {
+                    errorMessage += `A fallback option may be available - please try again or contact support.`;
+                  } else {
+                    errorMessage += `Please try reducing the content size or try again later.`;
+                  }
+                } else {
+                  errorMessage += ` - ${errorData.error?.message || errorText}`;
+                }
+              } catch {
+                errorMessage += errorText ? ` - ${errorText}` : '';
+              }
+            }
+            throw new Error(errorMessage);
           } else {
             throw new Error(`HTTP ${response.status}: ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
           }
