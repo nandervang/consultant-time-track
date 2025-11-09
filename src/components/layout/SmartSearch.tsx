@@ -70,7 +70,7 @@ export default function SmartSearch({ className }: SmartSearchProps) {
       title: 'Log Time Entry',
       description: 'Track time for a project',
       action: () => {
-        navigate('/time-tracking');
+        navigate('/time-focus');
       },
       icon: <Clock className="h-4 w-4" />,
       type: 'create',
@@ -121,12 +121,12 @@ export default function SmartSearch({ className }: SmartSearchProps) {
     },
     {
       id: 'quick-time',
-      title: 'Time Tracking',
-      description: 'Quick access to time tracking',
-      action: () => navigate('/time-tracking'),
+      title: 'Time & Focus',
+      description: 'Quick access to time & focus',
+      action: () => navigate('/time-focus'),
       icon: <Clock className="h-4 w-4" />,
       type: 'navigation',
-      keywords: ['tt', 'time', 'tracking', 'hours', 'timesheet', 'work']
+      keywords: ['tt', 'time', 'tracking', 'focus', 'hours', 'timesheet', 'work']
     },
     {
       id: 'quick-budget',
@@ -168,12 +168,12 @@ export default function SmartSearch({ className }: SmartSearchProps) {
     },
     {
       id: 'go-time-tracking',
-      title: 'Time Tracking',
-      description: 'Track and manage work hours',
-      action: () => navigate('/time-tracking'),
+      title: 'Time & Focus',
+      description: 'Track and manage work hours and focus',
+      action: () => navigate('/time-focus'),
       icon: <Clock className="h-4 w-4" />,
       type: 'navigation',
-      keywords: ['time', 'tracking', 'hours', 'timesheet', 'work']
+      keywords: ['time', 'tracking', 'focus', 'hours', 'timesheet', 'work']
     },
     {
       id: 'go-budget',
@@ -212,7 +212,7 @@ export default function SmartSearch({ className }: SmartSearchProps) {
       title: 'Start Timer',
       description: 'Quick time tracking',
       action: () => {
-        navigate('/time-tracking');
+        navigate('/time-focus');
       },
       icon: <Clock className="h-4 w-4" />,
       type: 'create',
@@ -453,7 +453,7 @@ export default function SmartSearch({ className }: SmartSearchProps) {
                   <p>• <span className="font-mono bg-muted px-1 rounded">d</span> - Dashboard</p>
                   <p>• <span className="font-mono bg-muted px-1 rounded">inv</span> - Invoicing</p>
                   <p>• <span className="font-mono bg-muted px-1 rounded">cli</span> - Clients</p>
-                  <p>• <span className="font-mono bg-muted px-1 rounded">tt</span> - Time tracking</p>
+                  <p>• <span className="font-mono bg-muted px-1 rounded">tt</span> - Time & Focus</p>
                   <p>• <span className="font-mono bg-muted px-1 rounded">bud</span> - Budget</p>
                 </div>
               </div>

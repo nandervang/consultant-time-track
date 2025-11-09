@@ -5,6 +5,8 @@ interface ModalContextType {
   setExpenseModalOpen: (open: boolean) => void;
   searchModalOpen: boolean;
   setSearchModalOpen: (open: boolean) => void;
+  timeModalOpen: boolean;
+  setTimeModalOpen: (open: boolean) => void;
 }
 
 const ModalContext = createContext<ModalContextType | undefined>(undefined);
@@ -24,6 +26,7 @@ interface ModalProviderProps {
 export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
   const [expenseModalOpen, setExpenseModalOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [timeModalOpen, setTimeModalOpen] = useState(false);
 
   return (
     <ModalContext.Provider
@@ -32,6 +35,8 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
         setExpenseModalOpen,
         searchModalOpen,
         setSearchModalOpen,
+        timeModalOpen,
+        setTimeModalOpen,
       }}
     >
       {children}

@@ -75,7 +75,7 @@ function App() {
         >
           <Routes>
             <Route path="/" element={<Dashboard isDarkMode={isDarkMode} />} />
-            <Route path="/time-tracking" element={<TimeTracking isDarkMode={isDarkMode} />} />
+            <Route path="/time-focus" element={<TimeTracking isDarkMode={isDarkMode} />} />
             <Route path="/budget" element={<Budget isDarkMode={isDarkMode} />} />
             <Route path="/cash-flow" element={<CashFlow isDarkMode={isDarkMode} />} />
             <Route path="/projects" element={<Projects />} />

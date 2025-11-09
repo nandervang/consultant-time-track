@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
-  Clock, 
+  Target, 
   DollarSign, 
   TrendingUp, 
   FolderOpen, 
@@ -24,7 +24,7 @@ interface SidebarProps {
 
 const navigationItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Time Tracking', href: '/time-tracking', icon: Clock },
+  { name: 'Time & Focus', href: '/time-focus', icon: Target },
   { name: 'Budget', href: '/budget', icon: DollarSign },
   { name: 'Cash Flow', href: '/cash-flow', icon: TrendingUp },
   { name: 'Projects', href: '/projects', icon: FolderOpen },
