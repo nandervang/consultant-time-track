@@ -28,6 +28,10 @@
 - **[CV Manager](./docs/specs/009-cv-manager.md)** - Resume generation
 - **[Salary Management](./docs/specs/013-salary-management.md)** - Payment processing
 
+#### Productivity & Planning
+
+- **[Time & Focus](./docs/specs/014-time-and-focus.md)** - Weekly focus planner and time tracking
+
 ## 🚀 Quick Start
 
 1. **Start here:** [Documentation Index](./docs/README.md)
@@ -53,7 +57,8 @@ docs/
     ├── 010-client-management.md           # Client relationship management
     ├── 011-project-management.md          # Project lifecycle management
     ├── 012-time-tracking.md               # Time tracking system
-    └── 013-salary-management.md           # Salary and payment management
+    ├── 013-salary-management.md           # Salary and payment management
+    └── 014-time-and-focus.md              # Time & Focus planner
 ```
 
 ---
