@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Edit2, 
@@ -42,6 +43,7 @@ export function ClientDetailDialog({ open, onOpenChange, clientId }: ClientDetai
   const [editForm, setEditForm] = useState<Partial<UpdateInvoiceItemData>>({});
   const [editDueDateOption, setEditDueDateOption] = useState<'20' | '30' | '90' | 'custom'>('20');
   const [sortBy, setSortBy] = useState<'invoice_date' | 'created_at' | 'total_amount' | 'status' | 'description'>('invoice_date');
+  const [showPaidItems, setShowPaidItems] = useState(false);
 
   // Helper function to calculate due date based on invoice date and days
   const calculateDueDate = (invoiceDate: string, days: number): string => {
@@ -115,7 +117,11 @@ export function ClientDetailDialog({ open, onOpenChange, clientId }: ClientDetai
   };
 
   const client = clients.find(c => c.id === clientId);
-  const clientItems = invoiceItems.filter(item => item.client_id === clientId);
+  const allClientItems = invoiceItems.filter(item => item.client_id === clientId);
+  // Filter out paid items unless showPaidItems is true
+  const clientItems = showPaidItems 
+    ? allClientItems 
+    : allClientItems.filter(item => item.status !== 'paid');
   const clientProjects = projects.filter(p => p.client_id === clientId);
 
   // Reset editing state when dialog opens/closes
@@ -233,7 +239,7 @@ export function ClientDetailDialog({ open, onOpenChange, clientId }: ClientDetai
   };
 
   const calculateSummary = () => {
-    return clientItems.reduce(
+    return allClientItems.reduce(
       (acc, item) => {
         acc.totalItems++;
         acc.totalAmount += item.total_amount;
@@ -354,7 +360,10 @@ export function ClientDetailDialog({ open, onOpenChange, clientId }: ClientDetai
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Invoice Items</span>
-                <Badge variant="outline">{clientItems.length} items</Badge>
+                <Badge variant="outline">
+                  {clientItems.length} {clientItems.length === 1 ? 'item' : 'items'}
+                  {!showPaidItems && allClientItems.length !== clientItems.length && ' (paid hidden)'}
+                </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -383,6 +392,16 @@ export function ClientDetailDialog({ open, onOpenChange, clientId }: ClientDetai
                         <option value="status">Status</option>
                         <option value="description">Description</option>
                       </select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Checkbox 
+                        id="show-paid" 
+                        checked={showPaidItems}
+                        onCheckedChange={(checked) => setShowPaidItems(checked === true)}
+                      />
+                      <Label htmlFor="show-paid" className="text-sm font-medium cursor-pointer">
+                        Show paid items
+                      </Label>
                     </div>
                   </div>
 
