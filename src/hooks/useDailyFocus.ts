@@ -19,14 +19,23 @@ export interface DailyFocusInput {
   goals: string;
 }
 
+// Helper to get ISO week number (Swedish standard)
+export function getISOWeekNumber(date: Date): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+}
+
 export function useDailyFocus() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [focusData, setFocusData] = useState<DailyFocus[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Get dates for the next 2 weeks (Monday to Friday only)
-  const getNextTwoWeeks = useCallback(() => {
+  // Get dates for 2 weeks (Monday to Friday only), with optional week offset
+  const getNextTwoWeeks = useCallback((weekOffset: number = 0) => {
     const dates: Date[] = [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -54,6 +63,11 @@ export function useDailyFocus() {
     
     startMonday.setHours(0, 0, 0, 0);
     
+    // Apply week offset (multiply by 7 to get days)
+    if (weekOffset !== 0) {
+      startMonday.setDate(startMonday.getDate() + (weekOffset * 7));
+    }
+    
     // Get 10 weekdays (2 weeks, Mon-Fri)
     const date = new Date(startMonday);
     while (dates.length < 10) {
@@ -68,13 +82,13 @@ export function useDailyFocus() {
     return dates;
   }, []);
 
-  // Fetch focus data for the next 2 weeks
-  const fetchFocusData = useCallback(async () => {
+  // Fetch focus data for a specific date range
+  const fetchFocusData = useCallback(async (weekOffset: number = 0) => {
     if (!user) return;
 
     try {
       setLoading(true);
-      const dates = getNextTwoWeeks();
+      const dates = getNextTwoWeeks(weekOffset);
       const startDate = dates[0].toISOString().split('T')[0];
       const endDate = dates[dates.length - 1].toISOString().split('T')[0];
 
@@ -162,6 +176,7 @@ export function useDailyFocus() {
     updateFocus,
     getFocusForDate,
     getNextTwoWeeks,
+    getISOWeekNumber,
     refetch: fetchFocusData,
   };
 }

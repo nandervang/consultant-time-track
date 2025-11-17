@@ -1,20 +1,37 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useDailyFocus } from '@/hooks/useDailyFocus';
+import { useDailyFocus, getISOWeekNumber } from '@/hooks/useDailyFocus';
 import { format, isSameDay, isPast } from 'date-fns';
-import { Target, Loader2 } from 'lucide-react';
+import { Target, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function FocusPlanner() {
-  const { loading, updateFocus, getFocusForDate, getNextTwoWeeks } = useDailyFocus();
+  const { loading, updateFocus, getFocusForDate, getNextTwoWeeks, refetch } = useDailyFocus();
   const [dates, setDates] = useState<Date[]>([]);
+  const [weekOffset, setWeekOffset] = useState(0);
   const [autoSaveTimers, setAutoSaveTimers] = useState<Map<string, NodeJS.Timeout>>(new Map());
   const [maxContentHeight, setMaxContentHeight] = useState({ focus: 3, goals: 5 });
 
   useEffect(() => {
-    setDates(getNextTwoWeeks());
-  }, [getNextTwoWeeks]);
+    setDates(getNextTwoWeeks(weekOffset));
+    // Refetch data when week offset changes
+    refetch(weekOffset);
+  }, [getNextTwoWeeks, weekOffset, refetch]);
+
+  // Navigation handlers
+  const handlePreviousWeeks = () => {
+    setWeekOffset(prev => prev - 2);
+  };
+
+  const handleNextWeeks = () => {
+    setWeekOffset(prev => prev + 2);
+  };
+
+  const handleToday = () => {
+    setWeekOffset(0);
+  };
 
   // Split dates into two weeks
   const week1 = dates.slice(0, 5);
@@ -232,12 +249,44 @@ export default function FocusPlanner() {
 
   return (
     <div className="space-y-8">
+      {/* Navigation Controls */}
+      <div className="flex items-center justify-between">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handlePreviousWeeks}
+          className="flex items-center gap-2"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Previous
+        </Button>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleToday}
+          disabled={weekOffset === 0}
+        >
+          Today
+        </Button>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleNextWeeks}
+          className="flex items-center gap-2"
+        >
+          Next
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
+
       {/* Week 1 */}
       <div>
         <div className="flex items-center gap-2 mb-4">
           <Target className="w-5 h-5 text-primary" />
           <h3 className="text-lg font-semibold">
-            Week 1: {week1.length > 0 && format(week1[0], 'MMM d')} -{' '}
+            Vecka {week1.length > 0 && getISOWeekNumber(week1[0])}: {week1.length > 0 && format(week1[0], 'MMM d')} -{' '}
             {week1.length > 0 && format(week1[week1.length - 1], 'MMM d, yyyy')}
           </h3>
         </div>
@@ -251,7 +300,7 @@ export default function FocusPlanner() {
         <div className="flex items-center gap-2 mb-4">
           <Target className="w-5 h-5 text-primary" />
           <h3 className="text-lg font-semibold">
-            Week 2: {week2.length > 0 && format(week2[0], 'MMM d')} -{' '}
+            Vecka {week2.length > 0 && getISOWeekNumber(week2[0])}: {week2.length > 0 && format(week2[0], 'MMM d')} -{' '}
             {week2.length > 0 && format(week2[week2.length - 1], 'MMM d, yyyy')}
           </h3>
         </div>

@@ -152,16 +152,11 @@ export function useCashFlowProjections() {
     const projections: MonthProjection[] = [];
     const today = new Date();
     
-    console.log('🔍 Current date:', today);
-    console.log('🔍 Current month index:', today.getMonth(), '(0=Jan, 10=Nov)');
-    
     // Start from current month (not next month)
     for (let i = 0; i < 6; i++) {
       const projectionDate = new Date(today.getFullYear(), today.getMonth() + i, 1);
       const monthKey = projectionDate.toISOString().slice(0, 7);
       const monthName = projectionDate.toLocaleDateString('en-US', { month: 'short' });
-      
-      console.log(`🔍 Month ${i}:`, { projectionDate, monthKey, monthName });
       
       // First month is current (partial), rest are projections
       const isProjection = i > 0;
